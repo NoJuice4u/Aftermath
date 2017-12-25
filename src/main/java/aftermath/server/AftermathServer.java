@@ -8,26 +8,21 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
 
 import com.google.gson.Gson;
 
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
+import main.java.aftermath.locale.*;
+
 import main.java.encephalon.annotations.*;
 import main.java.encephalon.annotations.methods.*;
-import main.java.encephalon.locale.*;
-import main.java.encephalon.profiler.Profiler;
-import main.java.encephalon.profiler.RequestCircularQueue;
-import main.java.encephalon.profiler.Task;
-import main.java.encephalon.server.EncephalonServer;
-import main.java.encephalon.writers.HtmlWriter;
+import main.java.encephalon.profiler.*;
+import main.java.encephalon.server.*;
+import main.java.encephalon.writers.*;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
@@ -40,6 +35,14 @@ public class AftermathServer extends EncephalonServer
 	public static final String GOOGLE_MAP_API_KEY = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
 	public static final double GOOGLE_MAP_ZOOMSCALE = 1.0; // 591657550.5;
 	private static AftermathController aftermathController = new AftermathController();
+	
+	public static Map<String, LocaleBase> localeList = new HashMap<String, LocaleBase>();
+	{
+		Map<String, LocaleBase> lMap = new HashMap<String, LocaleBase>();
+		lMap.put("jp_jp", new JP_JP());
+		lMap.put("en_us", new EN_US());
+		localeList = Collections.unmodifiableMap(lMap);
+	}
 
 	public static final Gson gsonRequest = new Gson();
 

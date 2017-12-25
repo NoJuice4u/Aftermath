@@ -1,0 +1,326 @@
+<html>
+	<head>
+		<title>
+${title}
+		</title>
+		<script type="application/javascript">
+function loadJSON(data_uri, zoom)
+{
+	// data_uri = "http://174.1.52.221:8080/aftermath/map/node/630971503/json";
+	// data_uri = "http://www.tutorialspoint.com/json/data.json";
+	var xHttpRequest = new XMLHttpRequest();
+	var jsonObj;
+
+	const mapCanvas = document.getElementById("mapCanvas");
+	const canvasInput = document.getElementById("canvasInput");
+	const tempLineCanvas = document.getElementById("tempLineCanvas");
+	const canvasA = mapCanvas.getContext("2d");
+
+	var chosenEdge = -1;
+	var inputData = { }
+	
+	mapCanvas.addEventListener('click', (e) => {
+		const mousePos = {
+			x: e.clientX - mapCanvas.offsetTop,
+			y: e.clientY - mapCanvas.offsetLeft - 50 // -50 is hacky!  Need to factor in screen position as well!!
+		};
+		var zm = Math.pow(2, zoom);
+		
+		if(chosenEdge > 0)
+		{
+			if(canvasInput.firstChild.value > 0)
+			{
+				console.log("Set Edge: " + chosenEdge + " : " + canvasInput.firstChild.value);
+				inputData[chosenEdge] = canvasInput.firstChild.value;
+			}
+			else
+			{
+				delete inputData[chosenEdge];
+			}
+			canvasInput.firstChild.value = "";
+		}
+		
+		var distance = 9999;
+		for(edge in jsonObj["mapEdges"])
+		{
+			var vertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
+			var vertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]];
+			
+			if(vertexA == null || vertexB == null) // Stupid catch-all because my server code sucks
+			{
+				// console.log("Skipped a Vertex on: " + edge);
+				continue;
+			}
+			
+			var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 600, 300);
+			var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 600, 300);
+
+			var min, max, minX, maxX, minY, maxY, mPos;
+			if (coordinatesA['x']<coordinatesB['x'])
+			{
+				minX = coordinatesA['x'];
+				maxX = coordinatesB['x'];
+				minY = coordinatesA['y'];
+				maxY = coordinatesB['y'];
+				mPos = mousePos.x;
+			}
+			else if (coordinatesA['x']<coordinatesB['x'])
+			{
+				minX = coordinatesB['x'];
+				maxX = coordinatesA['x'];
+				minY = coordinatesB['y'];
+				maxY = coordinatesA['y'];
+				mPos = mousePos.x;
+			} else if (coordinatesA['y']<coordinatesB['y'])
+			{
+				minX = coordinatesA['x'];
+				maxX = coordinatesB['x'];
+				minY = coordinatesA['y'];
+				maxY = coordinatesB['y'];
+				mPos = mousePos.y;
+			}
+			else
+			{
+				minX = coordinatesB['x'];
+				maxX = coordinatesA['x'];
+				minY = coordinatesB['y'];
+				maxY = coordinatesA['y'];
+				mPos = mousePos.y;
+			}
+			
+			if(minX == maxX)
+			{
+				min = minY;
+				max = maxY;
+			}
+			else
+			{
+				min = minX;
+				max = maxX;
+			}
+			
+			// CrossPoint - the X-Value position on the line (only works for straight lines.)
+			var crossPoint = (max - mPos) / (max - min);
+			var xRange = maxX - minX;
+			var yRange = maxY - minY;
+			
+			if(crossPoint >= 0 && crossPoint <= 1)
+			{
+				// Need stricter box testing
+				var xPt = (xRange * crossPoint) + minX;
+				var yPt = (yRange * crossPoint) + minY;
+				
+				var xDst = Math.abs(xPt - mousePos.x);
+				var yDst = Math.abs(yPt - mousePos.y);
+				
+				var finalDst = Math.sqrt(Math.pow(xDst, 2) + Math.pow(yDst, 2));
+				// range between xPt; mosue
+				
+				var nearestPoint = { x: xPt, y: yPt};
+
+				if(distance > finalDst)
+				{
+					chosenEdge = edge;
+					distance = finalDst;
+				}
+				
+				var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
+				var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
+				
+				var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 600, 300);
+				var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 600, 300);
+
+				// console.log("Mousey: " + mousePos.x + ", " + mousePos.y + " : " + distance);
+				// console.log("ToDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
+			}
+		}
+		console.log("Chosen Edge: " + chosenEdge);
+		
+		if(typeof inputData[chosenEdge] != 'undefined')
+		{
+			canvasInput.firstChild.value = inputData[chosenEdge];
+		}
+		else
+		{
+			canvasInput.firstChild.value = "";
+		}
+		
+		var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
+		var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
+		
+		var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 600, 300);
+		var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 600, 300);
+		
+		// console.log("FinalDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
+		
+		var lineWidth = 4;
+		var dx = coordinatesB['x'] - coordinatesA['x'];
+		var dy = coordinatesB['y'] - coordinatesA['y'];
+		var rotation = Math.atan2(dy, dx);
+		var lineLength = Math.sqrt(dx * dx + dy * dy);
+		
+		var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
+		var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
+		
+		canvasInput.style.left = xPos;
+		canvasInput.style.top = yPos;
+		
+		// canvasInput.style.left = xRange + xPos;
+		// canvasInput.style.top = yRange + yPos;
+		
+		tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
+		
+		tempLineCanvasContext = tempLineCanvas.getContext("2d");
+		tempLineCanvasContext.beginPath();
+		tempLineCanvasContext.globalAlpha = 1;
+		tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
+		tempLineCanvasContext.rotate(rotation);
+		tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
+		tempLineCanvasContext.translate(-coordinatesA['x'], -coordinatesA['y']);
+		tempLineCanvasContext.fillStyle = "#FF00FF";
+		tempLineCanvasContext.strokeStyle = "#0000FF";
+		tempLineCanvasContext.fill();
+		tempLineCanvasContext.stroke();
+		tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
+		tempLineCanvasContext.closePath();
+	});
+	
+	var drawn = 0;
+	var notdrawn = 0; 
+	
+	xHttpRequest.onreadystatechange = function()
+	{
+		if (xHttpRequest.readyState == 4  )
+		{
+			// Javascript function JSON.parse to parse JSON data
+			try
+			{
+				jsonObj = JSON.parse(xHttpRequest.responseText);
+			}
+			catch(e)
+			{
+				document.getElementById("mapCanvas").write(e);
+			}
+
+			ref_lon = jsonObj["focus"]["longitude"];
+			ref_lat = jsonObj["focus"]["latitude"];
+			
+			var zm = Math.pow(2, zoom);
+			for(edge in jsonObj["mapEdges"])
+			{
+				var vertexAId = jsonObj["mapEdges"][edge]["vertices"][0];
+				var vertexBId = jsonObj["mapEdges"][edge]["vertices"][1];
+				
+				var edgeObj = jsonObj["mapEdges"][edge];
+				
+				var vertexA = jsonObj["mapVertices"][vertexAId];
+				var vertexB = jsonObj["mapVertices"][vertexBId];
+				
+				if(vertexA == null || vertexB == null) // Stupid catch-all because my server code sucks
+				{
+					console.log("Skipped a Vertex on: " + edgeObj);
+					continue;
+				}
+			
+				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 600, 300);
+				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 600, 300);
+				
+				// console.log(coordinatesA['x'] + " -- " + coordinatesA['y'] + " :: " + coordinatesB['x'] + " -- " + coordinatesB['y']);
+			
+				if((coordinatesA['x'] > mapCanvas.width && coordinatesB['x'] > mapCanvas.width)
+				|| (coordinatesA['x'] < 0 && coordinatesB['x'] < 0)
+				|| (coordinatesA['y'] > mapCanvas.height && coordinatesB['y'] > mapCanvas.height)
+				|| (coordinatesA['y'] < 0 && coordinatesB['y'] < 0))
+				{
+					notdrawn += 1;
+					continue;
+					// remove element if not drawn
+				}
+
+				var dx = coordinatesB['x'] - coordinatesA['x'];
+				var dy = coordinatesB['y'] - coordinatesA['y'];
+				var rotation = Math.atan2(dy, dx);
+				var lineLength = Math.sqrt(dx * dx + dy * dy);
+				var lineWidth = 6;
+				
+				drawn += 1;
+				// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
+				// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
+				// canvasA.lineWidth = 5;
+				
+				canvasA.save();
+				canvasA.beginPath();
+
+				canvasA.globalAlpha = 1;
+
+				canvasA.translate(coordinatesA['x'], coordinatesA['y']);
+				canvasA.rotate(rotation);
+				canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
+				canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
+				
+				weightHex = edgeObj.weight;
+				weightHexStroke = edgeObj.confidence * 255;
+				if(weightHex > 255) weightHex = 255;
+				if(weightHexStroke > 255) weightHexStroke = 255;
+				hxresult = weightHex.toString(16);
+				hxresultStroke = weightHexStroke.toString(16);
+
+				canvasA.fillStyle = "#" + hxresult + "0000";
+				canvasA.strokeStyle = "#00" + hxresultStroke + "00";
+
+				canvasA.fill();
+				canvasA.stroke();
+				canvasA.restore();
+				canvasA.closePath();
+			} 
+			
+			canvasA.beginPath();
+			canvasA.fillText("Drawn: " + drawn, 20, 20);
+			canvasA.fillText("Not Drawn: " + notdrawn, 20, 40);
+			canvasA.closePath();
+		}
+	}
+
+	xHttpRequest.open("GET", data_uri, true);
+	xHttpRequest.send();
+}
+
+function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
+{
+	var coords = new Object();
+		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+155;
+		coords['y'] = (((rlat - lat)*zoom)+yOffset)*0.9;
+		
+	return coords;
+}
+		</script>
+		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+		<style type="text/css">
+body {Font-Family:Tahoma; margin: 0px 0px 0px 0px}
+table {border-collapse: collapse; padding: 0px}
+th {padding: 0px; font-size:10pt; border: 2px ridge #CCCCCC}
+td {padding: 0px; font-size:10pt; border: 2px ridge #CCCCCC}
+td.absolute {position: absolute}
+td.centered {text-align: center}
+td.title {font-size: 26pt}
+td.canvasContainer {text-align: center; width: 1200px}
+table.header {width: 100%; border: 2px ridge; Font-Family:Helvetica; Font-Weight:bold; background-color:#808080; font-size:24pt; color:#FFFFFF; text-align:center}
+table.tableContainer {width: 100%}
+table.baseMethodContainer {width: 100%}
+td.methodIndent {width: 12px; background-color:#FF8080}
+td.spacer {background-color:#80FF80}
+td.methodCategory {Font-Family:Helvetica; Font-Weight:bold; background-color:#8080FF; font-size:10pt; color:#FFFFFF}
+td.function {Font-Weight:bold}
+		</style>
+	</head>
+	<body>
+		<table class="header">
+			<tr>
+				<td class="title">
+${title}
+				</td>
+			</tr>
+		</table>
+${body}
+	</body>
+</html>
