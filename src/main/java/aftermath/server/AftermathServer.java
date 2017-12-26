@@ -32,6 +32,7 @@ public class AftermathServer extends EncephalonServer
 	protected AftermathServer()
 	{
 		super();
+		EncephalonServer.setInstance(this);
 	}
 
 	public static AftermathServer getInstance()

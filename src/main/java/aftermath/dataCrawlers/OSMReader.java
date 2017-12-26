@@ -13,24 +13,30 @@ import org.eclipse.jetty.xml.XmlParser;
 import org.eclipse.jetty.xml.XmlParser.Node;
 
 import main.java.aftermath.engine.Depot;
+import main.java.aftermath.server.AftermathServer;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
+import main.java.encephalon.profiler.CountMeter;
 import main.java.encephalon.profiler.Profiler;
 import main.java.encephalon.profiler.Task;
-import main.java.encephalon.server.EncephalonServer;
 import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class OSMReader {
 	private static final String RESOURCE = System.getProperty("aftermath.map.resource");
 
-	private final EncephalonServer es;
+	private final AftermathServer es;
 	private final Profiler profiler;
 	private HashMap<Long, MapVertex> mapData;
 	private HashMap<Long, MapEdge> edgeData;
 	private SpatialIndex<MapVertex> spatialIndex;
 	private SpatialIndex<Depot> spatialIndexDepot;
 	private float progress = 0.0f;
+
+	private CountMeter OSMDataVertexCountMeter = new CountMeter();
+	private CountMeter OSMDataEdgeCountMeter = new CountMeter();	
+	private CountMeter spatialIndexMeter = new CountMeter();
+	private CountMeter spatialIndexDepotMeter = new CountMeter();
 
 	public static void main(String[] args) throws Exception
 	{
@@ -41,12 +47,15 @@ public class OSMReader {
 	public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData, SpatialIndex<MapVertex> spatialIndex,
 			SpatialIndex<Depot> spatialIndexDepot) throws Exception
 	{
-		this.es = EncephalonServer.getInstance();
+		this.es = AftermathServer.getInstance();
 		this.mapData = mapData;
 		this.edgeData = edgeData;
 		this.spatialIndex = spatialIndex;
 		this.spatialIndexDepot = spatialIndexDepot;
 		this.profiler = es.getProfiler();
+		
+		es.getCountMeters().put("OSMData.Vertices", OSMDataVertexCountMeter);
+		es.getCountMeters().put("OSMData.Edges", OSMDataEdgeCountMeter);
 
 		read();
 	}
@@ -55,8 +64,8 @@ public class OSMReader {
 		this.es = null;
 		this.mapData = new HashMap<Long, MapVertex>(300000);
 		this.edgeData = new HashMap<Long, MapEdge>(300000);
-		this.spatialIndex = new SpatialIndex<MapVertex>(-180, 180, -90, 90, null);
-		this.spatialIndexDepot = new SpatialIndex<Depot>(-180, 180, -90, 90, null);
+		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
+		this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
 		this.profiler = null;
 
 		read();
@@ -109,6 +118,7 @@ public class OSMReader {
 				float lon = Float.valueOf(nD.getAttribute("lon"));
 				long id = Long.valueOf(nD.getAttribute("id"));
 				mapData.put(id, new MapVertex(lon, lat, id));
+				OSMDataVertexCountMeter.increment();
 				break;
 			case "way":
 				List<Long> edgeRefNodes = new ArrayList<Long>();
@@ -168,6 +178,7 @@ public class OSMReader {
 						MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode), mode);
 						edgeListForReduction.add(edgeId);
 						edgeData.put(edgeId, mapEdge);
+						OSMDataEdgeCountMeter.increment();
 						mapData.get(previousNode).addEdge(edgeId);
 						mapData.get(currentNode).addEdge(edgeId);
 						edgeId++;
@@ -217,6 +228,7 @@ public class OSMReader {
 			for(Long l : removeList)
 			{
 				mapData.remove(l);
+				OSMDataVertexCountMeter.decrement();
 				new Task(this.profiler, processOrphansTask, "Remove unlinked node", null).end();
 			}
 		}
@@ -238,12 +250,8 @@ public class OSMReader {
 					new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + ed.getKey(), null).end();
 					System.err.println("Stack Oveflow on Edge: " + ed.getKey());
 				}
-			}	
-			
-			
+			}
 			buildSpatialIndexTask.end();
-
-			new Task(this.profiler, osmProcessingTask, "Process Faces from Vertices/Edges", null).end();
 		}
 	}
 }

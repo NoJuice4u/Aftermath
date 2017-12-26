@@ -21,8 +21,8 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 			aftermath.initializeMap();
 			aftermath.setHandler(new DefaultHandler());
 			
-			aftermath.registerUri("/aftermath", "aftermath", new AftermathHandler());
-			aftermath.registerUri("/metro", "metro", new MetroHandler());
+			aftermath.registerUri("/aftermath", "aftermath", new AftermathHandler(aftermath));
+			aftermath.registerUri("/metro", "metro", new MetroHandler(aftermath));
 			registerEncephalonHandlers(aftermath);
 			
 			List<Connector> connectors = new ArrayList<Connector>();

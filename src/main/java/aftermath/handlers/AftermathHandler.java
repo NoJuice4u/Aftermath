@@ -24,6 +24,7 @@ import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
+import main.java.encephalon.annotations.methods.QueryString;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
 import main.java.encephalon.dto.InputEntry;
@@ -56,10 +57,10 @@ public class AftermathHandler extends DefaultHandler{
 		}
 	}
 
-	public AftermathHandler() {
+	public AftermathHandler(AftermathServer instance) {
 		super();
 
-		this.es = AftermathServer.getInstance();
+		this.es = instance;
 	}
 
 	@GET
@@ -152,25 +153,19 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)")
 	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid) throws Exception
-	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		String filter = AftermathServer.getOptionalQueryParamString(request, "roadType", "");
-		
+			@QueryParam(value="uid") Long uid, 
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
+	{	
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter);
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)")
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="longitude") Double longitude,
-			@QueryParam(value="latitude") Double latitude) throws Exception
+			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
 	{
 		Coordinates coords = new Coordinates(longitude, latitude);
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		String filter = AftermathServer.getOptionalQueryParamString(request, "roadType", "");
 		
 		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter);
@@ -179,25 +174,22 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)/canvas")
 	public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="longitude") Double longitude,
-			@QueryParam(value="latitude") Double latitude) throws Exception
+			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
 		Coordinates coords = new Coordinates(longitude, latitude);
 
 		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
-		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId);
+		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth);
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/vehicle/(vehicleId)")
 	public void getMapNodeByVehicle(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="vehicleId") Integer vehicleId) throws Exception
-	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		String filter = AftermathServer.getOptionalQueryParamString(request, "filter", "");
-		boolean drawMap = AftermathServer.getOptionalQueryParamBoolean(request, "drawMap", true);
-		
+			@QueryParam(value="vehicleId") Integer vehicleId,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
+			@QueryString(value="roadType", _default="") String filter, @QueryString(value="drawMap", _default="true") Boolean drawMap) throws Exception
+	{	
 		List<Transport> transporters = es.getAftermathController().getTransporters();
 		Transport transport = transporters.get(vehicleId);
 
@@ -228,12 +220,13 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/vehicle/(vehicleId)/canvas")
 	public void getMapCanvasNodeByVehicle(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="vehicleId") Integer vehicleId) throws Exception
+			@QueryParam(value="vehicleId") Integer vehicleId,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
 		Transport t = es.getAftermathController().getTransporters().get(vehicleId);
 		MapVertex initialNode = t.getNode();
 
-		getTestCanvas(target, locale, parent, baseRequest, request, response, initialNode.getId());
+		getTestCanvas(target, locale, parent, baseRequest, request, response, initialNode.getId(), zoom, depth);
 	}
 	
 	@GET
@@ -277,23 +270,19 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)")
 	public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid) throws Exception
+			@QueryParam(value="uid") Long uid,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
+			@QueryString(value="roadType", _default="") String filter) throws Exception
 	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		String filter = AftermathServer.getOptionalQueryParamString(request, "roadType", "");
-		
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter);
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/canvas")
 	public void getTestCanvas(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid) throws Exception
+			@QueryParam(value="uid") Long uid,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		HtmlWriter writer = new HtmlWriter(2, es);
 	
@@ -371,11 +360,9 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/vehicles/json")
 	public void getMapVehiclesJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid) throws Exception
+			@QueryParam(value="uid") Long uid,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		
 		List<Transport> transports = es.getAftermathController().getTransporters();
@@ -405,12 +392,9 @@ public class AftermathHandler extends DefaultHandler{
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/json")
 	public void getMapNodeJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid) throws Exception
+			@QueryParam(value="uid") Long uid,
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
 	{
-		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
-		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
-		String filter = AftermathServer.getOptionalQueryParamString(request, "roadTypes", "");
-		
 		HashSet<String> filterSet = new HashSet<String>();
 		StringTokenizer st = new StringTokenizer(filter, ",");
 		while (st.hasMoreTokens())

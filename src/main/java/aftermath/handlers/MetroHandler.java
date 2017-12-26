@@ -3,7 +3,6 @@ package main.java.aftermath.handlers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -12,9 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,13 +19,12 @@ import org.eclipse.jetty.server.Request;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import main.java.aftermath.server.AftermathServer;
 import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.QueryParam;
-import main.java.encephalon.locale.LocaleBase;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.server.EncephalonServer;
@@ -44,10 +40,10 @@ public class MetroHandler extends DefaultHandler{
 
 	private final String APIKEY;
 		
-	public MetroHandler() throws Exception {
+	public MetroHandler(AftermathServer instance) throws Exception {
 		super();
 		
-		this.es = EncephalonServer.getInstance();
+		this.es = instance;
 		// TODO Auto-generated constructor stub
 		
 		String key = "APIKEY NOT LOADED";
