@@ -1,9 +1,6 @@
 package main.java.aftermath.locale;
 
 public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
-
-	public String SERVER_TITLE = "[*AFTERMATH*]";
-	
 	public String TH_VERTEX_ID_1 = "[*UNDEFINED*]";
 	public String TH_VERTEX_ID_2 = "[*UNDEFINED*]";
 	public String TH_EDGE_ID = "[*UNDEFINED*]";
@@ -19,4 +16,9 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	public String TH_TICKS = "[*UNDEFINED*]";
 	
 	public String BTN_SEND_WEIGHTS = "[*UNDEFINED*]";
+	
+	public LocaleBase()
+	{
+		this.SERVER_TITLE = "[*AFTERMATH*]";
+	}
 }

@@ -31,6 +31,7 @@ import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapResponseDto;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
+import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
@@ -42,6 +43,8 @@ import main.java.encephalon.writers.JsonWriter;
 public class AftermathHandler extends DefaultHandler{
 	private AftermathServer es;
 	private long maxScore = 1;
+	//TO REMOVE
+	private LocaleBase locale = new EN_US();
 	
 	private class EdgeWeightInfo
 	{
@@ -63,11 +66,11 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/")
-	public void getMap(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getMap(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude";
 		
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 		writer.script_Start();
 		writer.text("if(navigator && navigator.geolocation) {");
 		writer.text("navigator.geolocation.getCurrentPosition(showPosition);");
@@ -77,22 +80,23 @@ public class AftermathHandler extends DefaultHandler{
 		writer.text("function showPosition(position) { document.write(\"Relocating!\"); window.location = \"" + destination + "; }");
 		writer.script_End();
 		
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 	
 	@GET
 	@HandlerInfo(schema="/map")
-	public void getMapData(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getMapData(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
+		LocaleBase localizer = es.getLocale(locale);
 		HashMap<Long, MapVertex> mapData = es.getAftermathController().getMapData();
 		HashMap<Long, MapEdge> mapEdges = es.getAftermathController().getEdgeData();
 		Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
 
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 
 		writer.table_Start(null, null, "sortable");
 		writer.tr_Start();
-		writer.th(locale.TH_NODE);
+		writer.th(localizer.TH_NODE);
 		writer.tr_End();
 		int i = 0;
 		while(iter.hasNext())
@@ -116,12 +120,12 @@ public class AftermathHandler extends DefaultHandler{
 		}
 		writer.table_End();
 
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/json")
-	public void getMapDataJson(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getMapDataJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		HashMap<Long, MapVertex> mapData = es.getAftermathController().getMapData();
 		
@@ -132,7 +136,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/depot/node/(uid)")
-	public void addDepotNode(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void addDepotNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="node") Long uid) throws Exception
 	{
 		MapEdge edge = es.getAftermathController().getEdgeData().get(uid);
@@ -141,7 +145,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/delay")
-	public void getDelay(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getDelay(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		Thread.sleep(5000);
 		response.getWriter().print("Delayed");
@@ -149,7 +153,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)")
-	public void getMapNode(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
@@ -161,7 +165,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)")
-	public void getMapNodeWithCoordinates(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="longitude") Double longitude,
 			@QueryParam(value="latitude") Double latitude) throws Exception
 	{
@@ -176,7 +180,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)/canvas")
-	public void getMapNodeWithCoordinatesCanvas(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="longitude") Double longitude,
 			@QueryParam(value="latitude") Double latitude) throws Exception
 	{
@@ -188,7 +192,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/map/vehicle/(vehicleId)")
-	public void getMapNodeByVehicle(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeByVehicle(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="vehicleId") Integer vehicleId) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
@@ -200,7 +204,7 @@ public class AftermathHandler extends DefaultHandler{
 		Transport transport = transporters.get(vehicleId);
 
 		MapVertex initialNode = transport.getNode();
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 	
 		if(drawMap == true) renderMap(writer, initialNode, zoom);
 		writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2);
@@ -216,16 +220,16 @@ public class AftermathHandler extends DefaultHandler{
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+		writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, initialNode, zoom, depth);
 		writer.table_End();
 
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/vehicle/(vehicleId)/canvas")
-	public void getMapCanvasNodeByVehicle(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapCanvasNodeByVehicle(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="vehicleId") Integer vehicleId) throws Exception
 	{
 		Transport t = es.getAftermathController().getTransporters().get(vehicleId);
@@ -236,7 +240,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/add/depot/edge/(edgeId)")
-	public void getMapAddDepotEdge(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapAddDepotEdge(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="edgeId") Long edgeId) throws Exception
 	{
 		MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edgeId);
@@ -244,11 +248,11 @@ public class AftermathHandler extends DefaultHandler{
 		es.getAftermathController().getSpatialIndexDepot().add(edgeId, mapEdge);
 	}
 	
-	public void getMapNodeWithDepthAndZoom(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			Long uid, int depth, int zoom, String filter) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 
 		renderMap(writer, initialNode, zoom);
 
@@ -265,16 +269,16 @@ public class AftermathHandler extends DefaultHandler{
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+		writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, initialNode, zoom, depth);
 		writer.table_End();
 
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)")
-	public void getMapNodeWith(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
@@ -286,14 +290,14 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/canvas")
-	public void getTestCanvas(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getTestCanvas(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
 		int depth = AftermathServer.getOptionalQueryParamInteger(request, "depth", 6);
 		
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 	
 		renderMap(writer, initialNode, zoom);
 		writer.table_Start(null, null, "tableContainer", 100, null);
@@ -314,8 +318,8 @@ public class AftermathHandler extends DefaultHandler{
 					writer.table_Start();
 						writer.tr_Start();
 							writer.td_Start();
-								writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-								writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+								writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
+								writeSummaryVehicles(writer, initialNode, zoom, depth);
 							writer.td_End();
 						writer.tr_End();
 					writer.table_End();
@@ -332,12 +336,12 @@ public class AftermathHandler extends DefaultHandler{
 				+ zoom + ");");
 		writer.script_End();
 
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/start/(sLat)/(sLon)/end/(eLat)/(eLon)")
-	public void getMapNodesWithinBounds(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodesWithinBounds(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="sLat") Long sLat, @QueryParam(value="sLon") Long sLon,
 			@QueryParam(value="eLat") Long eLat, @QueryParam(value="eLon") Long eLon) throws Exception
 	{
@@ -368,7 +372,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/vehicles/json")
-	public void getMapVehiclesJson(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapVehiclesJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
@@ -402,7 +406,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/json")
-	public void getMapNodeJson(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapNodeJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid) throws Exception
 	{
 		int zoom = AftermathServer.getOptionalQueryParamInteger(request, "zoom", 18);
@@ -467,7 +471,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/edge/weights")
-	public void getMapEdgeWeights(String target, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getMapEdgeWeights(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		List<HashMap<Long, Float>> weightList = AftermathServer.getInstance().getAftermathController().getWeightInputList();
 		HashMap<Long, Integer> weightCounts = AftermathServer.getInstance().getAftermathController().getWeightInputCounts();
@@ -480,7 +484,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@GET
 	@HandlerInfo(schema="/map/edge/(edgeId)/weight/(weight)")
-	public void getMapEdgeSetWeight(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapEdgeSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="edgeId") Long edgeId,
 			@QueryParam(value="weight") Integer weight) throws Exception
 	{
@@ -489,7 +493,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/vehicles/json")
-	public void getVehiclesJson(String target, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getVehiclesJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		List<Transport> transports = es.getAftermathController().getTransporters();
 		
@@ -511,7 +515,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/vehicle/(vehicleId)/capacity/(capacity)")
-	public void getVehicleSetWeight(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getVehicleSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="vehicleId") Integer vehicleId,
 			@QueryParam(value="capacity") Integer capacity) throws Exception
 	{
@@ -520,7 +524,7 @@ public class AftermathHandler extends DefaultHandler{
 	
 	@GET
 	@HandlerInfo(schema="/map/edge/(edgeId)")
-	public void getMapEdgeInfo(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void getMapEdgeInfo(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="edgeId") Long edgeId) throws Exception
 	{
 		List<InputEntry> weights = es.getAftermathController().getEdgeData().get(edgeId).getWeightInputs();
@@ -532,7 +536,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	@POST
 	@HandlerInfo(schema="/map/weight")
-	public void postMapEdgesSetWeight(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void postMapEdgesSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		BufferedReader br = request.getReader();
 		String inputString = br.readLine();
@@ -544,7 +548,7 @@ public class AftermathHandler extends DefaultHandler{
 		HashMap<Long, Float> weightInput = new HashMap<Long, Float>();
 		
 		String referer = baseRequest.getHeader("Referer");
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 		
 		long timeStamp = System.currentTimeMillis();
 		
@@ -661,7 +665,7 @@ public class AftermathHandler extends DefaultHandler{
 		// response.sendRedirect(referer);
 		
 		writer.text("<a href=\"" + referer + "\">Go Back</a><br/>");
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	private void drawRoads(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter) throws Exception
@@ -877,7 +881,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.drawCanvasLine("mapCanvas", 1, "#0000FF", 1.0f, destBearingX, destBearingY, carPrevBearingX, carPrevBearingY);
 	}
 
-	public void writeSummaryNeighboringNodes(HtmlWriter writer, LocaleBase locale, MapVertex focalPoint, int zoom, int depth) throws Exception
+	public void writeSummaryNeighboringNodes(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth) throws Exception
 	{
 		writer.table_Start(null, null, "sortable");
 		writer.tHead_Start();
@@ -938,7 +942,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.table_End();
 	}
 
-	public void writeSummaryVehicles(HtmlWriter writer, LocaleBase locale, Coordinates focalPoint, int zoom, int depth)
+	public void writeSummaryVehicles(HtmlWriter writer, Coordinates focalPoint, int zoom, int depth)
 	{
 		writer.table_Start(null, null, "sortable");
 		writer.tr_Start();

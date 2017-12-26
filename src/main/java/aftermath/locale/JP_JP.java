@@ -1,6 +1,6 @@
 package main.java.aftermath.locale;
 
-public class JP_JP extends LocaleBase {	
+public class JP_JP extends LocaleBase {
 	public JP_JP()
 	{
 		this.SERVER_TITLE = "余波";

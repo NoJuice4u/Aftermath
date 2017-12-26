@@ -70,7 +70,7 @@ public class MetroHandler extends DefaultHandler{
 	
 	@GET()
 	@HandlerInfo(schema="/(dataType)")
-	public void checkMetro(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	public void checkMetro(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam("dataType") String dataType) throws Exception
 	{
 		Long l = metroCacheTime.get(dataType);
@@ -163,7 +163,7 @@ public class MetroHandler extends DefaultHandler{
 			}			
 		}
 
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, es);
 		writer.table_Start(null, null, "sortable");
 		
 		List<String> headingList = new ArrayList<String>();
@@ -232,6 +232,6 @@ public class MetroHandler extends DefaultHandler{
 		writer.table_End();
 
 		response.setContentType("text/html; charset=utf-8");
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 }

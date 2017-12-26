@@ -1,0 +1,8 @@
+.idea
+.metadata
+.settings
+.DS_Store
+/jetty/*
+/bin/*
+/target/
+/bin/

@@ -14,14 +14,12 @@ import com.google.gson.Gson;
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
-
+import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.annotations.*;
 import main.java.encephalon.annotations.methods.*;
 import main.java.encephalon.profiler.*;
 import main.java.encephalon.server.*;
 import main.java.encephalon.writers.*;
-
-import java.io.IOException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -31,20 +29,21 @@ import javax.servlet.http.HttpServletResponse;
 
 public class AftermathServer extends EncephalonServer
 {
-	public static final AftermathServer aftermathServer = new AftermathServer();
+	public static final AftermathServer as = new AftermathServer();
 	public static final String GOOGLE_MAP_API_KEY = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
 	public static final double GOOGLE_MAP_ZOOMSCALE = 1.0; // 591657550.5;
 	private static AftermathController aftermathController = new AftermathController();
 	
-	public static Map<String, LocaleBase> localeList = new HashMap<String, LocaleBase>();
+	public Map<String, Localizer<LocaleBase>> localeList = new HashMap<String, Localizer<LocaleBase>>();
 	{
-		Map<String, LocaleBase> lMap = new HashMap<String, LocaleBase>();
-		lMap.put("jp_jp", new JP_JP());
-		lMap.put("en_us", new EN_US());
+		Map<String, Localizer<LocaleBase>> lMap = new HashMap<String, Localizer<LocaleBase>>();
+		lMap.put("ja", new Localizer<LocaleBase>(new JP_JP()));
+		lMap.put("en-us", new Localizer<LocaleBase>(new EN_US()));
+		lMap.put("undefined", new Localizer<LocaleBase>(new LocaleBase()));
 		localeList = Collections.unmodifiableMap(lMap);
 	}
 
-	public static final Gson gsonRequest = new Gson();
+	public final Gson gsonRequest = new Gson();
 
 	public AftermathServer()
 	{
@@ -53,7 +52,7 @@ public class AftermathServer extends EncephalonServer
 
 	public static AftermathServer getInstance()
 	{
-		return aftermathServer;
+		return as;
 	}
 
 	public void initializeMap() throws Exception
@@ -61,65 +60,6 @@ public class AftermathServer extends EncephalonServer
 		new OSMReader(aftermathController.getMapData(), aftermathController.getEdgeData(), aftermathController.getSpatialIndex(),
 				aftermathController.getSpatialIndexDepot());
 		aftermathController.run();
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void registerUri(String uri, String callbackName, Handler handler) throws NoSuchMethodException
-	{
-		for(Method method : handler.getClass().getMethods())
-		{
-			HandlerInfo handlerInfo = method.getAnnotation(HandlerInfo.class);
-			if(handlerInfo == null) continue;
-
-			String httpMethod = null;
-			if(method.getAnnotation(GET.class) != null) httpMethod = method.getAnnotation(GET.class).method();
-			else if(method.getAnnotation(PUT.class) != null) httpMethod = method.getAnnotation(PUT.class).method();
-			else if(method.getAnnotation(POST.class) != null) httpMethod = method.getAnnotation(POST.class).method();
-			else if(method.getAnnotation(DELETE.class) != null) httpMethod = method.getAnnotation(DELETE.class).method();
-			else
-			{
-				throw new NoSuchMethodException("Handler does not have a registered method defined!");
-			}
-
-			String baseSchema = handlerInfo.schema();
-			String schema = httpMethod + uri + baseSchema;
-
-			// TEST CODE
-		    Class<?> params[] = method.getParameterTypes();
-			Method m = handler.getClass().getDeclaredMethod(method.getName(), params);
-			String mName = handler.getClass().getName() + "." + m.getName();
-
-			String[] schemaArray = schema.split("/");
-			uriSegment = uriCollection;
-			for(String s : schemaArray)
-			{
-				String sMasked = s;
-				int isWildcard = s.indexOf('(');
-				if(isWildcard > -1)
-				{
-					sMasked = "??";
-				}
-				uriSubSegment = uriSegment.get(sMasked);
-				if(uriSubSegment == null)
-				{
-					uriSegment.put(sMasked, new HashMap<String, HashMap>());
-					if(isWildcard > -1)
-					{
-						uriSegment.put(ENCEPHALON_PATHPARAMIDENTIFIER, s.substring(1, s.length()-1));
-					}
-				}
-				uriSegment=(HashMap) uriSegment.get(sMasked);
-			}
-
-			if(methodList.get(mName) == null)
-			{
-				methodList.put(mName, m);
-				handlerList.put(mName, handler);
-			}
-			((HashMap<String, String>) uriSegment).put(ENCEPHALON_CALLBACKIDENTIFIER, mName);
-
-			System.out.println("Added Schema: " + httpMethod + " " + baseSchema);
-		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -161,8 +101,7 @@ public class AftermathServer extends EncephalonServer
 	    Object params[] = new Object[parameterAnnotations.length];
 	    
 	    Task task = new Task(getProfiler(), parent, uriMethod + " " + handlerInfo.schema(), baseRequest);
-	    String localeString = getOptionalQueryParamString(request, "locale", "en_us").toLowerCase();
-	    LocaleBase locale = localeList.get(localeString);
+	    String locale = request.getHeader("Accept-Language");
 	    params[0] = target;
 	    params[1] = locale;
 	    params[2] = task;
@@ -225,7 +164,7 @@ public class AftermathServer extends EncephalonServer
 		}
 		catch (Throwable t) {
 			task.insertException(t.getCause());
-			returnError(target, locale, task, baseRequest, request, response, m.getDeclaringClass().getName(), t);
+			returnError(target, task, baseRequest, request, response, m.getDeclaringClass().getName(), t);
 		}
 		finally
 		{
@@ -236,14 +175,14 @@ public class AftermathServer extends EncephalonServer
 		}
 	}
 
-	public void returnError(String target, LocaleBase locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response, String declaringClassName, Throwable t) throws IOException
+	public void returnError(String target, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response, String declaringClassName, Throwable t) throws Exception
 	{
 		Task task = new Task(getProfiler(), parent, "500 INTERNAL SERVER ERROR", baseRequest);
 		response.setContentType("text/html;charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		baseRequest.setHandled(true);
 
-		HtmlWriter writer = new HtmlWriter(2, locale);
+		HtmlWriter writer = new HtmlWriter(2, as);
 		writer.text("500 Internal Server Error - " + declaringClassName + "</br>");
 		writer.text("Message: " + t.getMessage() + "</br>");
 		StackTraceElement[] steList =  t.getStackTrace();
@@ -252,7 +191,7 @@ public class AftermathServer extends EncephalonServer
 			writer.text(ste.toString() + "</br>");
 		}
 		
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(request.getHeader("Accept-Language")));
 		task.end();
 	}
 
@@ -339,5 +278,20 @@ public class AftermathServer extends EncephalonServer
 			}
 		}
 		return _default;
+	}
+	
+	public LocaleBase getLocale(String string) throws Exception {
+		String[] presplit = string.split(",");
+		
+		for(int i = 0; i < presplit.length; i++)
+		{
+			String[] locales = presplit[i].split(";");
+			Localizer<LocaleBase> loc = localeList.get(locales[0].toLowerCase());
+			if(loc != null)
+			{
+				return loc.getLocale();
+			}
+		}
+		return localeList.get("undefined").getLocale();
 	}
 }

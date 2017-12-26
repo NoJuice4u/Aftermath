@@ -8,8 +8,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import main.java.aftermath.handlers.*;
-import main.java.encephalon.server.DefaultHandler;
-import main.java.aftermath.server.AftermathServer;
+import main.java.aftermath.server.*;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
 {
