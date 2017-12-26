@@ -43,8 +43,6 @@ import main.java.encephalon.writers.JsonWriter;
 public class AftermathHandler extends DefaultHandler{
 	private AftermathServer es;
 	private long maxScore = 1;
-	//TO REMOVE
-	private LocaleBase locale = new EN_US();
 	
 	private class EdgeWeightInfo
 	{
@@ -220,8 +218,8 @@ public class AftermathHandler extends DefaultHandler{
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, initialNode, zoom, depth);
+		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
 
 		response.getWriter().print(writer.getString(locale));
@@ -269,8 +267,8 @@ public class AftermathHandler extends DefaultHandler{
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, initialNode, zoom, depth);
+		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
 
 		response.getWriter().print(writer.getString(locale));
@@ -318,8 +316,8 @@ public class AftermathHandler extends DefaultHandler{
 					writer.table_Start();
 						writer.tr_Start();
 							writer.td_Start();
-								writeSummaryNeighboringNodes(writer, initialNode, zoom, depth);
-								writeSummaryVehicles(writer, initialNode, zoom, depth);
+								writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
+								writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 							writer.td_End();
 						writer.tr_End();
 					writer.table_End();
@@ -881,20 +879,22 @@ public class AftermathHandler extends DefaultHandler{
 		writer.drawCanvasLine("mapCanvas", 1, "#0000FF", 1.0f, destBearingX, destBearingY, carPrevBearingX, carPrevBearingY);
 	}
 
-	public void writeSummaryNeighboringNodes(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth) throws Exception
+	public void writeSummaryNeighboringNodes(HtmlWriter writer, String locale, MapVertex focalPoint, int zoom, int depth) throws Exception
 	{
+		LocaleBase localizer = es.getLocale(locale);
+		
 		writer.table_Start(null, null, "sortable");
 		writer.tHead_Start();
 		writer.tr_Start();
-		writer.th(locale.TH_VERTEX_ID_1);
-		writer.th(locale.TH_VERTEX_ID_2);
-		writer.th(locale.TH_EDGE_ID);
-		writer.th(locale.TH_COORDINATES);
-		writer.th(locale.TH_TYPE);
-		writer.th(locale.TH_SCORE);
-		writer.th(locale.TH_WEIGHT);
-		writer.th(locale.TH_CONFIDENCE);
-		writer.th(locale.TH_SET_WEIGHT);
+		writer.th(localizer.TH_VERTEX_ID_1);
+		writer.th(localizer.TH_VERTEX_ID_2);
+		writer.th(localizer.TH_EDGE_ID);
+		writer.th(localizer.TH_COORDINATES);
+		writer.th(localizer.TH_TYPE);
+		writer.th(localizer.TH_SCORE);
+		writer.th(localizer.TH_WEIGHT);
+		writer.th(localizer.TH_CONFIDENCE);
+		writer.th(localizer.TH_SET_WEIGHT);
 		writer.tr_End();
 		writer.tHead_End();
 		writer.form_Start("/aftermath/map/weight", "POST");
@@ -935,23 +935,25 @@ public class AftermathHandler extends DefaultHandler{
 
 		writer.tFoot_Start();
 		writer.tr_Start();
-		writer.td("<input type=\"submit\" value=\"" + locale.BTN_SEND_WEIGHTS + "\"/>", "", "", "text-align:center", 9);
+		writer.td("<input type=\"submit\" value=\"" + localizer.BTN_SEND_WEIGHTS + "\"/>", "", "", "text-align:center", 9);
 		writer.tr_End();
 		writer.tFoot_End();
 		writer.form_End();
 		writer.table_End();
 	}
 
-	public void writeSummaryVehicles(HtmlWriter writer, Coordinates focalPoint, int zoom, int depth)
+	public void writeSummaryVehicles(HtmlWriter writer, String locale, Coordinates focalPoint, int zoom, int depth) throws Exception
 	{
+		LocaleBase localizer = es.getLocale(locale);
+		
 		writer.table_Start(null, null, "sortable");
 		writer.tr_Start();
-		writer.th(locale.TH_ID_GENERIC);
-		writer.th(locale.TH_COORDINATES);
-		writer.th(locale.TH_TICKS);
-		writer.th(locale.TH_TYPE);
-		writer.th(locale.TH_SCORE);
-		writer.th(locale.TH_DESTINATION);
+		writer.th(localizer.TH_ID_GENERIC);
+		writer.th(localizer.TH_COORDINATES);
+		writer.th(localizer.TH_TICKS);
+		writer.th(localizer.TH_TYPE);
+		writer.th(localizer.TH_SCORE);
+		writer.th(localizer.TH_DESTINATION);
 		writer.tr_End();
 
 		List<Transport> transporters = es.getAftermathController().getTransporters();

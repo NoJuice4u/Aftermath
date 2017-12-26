@@ -19,6 +19,7 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	
 	public LocaleBase()
 	{
+		super();
 		this.SERVER_TITLE = "[*AFTERMATH*]";
 	}
 }

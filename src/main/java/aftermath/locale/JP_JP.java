@@ -3,6 +3,7 @@ package main.java.aftermath.locale;
 public class JP_JP extends LocaleBase {
 	public JP_JP()
 	{
+		super();
 		this.SERVER_TITLE = "余波";
 		
 		this.TH_VERTEX_ID_1 = "バーテックス１ ID";

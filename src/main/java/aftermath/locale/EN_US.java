@@ -3,6 +3,7 @@ package main.java.aftermath.locale;
 public class EN_US extends LocaleBase{	
 	public EN_US()
 	{
+		super();
 		this.SERVER_TITLE = "Aftermath";
 		
 		this.TH_VERTEX_ID_1 = "VtxId(1)";

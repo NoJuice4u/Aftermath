@@ -4,5 +4,5 @@
 .DS_Store
 /jetty/*
 /bin/*
-/target/
+/target/*
 /bin/
