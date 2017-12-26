@@ -16,8 +16,8 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 	{
 		try
 		{
-			AftermathServer aftermath = new AftermathServer();
-			
+			AftermathServer aftermath = AftermathServer.getInstance();
+
 			aftermath.initializeMap();
 			aftermath.setHandler(new DefaultHandler());
 			
