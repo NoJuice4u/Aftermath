@@ -51,7 +51,8 @@ public class DefaultHandler extends AbstractHandler
 			}
 			catch(Exception e2)
 			{
-				System.err.println("SHIT.");
+				System.err.println("[EXCEPTION] -- Second Exception!");
+				e2.printStackTrace();
 			}
 		}
 		finally
@@ -81,7 +82,7 @@ public class DefaultHandler extends AbstractHandler
 			writer.writeln(stackElement.toString(), 0);
 		}
 		
-		response.getWriter().print(writer.getString(request.getHeader("Accept-Language")));
+		response.getWriter().print(writer.getString("en-us"));
 		task.end();
 	}
 }

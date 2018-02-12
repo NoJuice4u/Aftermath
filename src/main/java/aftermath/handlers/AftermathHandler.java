@@ -134,11 +134,24 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	@GET
-	@HandlerInfo(schema="/map/depot/node/(uid)")
-	public void addDepotNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="node") Long uid) throws Exception
+	@HandlerInfo(schema="/map/vehicle/(vehicleId)/json")
+	public void getVehicleInfo(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+			@QueryParam(value="vehicleId") Integer vehicleId) throws Exception
 	{
-		MapEdge edge = es.getAftermathController().getEdgeData().get(uid);
+		Transport vehicle = es.getAftermathController().getTransporters().get(vehicleId);
+		
+		JsonWriter jw = new JsonWriter(vehicle);
+
+		response.setContentType("application/json");
+		response.getWriter().print(jw.toString());
+	}
+	
+	@GET
+	@HandlerInfo(schema="/map/depot/node/(uid)/edge/(edgeId)")
+	public void addDepotNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+			@QueryParam(value="node") Long uid, @QueryParam(value="edge:") Long edgeId) throws Exception
+	{
+		MapEdge edge = es.getAftermathController().getEdgeData().get(edgeId);
 		es.getAftermathController().getSpatialIndexDepot().add(uid, edge);
 	}
 
@@ -154,21 +167,24 @@ public class AftermathHandler extends DefaultHandler{
 	@HandlerInfo(schema="/map/node/(uid)")
 	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid, 
-			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
+			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
 	{	
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter);
+		// @QueryString(value="zoom", _default="18")
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices);
 	}
 
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)")
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
-			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
+			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
+			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
 	{
 		Coordinates coords = new Coordinates(longitude, latitude);
 		
 		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices);
 	}
 	
 	@GET
@@ -240,7 +256,7 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			Long uid, int depth, int zoom, String filter) throws Exception
+			Long uid, int depth, int zoom, String filter, Boolean drawVertices) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		HtmlWriter writer = new HtmlWriter(2, es);
@@ -254,12 +270,14 @@ public class AftermathHandler extends DefaultHandler{
 		int zm = (int)(AftermathServer.GOOGLE_MAP_ZOOMSCALE*Math.pow(2, zoom));
 		drawSpatialIndex(writer, initialNode, zm);
 		drawRoads(writer, initialNode, zm, depth, filter);
+		if(drawVertices) drawVertices(writer, initialNode, zm, depth, filter);
 		drawDepot(writer, initialNode, zm);
 		drawTransports(writer, initialNode, zm, depth);
 
 		writer.script_End();
 		writer.table_Start();
 
+		writeSummaryNode(writer, locale, initialNode, zoom, depth);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
@@ -272,9 +290,9 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
-			@QueryString(value="roadType", _default="") String filter) throws Exception
+			@QueryString(value="roadType", _default="") String filter, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
 	{
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices);
 	}
 
 	@GET
@@ -332,8 +350,10 @@ public class AftermathHandler extends DefaultHandler{
 			@QueryParam(value="sLat") Long sLat, @QueryParam(value="sLon") Long sLon,
 			@QueryParam(value="eLat") Long eLat, @QueryParam(value="eLon") Long eLon) throws Exception
 	{
-		List<Long> list = es.getAftermathController().getSpatialIndex().getVerticesWithinBounds(new Coordinates(sLon, sLat),
-				new Coordinates(eLon, eLat));
+		Coordinates[] coordsRange = { new Coordinates(sLon, sLat), new Coordinates(eLon, eLat) };
+		List<Long> list = es.getAftermathController().getSpatialIndex().getVerticesWithinBounds(coordsRange);
+		
+		// TODO: FILL IN FOR EDGES
 
 		HashSet<Long> edgeList = new HashSet<Long>();
 
@@ -520,6 +540,7 @@ public class AftermathHandler extends DefaultHandler{
 	@HandlerInfo(schema="/map/weight")
 	public void postMapEdgesSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
+		long inId = parent.getTaskId();
 		BufferedReader br = request.getReader();
 		String inputString = br.readLine();
 		
@@ -619,13 +640,13 @@ public class AftermathHandler extends DefaultHandler{
 			weightInput.put(edge, Float.valueOf(newWeight));
 			
 			// TEMP
-			es.getAftermathController().getEdgeData().get(edge).addWeightInput(timeStamp, weight);
+			es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId, timeStamp, weight);
 			List<InputEntry> weightInputs = es.getAftermathController().getEdgeData().get(edge).getWeightInputs();
 			float finalWeight = 0;
 			int weightEntryCount = 0;
 			for(InputEntry iEntry : weightInputs)
 			{
-				finalWeight += iEntry.weight;
+				finalWeight += iEntry.getWeight();
 				weightEntryCount++;
 			}
 			es.getAftermathController().getEdgeData().get(edge).setWeight((int)(finalWeight/weightEntryCount), edge);
@@ -649,6 +670,39 @@ public class AftermathHandler extends DefaultHandler{
 		writer.text("<a href=\"" + referer + "\">Go Back</a><br/>");
 		response.getWriter().print(writer.getString(locale));
 	}
+	
+	private void drawVertices(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter) throws Exception
+	{
+		SpatialIndex<Coordinates> diveQuadrant = es.getAftermathController().getSpatialIndex().dive(focalPoint);
+		Coordinates[] bounds = Coordinates.getBounds(focalPoint, zoom, MapVertex.WIDTH, MapVertex.HEIGHT);
+		List<Long> vertices =  es.getAftermathController().getSpatialIndex().getVerticesWithinBounds(bounds);
+		
+		for(Long l : vertices)
+		{
+			MapVertex position = es.getAftermathController().getMapData().get(l);
+			double[] bearing = position.getBearing(focalPoint, zoom);
+
+			int bearingX = (int)bearing[0]+MapVertex.WIDTH/2;
+			int bearingY = (int)bearing[1]+MapVertex.HEIGHT/2;
+
+			String arcColor = "#800000";
+			if(position.getEdges().size() > 2)
+			{
+				arcColor = "#FF0000";
+			}
+			else if(position.getEdges().size() == 1)
+			{
+				arcColor = "#808000";
+			}
+			else if(position.getEdges().size() == 0)
+			{
+				arcColor = "#000000";
+			}
+			
+			writer.drawArc(bearingX, bearingY, 7, 3, arcColor);
+			writer.drawVertex("mapCanvas", 10, 1.0f, bearingX+5, bearingY+15, String.valueOf(position.getId()), arcColor);
+		}
+	}
 
 	private void drawRoads(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter) throws Exception
 	{
@@ -658,6 +712,12 @@ public class AftermathHandler extends DefaultHandler{
 		{
 			filterSet.add(st.nextToken());
 		}
+		
+		Coordinates[] bounds = Coordinates.getBounds(focalPoint, zoom, MapVertex.WIDTH, MapVertex.HEIGHT);
+		/*
+		DistinctOrderedSet masterEdgeList = new DistinctOrderedSet(200);
+		masterEdgeList.add(es.getAftermathController().getSpatialIndex().getEdgesWithinBounds(bounds));
+		*/
 		
 		HashMap<Long, Integer> masterDepthList = new HashMap<Long, Integer>(200);
 		
@@ -671,125 +731,129 @@ public class AftermathHandler extends DefaultHandler{
 		{
 			Long edge = masterEdgeList.next();
 			MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edge);
+			long[] verticesList = mapEdge.getVertices();
 			
-			double[] focusBearing = es.getAftermathController().getMapData().get(mapEdge.getVertices()[0]).getBearing(focalPoint, zoom);
-			double[] drawBearing = es.getAftermathController().getMapData().get(mapEdge.getVertices()[1]).getBearing(focalPoint, zoom);
+			for(int i = 0; i < verticesList.length - 1; i++)
+			{
+				double[] focusBearing = es.getAftermathController().getMapData().get(verticesList[i]).getBearing(focalPoint, zoom);
+				double[] drawBearing = es.getAftermathController().getMapData().get(verticesList[i+1]).getBearing(focalPoint, zoom);
 
-			int startPointX = (int)focusBearing[0]+MapVertex.WIDTH/2;
-			int startPointY = (int)focusBearing[1]+MapVertex.HEIGHT/2;
+				int startPointX = (int)focusBearing[0]+MapVertex.WIDTH/2;
+				int startPointY = (int)focusBearing[1]+MapVertex.HEIGHT/2;
 
-			int drawPointX = (int)drawBearing[0]+MapVertex.WIDTH/2;
-			int drawPointY = (int)drawBearing[1]+MapVertex.HEIGHT/2;
+				int drawPointX = (int)drawBearing[0]+MapVertex.WIDTH/2;
+				int drawPointY = (int)drawBearing[1]+MapVertex.HEIGHT/2;
 
-			RoadTypes mode = mapEdge.getMode();
-			String hx3 = "#00";
-			int width = 1;
-			
-			if(filterSet.size() == 0 || filterSet.contains(String.valueOf(mode))) { } else
-			{
-				continue;
+				RoadTypes mode = mapEdge.getMode();
+				String hx3 = "#00";
+				int width = 1;
+				
+				if(filterSet.size() == 0 || filterSet.contains(String.valueOf(mode))) { } else
+				{
+					continue;
+				}
+				switch(String.valueOf(mode))
+				{
+				case "secondary":
+					hx3 = "80";
+					width = 4;
+					break;
+				case "secondary_link":
+					hx3 = "40";
+					width = 3;
+					break;
+				case "primary":
+					hx3 = "80";
+					width = 5;
+					break;
+				case "primary_link":
+					hx3 = "40";
+					width = 4;
+					break;
+				case "tertiary":
+					hx3 = "80";
+					width = 3;
+					break;
+				case "tertiary_link":
+					hx3 = "60";
+					width = 2;
+					break;
+				case "residential":
+					hx3 = "FF";
+					width = 2;
+					break;
+				case "living_street":
+					hx3 = "FF";
+					break;
+				case "service":
+					hx3 = "80";
+					break;
+				case "motorway":
+					hx3 = "80";
+					width = 5;
+					break;
+				case "motorway_link":
+					hx3 = "40";
+					width = 4;
+					break;
+				case "rail":
+				case "subway":
+				case "subway_entrance":
+				case "station":
+					hx3 = "FF";
+					width = 3;
+					break;
+				case "road":
+					hx3 = "00";
+					width = 1;
+					break;
+				case "trunk":
+				case "trunk_link":
+					hx3 = "00";
+					width = 1;
+					break;
+				case "pedestrian":
+				case "footway":
+				case "path":
+				case "steps":
+					hx3 = "FF";
+					width = 1;
+					break;
+				case "unclassified":
+					hx3 = "00";
+					width = 1;
+					break;
+				case "null":
+					hx3 = "00";
+					width = 1;
+					break;
+				case "platform":
+					hx3 = "66";
+					width = 10;
+					break;
+				default:
+					hx3 = "00";
+					width = 1;
+					break;
+				}
+				int mx = (int)((mapEdge.getScore() * 255) / maxScore);
+				if(mx > 255)
+				{
+					mx = 255;
+				}
+				String hx = Integer.toHexString(0x100 | mx).substring(1);
+				String hx2 = Integer.toHexString(0x100 | mapEdge.getWeight()).substring(1);
+				String color = "#" + hx + hx2 + hx3;
+				
+				if(mapEdge.getWeight() > 0)
+				{
+					width = 10;
+				}
+				
+				// writer.drawCanvasLine("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
+				writer.drawCanvasLineAsRect("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
+				// writer.drawVertex("mapCanvas", 2, (startPointX+drawPointX)/2, (startPointY+drawPointY)/2, String.valueOf(mapEdge.getId()), "#606060");
 			}
-			switch(String.valueOf(mode))
-			{
-			case "secondary":
-				hx3 = "80";
-				width = 4;
-				break;
-			case "secondary_link":
-				hx3 = "40";
-				width = 3;
-				break;
-			case "primary":
-				hx3 = "80";
-				width = 5;
-				break;
-			case "primary_link":
-				hx3 = "40";
-				width = 4;
-				break;
-			case "tertiary":
-				hx3 = "80";
-				width = 3;
-				break;
-			case "tertiary_link":
-				hx3 = "60";
-				width = 2;
-				break;
-			case "residential":
-				hx3 = "FF";
-				width = 2;
-				break;
-			case "living_street":
-				hx3 = "FF";
-				break;
-			case "service":
-				hx3 = "80";
-				break;
-			case "motorway":
-				hx3 = "80";
-				width = 5;
-				break;
-			case "motorway_link":
-				hx3 = "40";
-				width = 4;
-				break;
-			case "rail":
-			case "subway":
-			case "subway_entrance":
-			case "station":
-				hx3 = "FF";
-				width = 3;
-				break;
-			case "road":
-				hx3 = "00";
-				width = 1;
-				break;
-			case "trunk":
-			case "trunk_link":
-				hx3 = "00";
-				width = 1;
-				break;
-			case "pedestrian":
-			case "footway":
-			case "path":
-			case "steps":
-				hx3 = "FF";
-				width = 1;
-				break;
-			case "unclassified":
-				hx3 = "00";
-				width = 1;
-				break;
-			case "null":
-				hx3 = "00";
-				width = 1;
-				break;
-			case "platform":
-				hx3 = "66";
-				width = 10;
-				break;
-			default:
-				hx3 = "00";
-				width = 1;
-				break;
-			}
-			int mx = (int)((mapEdge.getScore() * 255) / maxScore);
-			if(mx > 255)
-			{
-				mx = 255;
-			}
-			String hx = Integer.toHexString(0x100 | mx).substring(1);
-			String hx2 = Integer.toHexString(0x100 | mapEdge.getWeight()).substring(1);
-			String color = "#" + hx + hx2 + hx3;
-			
-			if(mapEdge.getWeight() > 0)
-			{
-				width = 10;
-			}
-			
-			// writer.drawCanvasLine("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
-			writer.drawCanvasLineAsRect("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
-			// writer.drawVertex("mapCanvas", 2, (startPointX+drawPointX)/2, (startPointY+drawPointY)/2, String.valueOf(mapEdge.getId()), "#606060");
 		}
 	}
 
@@ -835,7 +899,7 @@ public class AftermathHandler extends DefaultHandler{
 			int edgeBearingY = (int)point[1]+MapVertex.HEIGHT/2;
 			
 			writer.drawArc(edgeBearingX, edgeBearingY, 5, 5, "#00FFFF");
-			writer.drawVertex("mapCanvas", 3, edgeBearingX+5, edgeBearingY+5, "Depot", "#0080FF");
+			writer.drawVertex("mapCanvas", 16, edgeBearingX+5, edgeBearingY+5, "Depot", "#0080FF");
 		}
 	}
 
@@ -859,10 +923,52 @@ public class AftermathHandler extends DefaultHandler{
 		int carPrevBearingY = (int)carPrevBearing[1]+MapVertex.HEIGHT/2;
 
 		writer.drawArc(carBearingX, carBearingY, 5, 3, "#00FF00");
-		writer.drawVertex("mapCanvas", 2, 1.0f, carBearingX+10, carBearingY+5, transport.getId().toString(), "#00AA00");
+		writer.drawVertex("mapCanvas", 16, 1.0f, carBearingX+10, carBearingY+5, String.valueOf(transport.getId()), "#00AA00");
 		writer.drawCanvasLine("mapCanvas", 1, "#0000FF", 1.0f, destBearingX, destBearingY, carPrevBearingX, carPrevBearingY);
 	}
 
+	public void writeSummaryNode(HtmlWriter writer, String locale, MapVertex focalPoint, int zoom, int depth) throws Exception
+	{
+		LocaleBase localizer = es.getLocale(locale);
+		
+		writer.table_Start(null, null, "sortable");
+		writer.tHead_Start();
+		writer.tr_Start();
+		writer.th(localizer.TH_EDGE_ID);
+		writer.th("Vertices");
+		writer.th("Mode");
+		writer.th("Inputs");
+		writer.tr_End();
+		writer.tHead_End();
+
+		List<Long> edges = focalPoint.getEdges();
+		
+		writer.tBody_Start();
+		for (Long e : edges)
+		{
+			MapEdge mapEdge = es.getAftermathController().getEdgeData().get(e);
+			
+			writer.tr_Start();
+			writer.td(String.valueOf(mapEdge.getId()));
+			writer.td_Start();
+			for(Long vertexId : mapEdge.getVertices())
+			{
+				writer.text(String.valueOf(vertexId) + "</br>");
+			}
+			writer.td_End();
+			writer.td(mapEdge.getMode().toString());
+			writer.td_Start();
+			for(InputEntry input : mapEdge.getWeightInputs())
+			{
+				writer.text(input.getInputId() + ", " + input.getTimeStamp() + ", " + input.getWeight() + "</br>");
+			}
+			writer.td_End();
+			writer.tr_End();
+		}
+		writer.tBody_End();
+		writer.table_End();
+	}
+	
 	public void writeSummaryNeighboringNodes(HtmlWriter writer, String locale, MapVertex focalPoint, int zoom, int depth) throws Exception
 	{
 		LocaleBase localizer = es.getLocale(locale);
@@ -985,6 +1091,11 @@ public class AftermathHandler extends DefaultHandler{
 		writer.text("<script src=\"https://maps.googleapis.com/maps/api/js?key=" + AftermathServer.GOOGLE_MAP_API_KEY + "&callback=myMap&libraries=drawing\"></script>");
 		writer.td_End();
 		writer.tr_End();
+	}
+	
+	private DistinctOrderedSet buildMasterEdgeListFromBounds(MapVertex focalPoint, int depth, int zoom)
+	{
+		return null;
 	}
 	
 	private DistinctOrderedSet buildMasterEdgeListFromDepth(MapVertex focalPoint,  HashMap<Long, Integer> masterDepthList, List<Long> edges, int depth, int zoom) throws Exception

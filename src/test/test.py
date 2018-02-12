@@ -9,7 +9,7 @@ def main():
 	parser.add_argument('--count', type=int, default=0)
 	parser.add_argument('--delay', type=float, default=1.0)
 	args = parser.parse_args()
-	h1 = httplib.HTTPConnection('107.189.36.9', 8080, timeout=10)
+	h1 = httplib.HTTPConnection('127.0.0.1', 8080, timeout=10)
 
 	value = 3387102843
 	request = h1.request("GET", "/aftermath/map/node/" + str(value) + "/depth/" + str(24) + "/zoom/" + str(12) + "/json")

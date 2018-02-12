@@ -9,6 +9,8 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
+import main.java.encephalon.dto.MapVertex;
+import main.java.encephalon.server.EncephalonServer;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
 {
@@ -17,12 +19,9 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 		try
 		{
 			AftermathServer aftermath = AftermathServer.getInstance();
-
 			aftermath.initializeMap();
 			aftermath.setHandler(new DefaultHandler());
-			
-			aftermath.registerUri("/aftermath", "aftermath", new AftermathHandler(aftermath));
-			aftermath.registerUri("/metro", "metro", new MetroHandler(aftermath));
+			registerAftermathHandlers(aftermath);
 			registerEncephalonHandlers(aftermath);
 			
 			List<Connector> connectors = new ArrayList<Connector>();
@@ -50,24 +49,40 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 			String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
 			String trustStorePass = System.getProperty("javax.net.ssl.trustStorePassword");
 			
-			System.out.println("Trust Store Path: " + trustStorePath);
-			SslContextFactory sslContext = new SslContextFactory(keyStorePath);
-			sslContext.setKeyStorePassword(keyStorePass);
-			sslContext.setTrustStorePath(trustStorePath);
-			sslContext.setTrustStorePassword(trustStorePass);
-			
-			ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
-			sslConnector.setName("SSL");
-			sslConnector.setPort(8443);
-			sslConnector.setAcceptQueueSize(1000);
-			aftermath.addConnector(sslConnector);
+			try
+			{
+				System.out.println("Trust Store Path: " + trustStorePath);
+				SslContextFactory sslContext = new SslContextFactory(keyStorePath);
+				sslContext.setKeyStorePassword(keyStorePass);
+				sslContext.setTrustStorePath(trustStorePath);
+				sslContext.setTrustStorePassword(trustStorePass);
+				
+				ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
+				sslConnector.setName("SSL");
+				sslConnector.setPort(8443);
+				sslConnector.setAcceptQueueSize(1000);
+				aftermath.addConnector(sslConnector);	
+			}
+			catch(Exception e)
+			{
+				System.err.println("Failed to setup SSL");
+				// Log failure to load keystore
+			}
 			
 			aftermath.start();
 			aftermath.join();
 		}
 		catch(Throwable t)
 		{
+			System.err.println(t.getMessage());
 			t.printStackTrace();
 		}
+	}
+	
+	public static void registerAftermathHandlers(EncephalonServer server) throws Exception
+	{
+		server.registerUri("/aftermath", "aftermath", new AftermathHandler((AftermathServer)server));
+		server.registerUri("/metro", "metro", new MetroHandler((AftermathServer)server));
+		server.registerUri("/", "wcencephalon", new WCEncephalonHandler((AftermathServer)server));
 	}
 }

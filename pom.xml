@@ -18,21 +18,6 @@
     </plugins>
   </build>
   <dependencies>
-    <dependency>
-  		<groupId>org.eclipse.jetty</groupId>
-  		<artifactId>jetty-server</artifactId>
-  		<version>9.4.7.v20170914</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.eclipse.jetty</groupId>
-  		<artifactId>jetty-xml</artifactId>
-  		<version>9.4.7.v20170914</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>com.google.code.gson</groupId>
-  		<artifactId>gson</artifactId>
-  		<version>2.6.2</version>
-  	</dependency>
   	<dependency>
   		<groupId>encephalon</groupId>
   		<artifactId>encephalon</artifactId>

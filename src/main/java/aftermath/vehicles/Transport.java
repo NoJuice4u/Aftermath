@@ -11,22 +11,25 @@ import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
 
 public class Transport extends Bin{
-	private AftermathController controller;
+	private transient AftermathController controller;
+	private transient final static Random randomizer = new Random();
+	
 	private static long nextId = 0;
 	private final long id;
 	private double VEHICLE_VELOCITY = 0.5/111.0;
 
-	private final static Random randomizer = new Random();
-
 	private int ticks = 0;
 	private int WeightChange = 1;
 	private long lastTick, nextTick, tickAtLastNode;
+	private long previousEdge = 0L;
+	
 	private MapEdge edge;
 	private MapVertex node, previousNode;
-	private Map<MapVertex, Double> previousProbabilityList;
+	private transient Map<MapVertex, Double> previousProbabilityList;
+	
 	private Coordinates destination = null;
 
-	public Transport(AftermathController controller, Long e) throws Exception
+	public Transport(AftermathController controller, long e) throws Exception
 	{
 		super(500);
 		this.controller = controller;
@@ -47,95 +50,22 @@ public class Transport extends Bin{
 
 	public boolean traverse() throws Exception
 	{
-		MapVertex vertex = controller.getMapData().get(node.getId());
-		if(destination == node)
-		{
-			Long l = controller.getSpatialIndexDepot().getNearestNode(vertex);
-			if(l != -1)
-			{
-				destination = controller.getEdgeData().get(l);
-			}
-		}
-
-		long vEdge = vertex.getEdges().get(0);
-		MapEdge mEd = controller.getEdgeData().get(vertex.getEdges().get(0));
-		long vertexId = controller.getEdgeData().get(vertex.getEdges().get(0)).getVertices()[0];
-		MapVertex newNode = controller.getMapData().get(vertexId);
-		if(node == newNode)
-		{
-			vertexId = controller.getEdgeData().get(vertex.getEdges().get(0)).getVertices()[0];
-			newNode = controller.getMapData().get(vertexId);
-		}
-		long chosenEdge = -1;
-		float totalPref = 0.0f;
-		for(Long e : vertex.getEdges())
-		{
-			if(edge != null && e == edge.getId())
-			{
-				continue;
-			}
-
-			MapEdge mapEdge = controller.getEdgeData().get(e);
-			float preference = preferenceSwitchCase(mapEdge);
-			totalPref += preference;
-		}
-		double rnd = randomizer.nextDouble() * totalPref;
-		for(Long e : vertex.getEdges())
-		{
-			if(edge != null && e == edge.getId())
-			{
-				continue;
-			}
-
-			MapEdge mapEdge = controller.getEdgeData().get(e);
-			float preference = preferenceSwitchCase(mapEdge);
-
-			for(Long vtxId : controller.getEdgeData().get(e).getVertices())
-			{
-				MapVertex checkNode = controller.getMapData().get(vtxId);
-				if(node.getId().equals(checkNode.getId()) || previousNode.getId().equals(checkNode.getId())) continue;
-
-				newNode = checkNode;
-				chosenEdge = e;
-				totalPref -= preference;
-
-				/*
-				if(this.id == 149 && node.getEdges().size() == 3)
-				{
-					System.out.println(rnd + " : " + totalPref + " : " + preference);
-				}
-				*/
-
-				if(rnd > totalPref) // heading < bestHeading
-				{
-					totalPref = 0.0f;
-					break;
-				}
-			}
-			if(totalPref == 0.0f)
-			{
-				break;
-			}
-		}
-
-		tickAtLastNode = System.currentTimeMillis();
-
-		long nextTickInterval = (long)(1000*(Coordinates.GetDistance(node, newNode)/VEHICLE_VELOCITY));
-		lastTick = System.currentTimeMillis();
-		nextTick = lastTick + nextTickInterval;
-		ticks++;
-
+		List<Long> edges = node.getEdges();
+		// edges.remove(previousEdge); // This destroys stuff
+		int rnd = randomizer.nextInt(edges.size());
+		edge = controller.getEdgeData().get(edges.get(rnd));
+		
+		MapVertex newVertex = controller.getMapData().get(edge.getOtherVertex(node.getId()));
+		
+		previousEdge = edge.getId();
 		previousNode = node;
-		node = newNode;
-		edge = controller.getEdgeData().get(chosenEdge);
+		node = newVertex;		
 
-		if(chosenEdge != -1)
-		{
-			controller.getEdgeData().get(chosenEdge).addScore();
-			controller.getEdgeData().get(chosenEdge).reduceWeight(WeightChange);
-		}
-
-		return nextTick > lastTick;
+		lastTick = System.currentTimeMillis();
+		nextTick = System.currentTimeMillis() - 20;
+		
+		return true;
+		// return nextTick > lastTick;
 	}
 	
 	public void setWeightChange(int value)
@@ -155,7 +85,7 @@ public class Transport extends Bin{
 		return edgeList;
 	}
 
-	public Long getId()
+	public long getId()
 	{
 		return id;
 	}
@@ -187,13 +117,15 @@ public class Transport extends Bin{
 
 	public Coordinates getPosition()
 	{
-		double diff = ((double)System.currentTimeMillis() - lastTick) / (double)(nextTick - lastTick);
+		// double diff = ((double)System.currentTimeMillis() - lastTick) / (double)(nextTick - lastTick);
+		double diff = 1.0;
 		return Coordinates.GetPositionBetween(previousNode, node, diff);
 	}
 
 	public boolean shouldTick()
 	{
-		return nextTick < System.currentTimeMillis();
+		return true;
+		// return nextTick < System.currentTimeMillis();
 	}
 
 	public int getTicks()

@@ -7,14 +7,14 @@ import java.util.concurrent.Callable;
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.vehicles.Transport;
 import main.java.encephalon.dto.Coordinates;
+import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
 
 public class AftermathEngine implements Runnable {
-	private static int NUMBER_OF_VEHICLES = 1000;
+	private static int NUMBER_OF_VEHICLES = 50;
 	private AftermathController controller;
 	private List<Transport> transporters;
-	private List<Depot> storageDepot;
 
 	public AftermathEngine(AftermathController aftermathController)
 	{
@@ -56,6 +56,9 @@ public class AftermathEngine implements Runnable {
 
 		while(true)
 		{
+			MapVertex mvv = this.controller.getMapData().get(630971621L);
+			System.out.println(mvv.getEdges().size());
+			
 			try {
 				Thread.sleep(250);
 				traverse();
@@ -77,23 +80,20 @@ public class AftermathEngine implements Runnable {
 	private void traverse() throws Exception
 	{
 		Task task = new Task(controller.getProfiler(), null, "Aftermath Engine Tick", null);
-		try
+		for(Transport t : transporters)
 		{
-			for(Transport t : transporters)
+			try
 			{
-				if(t.shouldTick())
-				{
-					while(t.traverse() != true);
-				}
+				t.traverse();
 			}
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-		}
-		finally
-		{
-			task.end();
+			catch(Throwable th)
+			{
+				th.printStackTrace();
+			}
+			finally
+			{
+				task.end();
+			}
 		}
 	}
 

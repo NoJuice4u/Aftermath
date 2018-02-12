@@ -3,6 +3,7 @@ package main.java.aftermath.dataCrawlers;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -91,7 +92,7 @@ public class OSMReader {
 		Node data = xP.parse(file);
 		xmlParseTask.end();
 
-		Long edgeId = 0L;
+		long edgeId = 0L;
 
 		Task osmProcessingTask = new Task(this.profiler, null, "Parse OSM File", null);
 		Iterator<Object> nodeIterator = data.iterator();
@@ -166,24 +167,25 @@ public class OSMReader {
 						break;
 					}
 				}
-				// submit Object
-				long previousNode = 0L;
-				long currentNode = 0L;
-				for(long l : edgeRefNodes)
-				{
-					previousNode = currentNode;
-					currentNode = l;
-					if(previousNode != 0L)
-					{
-						MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode), mode);
-						edgeListForReduction.add(edgeId);
-						edgeData.put(edgeId, mapEdge);
-						OSMDataEdgeCountMeter.increment();
-						mapData.get(previousNode).addEdge(edgeId);
-						mapData.get(currentNode).addEdge(edgeId);
-						edgeId++;
-					}
-				}
+				
+                long previousNode = 0L;
+                long currentNode = 0L;
+                for(long l : edgeRefNodes)
+                {
+                        previousNode = currentNode;
+                        currentNode = l;
+                        if(previousNode != 0L)
+                        {
+                                MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode), mode);
+                                edgeListForReduction.add(edgeId);
+                                edgeData.put(edgeId, mapEdge);
+                                OSMDataEdgeCountMeter.increment();
+                                mapData.get(previousNode).addEdge(edgeId);
+                                mapData.get(currentNode).addEdge(edgeId);
+                                edgeId++;
+                        }
+                }
+
 				break;
 			default:
 				Task.entry(this.profiler, tagTypeTask, "MISSED TAG: " + nD.getTag(), null);
@@ -193,38 +195,86 @@ public class OSMReader {
 		}
 		fr.close();
 		osmProcessingTask.end();
-
+		
+		for(long l = 0; l < edgeId; l++)
+		{
+			MapEdge initialEdge = edgeData.get(l);
+			List<Long> edgeList = new ArrayList<Long>();
+			
+			if(initialEdge == null) continue;
+			
+			edgeList.add(initialEdge.getId());
+			RoadTypes type = initialEdge.getMode();
+			long[] vertices = initialEdge.getVertices();
+			
+			// System.out.println("S [" + type.toString() + "]" + initialEdge.getId() + " :: ########### -- {" + vertices[0] + ", " + vertices[1] + "}");
+			long[] endPoints = new long[] {-1, -1};
+			
+			for(int i = 0; i < endPoints.length; i++)
+			{
+				MapEdge e = initialEdge;
+				for(MapVertex vertex = mapData.get(vertices[i]); true;)
+				{
+					if(vertex.getEdges().size() != 2
+							|| (vertex.getEdges().size() == 2 && e.getMode() != type)) // This breaks things for some reason... 
+					{
+						endPoints[i] = vertex.getId();
+						break;
+					}
+					e = edgeData.get(vertex.getOtherEdge(e.getId()));
+					edgeList.add(e.getId());
+					vertex = mapData.get(e.getOtherVertex(vertex.getId()));
+					if(initialEdge.getId() == e.getId())
+					{
+						break;
+					}
+					// System.out.println("E" + i + " [" + e.getMode().toString() + "]" + e.getId() + " :: " + vertex.getId() + " -- " + Arrays.toString(e.getVertices()));
+				}
+			}
+			
+			// System.out.println("[ NEXT: " + endPoints[0] + ", " + endPoints[1] + " ]");
+		}
+		
+		/*
 		List<Long> multiPathVertex = new ArrayList<Long>();
 		HashSet<Long> edgesToMultiPathVertex = new HashSet<Long>();
 		Task processOrphansTask = new Task(this.profiler, osmProcessingTask, "Process Orphaned Nodes", null);
 		{
 			Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
+			List<Long> intersectList = new ArrayList<Long>();
 			List<Long> removeList = new ArrayList<Long>();
 			while(iter.hasNext())
 			{
-				Entry<Long, MapVertex> e = iter.next();
-				if(e.getValue().getEdges().size() == 0)
+				// Organize ophaned nodes
+				Entry<Long, MapVertex> vEntry = iter.next();
+				if(vEntry.getValue().getEdges().size() == 0)
 				{
-					removeList.add(e.getKey());
+					removeList.add(vEntry.getKey());
 				}
-				else if(e.getValue().getEdges().size() != 2) 
+				else if(vEntry.getValue().getEdges().size() != 2) 
 				{
-					multiPathVertex.add(e.getKey());
-					for(Long l : e.getValue().getEdges())
+					multiPathVertex.add(vEntry.getKey());
+					for(Long l : vEntry.getValue().getEdges())
 					{
+						MapEdge mE = edgeData.get(l);
 						if(edgesToMultiPathVertex.contains(l))
 						{
-							new Task(es.getProfiler(), processOrphansTask, "Remove Edge with Shared Vertices", null).end();
+							new Task(es.getProfiler(), processOrphansTask, "Remove Edge with Shared Vertices: " + mE.getMode().toString(), null).end();
 							edgesToMultiPathVertex.remove(l);
 						}
 						else
 						{
-							new Task(es.getProfiler(), processOrphansTask, "Add Edge from MultiPathVertex", null).end();
+							new Task(es.getProfiler(), processOrphansTask, "Add Edge from MultiPathVertex: " + mE.getMode().toString(), null).end();
 							edgesToMultiPathVertex.add(l);
 						}
 					}
 				}
+				else
+				{
+					intersectList.add(vEntry.getKey());
+				}
 			}
+			
 			for(Long l : removeList)
 			{
 				mapData.remove(l);
@@ -233,6 +283,7 @@ public class OSMReader {
 			}
 		}
 		processOrphansTask.end();
+		*/
 		
 		{
 			Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
@@ -240,15 +291,15 @@ public class OSMReader {
 			
 			while(iter.hasNext())
 			{
-				Entry<Long, MapVertex> ed = iter.next();
+				Entry<Long, MapVertex> vEntry = iter.next();
 				try
 				{
-					spatialIndex.add(ed.getKey(), ed.getValue());
+					spatialIndex.add(vEntry.getKey(), vEntry.getValue());
 				}
 				catch(StackOverflowError e)
 				{
-					new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + ed.getKey(), null).end();
-					System.err.println("Stack Oveflow on Edge: " + ed.getKey());
+					new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + vEntry.getKey(), null).end();
+					System.err.println("Stack Oveflow on Edge: " + vEntry.getKey());
 				}
 			}
 			buildSpatialIndexTask.end();

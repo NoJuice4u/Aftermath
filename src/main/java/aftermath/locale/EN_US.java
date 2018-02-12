@@ -21,5 +21,26 @@ public class EN_US extends LocaleBase{
 		this.TH_TICKS = "Ticks";
 		
 		this.BTN_SEND_WEIGHTS = "Send Weights";
+		
+		/*
+		 * FROM ENCEPHALON
+		 */
+		this.KV_KEY = "Key";
+		this.KV_VALUE = "Value";
+		
+		this.REQUEST_PROTOCOL = "Protocol";
+		this.REQUEST_CONTEXTPATH = "Context Path";
+		this.REQUEST_SCHEME = "Scheme";
+		this.REQUEST_QUERYSTRING = "QueryString";
+		this.REQUEST_REQUEST_URL = "Request URL";
+		this.REQUEST_METHOD = "Method";
+		this.REQUEST_LOCAL_NAME = "Local Name";
+		this.REQUEST_PATH_TRANSLATED = "Path Translated";
+		this.REQUEST_REMOTE_HOST = "Remote Host";
+		this.REQUEST_LOCAL_PORT = "Local Port";
+		this.REQUEST_SERVER_NAME = "Server Name";
+		this.REQUEST_CONTENT_LENGTH = "Content Length";
+		this.REQUEST_PATH_INFO = "Path Info";
+		this.REQUEST_HEADER = "Header";
 	}
 }

@@ -44,14 +44,15 @@ public class MetroHandler extends DefaultHandler{
 		super();
 		
 		this.es = instance;
-		// TODO Auto-generated constructor stub
 		
 		String key = "APIKEY NOT LOADED";
-		BufferedReader fileBuffer = new BufferedReader(new FileReader(new File(TempDir + "/apikey")));;
+		BufferedReader fileBuffer = null;
 		try
-		{ 
-			 key = fileBuffer.readLine();
-			 System.out.println("Tokyo Metro API Key: " + key);
+		{
+			FileReader fr = new FileReader(new File(TempDir + "/apikey"));
+			fileBuffer = new BufferedReader(fr);
+			key = fileBuffer.readLine();
+			System.out.println("Tokyo Metro API Key: " + key);
 		}
 		catch(Exception e)
 		{
@@ -59,7 +60,10 @@ public class MetroHandler extends DefaultHandler{
 		}
 		finally
 		{
-			fileBuffer.close();		
+			if(fileBuffer != null)
+			{
+				fileBuffer.close();
+			}
 		}
 		APIKEY = key;
 	}

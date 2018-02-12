@@ -101,8 +101,8 @@ function loadJSON(data_uri, zoom)
 			
 			// CrossPoint - the X-Value position on the line (only works for straight lines.)
 			var crossPoint = (max - mPos) / (max - min);
-			var xRange = maxX - minX;
-			var yRange = maxY - minY;
+			var xRange = Math.abs(maxX - minX);
+			var yRange = Math.abs(maxY - minY);
 			
 			if(crossPoint >= 0 && crossPoint <= 1)
 			{
@@ -110,8 +110,8 @@ function loadJSON(data_uri, zoom)
 				var xPt = (xRange * crossPoint) + minX;
 				var yPt = (yRange * crossPoint) + minY;
 				
-				var xDst = Math.abs(xPt - mousePos.x);
-				var yDst = Math.abs(yPt - mousePos.y);
+				var xDst = xPt - mousePos.x;
+				var yDst = yPt - mousePos.y;
 				
 				var finalDst = Math.sqrt(Math.pow(xDst, 2) + Math.pow(yDst, 2));
 				// range between xPt; mosue
@@ -145,44 +145,50 @@ function loadJSON(data_uri, zoom)
 			canvasInput.firstChild.value = "";
 		}
 		
-		var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
-		var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
-		
-		var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 600, 300);
-		var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 600, 300);
-		
-		// console.log("FinalDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
-		
-		var lineWidth = 4;
-		var dx = coordinatesB['x'] - coordinatesA['x'];
-		var dy = coordinatesB['y'] - coordinatesA['y'];
-		var rotation = Math.atan2(dy, dx);
-		var lineLength = Math.sqrt(dx * dx + dy * dy);
-		
-		var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
-		var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
-		
-		canvasInput.style.left = xPos;
-		canvasInput.style.top = yPos;
-		
-		// canvasInput.style.left = xRange + xPos;
-		// canvasInput.style.top = yRange + yPos;
-		
-		tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
-		
-		tempLineCanvasContext = tempLineCanvas.getContext("2d");
-		tempLineCanvasContext.beginPath();
-		tempLineCanvasContext.globalAlpha = 1;
-		tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
-		tempLineCanvasContext.rotate(rotation);
-		tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
-		tempLineCanvasContext.translate(-coordinatesA['x'], -coordinatesA['y']);
-		tempLineCanvasContext.fillStyle = "#FF00FF";
-		tempLineCanvasContext.strokeStyle = "#0000FF";
-		tempLineCanvasContext.fill();
-		tempLineCanvasContext.stroke();
-		tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
-		tempLineCanvasContext.closePath();
+		// FOR LOOP HERE
+		var length = jsonObj["mapEdges"][chosenEdge]["vertices"].length;
+		console.log("FLEGN: " + length)
+		for(var i = 0; i < length-1; i++)
+		{
+			var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i]];
+			var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i+1]];
+			
+			var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 600, 300);
+			var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 600, 300);
+			
+			console.log("FinalDraw: " + i + " :: " + coordinatesA['x'] + ":" + coordinatesA['y'])
+			
+			var lineWidth = 4;
+			var dx = coordinatesB['x'] - coordinatesA['x'];
+			var dy = coordinatesB['y'] - coordinatesA['y'];
+			var rotation = Math.atan2(dy, dx);
+			var lineLength = Math.sqrt(dx * dx + dy * dy);
+			
+			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
+			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
+			
+			canvasInput.style.left = xPos;
+			canvasInput.style.top = yPos;
+			
+			// canvasInput.style.left = xRange + xPos;
+			// canvasInput.style.top = yRange + yPos;
+			
+			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
+			
+			tempLineCanvasContext = tempLineCanvas.getContext("2d");
+			tempLineCanvasContext.beginPath();
+			tempLineCanvasContext.globalAlpha = 1;
+			tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
+			tempLineCanvasContext.rotate(rotation);
+			tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
+			tempLineCanvasContext.translate(-coordinatesA['x'], -coordinatesA['y']);
+			tempLineCanvasContext.fillStyle = "#FF00FF";
+			tempLineCanvasContext.strokeStyle = "#0000FF";
+			tempLineCanvasContext.fill();
+			tempLineCanvasContext.stroke();
+			tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
+			tempLineCanvasContext.closePath();
+		}
 	});
 	
 	var drawn = 0;
@@ -208,70 +214,75 @@ function loadJSON(data_uri, zoom)
 			var zm = Math.pow(2, zoom);
 			for(edge in jsonObj["mapEdges"])
 			{
-				var vertexAId = jsonObj["mapEdges"][edge]["vertices"][0];
-				var vertexBId = jsonObj["mapEdges"][edge]["vertices"][1];
-				
-				var edgeObj = jsonObj["mapEdges"][edge];
-				
-				var vertexA = jsonObj["mapVertices"][vertexAId];
-				var vertexB = jsonObj["mapVertices"][vertexBId];
-				
-				if(vertexA == null || vertexB == null) // Stupid catch-all because my server code sucks
+				var length = jsonObj["mapEdges"][edge]["vertices"].length;
+				console.log("FLEGN: " + length)
+				for(var i = 0; i < length-1; i++)
 				{
-					console.log("Skipped a Vertex on: " + edgeObj);
-					continue;
+					var vertexAId = jsonObj["mapEdges"][edge]["vertices"][i];
+					var vertexBId = jsonObj["mapEdges"][edge]["vertices"][i+1];
+					
+					var edgeObj = jsonObj["mapEdges"][edge];
+					
+					var vertexA = jsonObj["mapVertices"][vertexAId];
+					var vertexB = jsonObj["mapVertices"][vertexBId];
+					
+					if(vertexA == null || vertexB == null) // Stupid catch-all because my server code sucks
+					{
+						console.log("Skipped a Vertex on: " + edgeObj);
+						continue;
+					}
+				
+					var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 600, 300);
+					var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 600, 300);
+					
+					// console.log(coordinatesA['x'] + " -- " + coordinatesA['y'] + " :: " + coordinatesB['x'] + " -- " + coordinatesB['y']);
+				
+					if((coordinatesA['x'] > mapCanvas.width && coordinatesB['x'] > mapCanvas.width)
+					|| (coordinatesA['x'] < 0 && coordinatesB['x'] < 0)
+					|| (coordinatesA['y'] > mapCanvas.height && coordinatesB['y'] > mapCanvas.height)
+					|| (coordinatesA['y'] < 0 && coordinatesB['y'] < 0))
+					{
+						notdrawn += 1;
+						continue;
+						// remove element if not drawn
+					}
+	
+					var dx = coordinatesB['x'] - coordinatesA['x'];
+					var dy = coordinatesB['y'] - coordinatesA['y'];
+					var rotation = Math.atan2(dy, dx);
+					var lineLength = Math.sqrt(dx * dx + dy * dy);
+					var lineWidth = 6;
+					
+					drawn += 1;
+					// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
+					// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
+					// canvasA.lineWidth = 5;
+					
+					canvasA.save();
+					canvasA.beginPath();
+	
+					canvasA.globalAlpha = 1;
+	
+					canvasA.translate(coordinatesA['x'], coordinatesA['y']);
+					canvasA.rotate(rotation);
+					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
+					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
+					
+					weightHex = edgeObj.weight;
+					weightHexStroke = edgeObj.confidence * 255;
+					if(weightHex > 255) weightHex = 255;
+					if(weightHexStroke > 255) weightHexStroke = 255;
+					hxresult = weightHex.toString(16);
+					hxresultStroke = weightHexStroke.toString(16);
+	
+					canvasA.fillStyle = "#" + hxresult + "0000";
+					canvasA.strokeStyle = "#00" + hxresultStroke + "00";
+	
+					canvasA.fill();
+					canvasA.stroke();
+					canvasA.restore();
+					canvasA.closePath();
 				}
-			
-				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 600, 300);
-				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 600, 300);
-				
-				// console.log(coordinatesA['x'] + " -- " + coordinatesA['y'] + " :: " + coordinatesB['x'] + " -- " + coordinatesB['y']);
-			
-				if((coordinatesA['x'] > mapCanvas.width && coordinatesB['x'] > mapCanvas.width)
-				|| (coordinatesA['x'] < 0 && coordinatesB['x'] < 0)
-				|| (coordinatesA['y'] > mapCanvas.height && coordinatesB['y'] > mapCanvas.height)
-				|| (coordinatesA['y'] < 0 && coordinatesB['y'] < 0))
-				{
-					notdrawn += 1;
-					continue;
-					// remove element if not drawn
-				}
-
-				var dx = coordinatesB['x'] - coordinatesA['x'];
-				var dy = coordinatesB['y'] - coordinatesA['y'];
-				var rotation = Math.atan2(dy, dx);
-				var lineLength = Math.sqrt(dx * dx + dy * dy);
-				var lineWidth = 6;
-				
-				drawn += 1;
-				// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
-				// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
-				// canvasA.lineWidth = 5;
-				
-				canvasA.save();
-				canvasA.beginPath();
-
-				canvasA.globalAlpha = 1;
-
-				canvasA.translate(coordinatesA['x'], coordinatesA['y']);
-				canvasA.rotate(rotation);
-				canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
-				canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
-				
-				weightHex = edgeObj.weight;
-				weightHexStroke = edgeObj.confidence * 255;
-				if(weightHex > 255) weightHex = 255;
-				if(weightHexStroke > 255) weightHexStroke = 255;
-				hxresult = weightHex.toString(16);
-				hxresultStroke = weightHexStroke.toString(16);
-
-				canvasA.fillStyle = "#" + hxresult + "0000";
-				canvasA.strokeStyle = "#00" + hxresultStroke + "00";
-
-				canvasA.fill();
-				canvasA.stroke();
-				canvasA.restore();
-				canvasA.closePath();
 			} 
 			
 			canvasA.beginPath();
