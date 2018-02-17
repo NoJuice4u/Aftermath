@@ -2,11 +2,9 @@ package main.java.aftermath.engine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.vehicles.Transport;
-import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
@@ -57,7 +55,6 @@ public class AftermathEngine implements Runnable {
 		while(true)
 		{
 			MapVertex mvv = this.controller.getMapData().get(630971621L);
-			System.out.println(mvv.getEdges().size());
 			
 			try {
 				Thread.sleep(250);

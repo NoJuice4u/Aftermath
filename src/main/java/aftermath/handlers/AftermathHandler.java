@@ -391,7 +391,6 @@ public class AftermathHandler extends DefaultHandler{
 		for(Transport t : transports)
 		{
 			double[] bearing = initialNode.getBearing(t.getNode(), zoom);
-			System.out.println(bearing[0]);
 			
 			// Sort/filter Vehicles based on location!
 			MapVertex vertex = new MapVertex((float)t.getNode().getLongitude(), (float)t.getNode().getLatitude(), t.getId());
