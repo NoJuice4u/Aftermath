@@ -6,3 +6,5 @@
 /bin/*
 /target/*
 /bin/
+/target/
+/src/main/resource/noupload/*
