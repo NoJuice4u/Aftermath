@@ -17,6 +17,7 @@ import main.java.aftermath.engine.Depot;
 import main.java.aftermath.server.AftermathServer;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
+import main.java.encephalon.histogram.HistogramBase;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.CountMeter;
 import main.java.encephalon.profiler.Profiler;
@@ -60,6 +61,7 @@ public class OSMReader {
 
 		read();
 	}
+	
 	public OSMReader() throws Exception
 	{
 		this.es = null;

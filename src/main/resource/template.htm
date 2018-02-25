@@ -268,7 +268,7 @@ function loadJSON(data_uri, zoom)
 					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
 					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
 					
-					weightHex = edgeObj.weight;
+					weightHex = edgeObj.weight * 25;
 					weightHexStroke = edgeObj.confidence * 255;
 					if(weightHex > 255) weightHex = 255;
 					if(weightHexStroke > 255) weightHexStroke = 255;

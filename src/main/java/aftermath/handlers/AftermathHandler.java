@@ -32,6 +32,7 @@ import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapResponseDto;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
+import main.java.encephalon.histogram.HistogramBase;
 import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
@@ -528,7 +529,7 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapEdgeInfo(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="edgeId") Long edgeId) throws Exception
 	{
-		List<InputEntry> weights = es.getAftermathController().getEdgeData().get(edgeId).getWeightInputs();
+		HistogramBase weights = es.getAftermathController().getEdgeData().get(edgeId).getWeightInputs();
 		JsonWriter jw = new JsonWriter(weights);
 		
 		response.setContentType("application/json");
@@ -635,20 +636,14 @@ public class AftermathHandler extends DefaultHandler{
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
 			int newWeight = (previousWeight==0)?(int)(previousWeight+(weight*normalize)):(int)((previousWeight+(weight*normalize))/2) ;
 
-			es.getAftermathController().getEdgeData().get(edge).setConfidence(confidence);
 			weightInput.put(edge, Float.valueOf(newWeight));
 			
 			// TEMP
 			es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId, timeStamp, weight);
-			List<InputEntry> weightInputs = es.getAftermathController().getEdgeData().get(edge).getWeightInputs();
-			float finalWeight = 0;
-			int weightEntryCount = 0;
-			for(InputEntry iEntry : weightInputs)
-			{
-				finalWeight += iEntry.getWeight();
-				weightEntryCount++;
-			}
-			es.getAftermathController().getEdgeData().get(edge).setWeight((int)(finalWeight/weightEntryCount), edge);
+			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).getWeightInputs();
+			float finalWeight = weightInputs.calculateValue();
+			
+			es.getAftermathController().getEdgeData().get(edge).setWeight((int)(finalWeight), edge);
 			
 			writer.tr_Start();
 			writer.td(String.valueOf(edge));
@@ -663,8 +658,6 @@ public class AftermathHandler extends DefaultHandler{
 		}
 		writer.table_End();
 		weightList.add(weightInput);
-
-		// response.sendRedirect(referer);
 		
 		writer.text("<a href=\"" + referer + "\">Go Back</a><br/>");
 		response.getWriter().print(writer.getString(locale));
@@ -835,7 +828,7 @@ public class AftermathHandler extends DefaultHandler{
 					width = 1;
 					break;
 				}
-				int mx = (int)((mapEdge.getScore() * 255) / maxScore);
+				int mx = (int)((mapEdge.getScore() * 25) / maxScore);
 				if(mx > 255)
 				{
 					mx = 255;
@@ -956,12 +949,7 @@ public class AftermathHandler extends DefaultHandler{
 			}
 			writer.td_End();
 			writer.td(mapEdge.getMode().toString());
-			writer.td_Start();
-			for(InputEntry input : mapEdge.getWeightInputs())
-			{
-				writer.text(input.getInputId() + ", " + input.getTimeStamp() + ", " + input.getWeight() + "</br>");
-			}
-			writer.td_End();
+			writer.td(mapEdge.getHistogramDataString());
 			writer.tr_End();
 		}
 		writer.tBody_End();
