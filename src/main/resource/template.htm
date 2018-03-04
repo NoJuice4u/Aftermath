@@ -272,11 +272,13 @@ function loadJSON(data_uri, zoom)
 					weightHexStroke = edgeObj.confidence * 255;
 					if(weightHex > 255) weightHex = 255;
 					if(weightHexStroke > 255) weightHexStroke = 255;
+					if(weightHexStroke < 0) weightHexStroke = 0;
 					hxresult = weightHex.toString(16);
 					hxresultStroke = weightHexStroke.toString(16);
 	
 					canvasA.fillStyle = "#" + hxresult + "0000";
 					canvasA.strokeStyle = "#00" + hxresultStroke + "00";
+					// console.log("HXR: " + hxresultStroke)
 	
 					canvasA.fill();
 					canvasA.stroke();

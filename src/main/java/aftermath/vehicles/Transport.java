@@ -54,7 +54,6 @@ public class Transport extends Bin{
 		// edges.remove(previousEdge); // This destroys stuff
 		int rnd = randomizer.nextInt(edges.size());
 		edge = controller.getEdgeData().get(edges.get(rnd));
-		edge.decrementWeight();
 		
 		MapVertex newVertex = controller.getMapData().get(edge.getOtherVertex(node.getId()));
 		

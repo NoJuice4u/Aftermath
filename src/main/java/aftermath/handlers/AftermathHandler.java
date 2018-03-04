@@ -737,7 +737,7 @@ public class AftermathHandler extends DefaultHandler{
 				int drawPointY = (int)drawBearing[1]+MapVertex.HEIGHT/2;
 
 				RoadTypes mode = mapEdge.getMode();
-				String hx3 = "#00";
+				String hx3 = "00";
 				int width = 1;
 				
 				if(filterSet.size() == 0 || filterSet.contains(String.valueOf(mode))) { } else
@@ -747,103 +747,91 @@ public class AftermathHandler extends DefaultHandler{
 				switch(String.valueOf(mode))
 				{
 				case "secondary":
-					hx3 = "80";
 					width = 4;
 					break;
 				case "secondary_link":
-					hx3 = "40";
 					width = 3;
 					break;
 				case "primary":
-					hx3 = "80";
 					width = 5;
 					break;
 				case "primary_link":
-					hx3 = "40";
 					width = 4;
 					break;
 				case "tertiary":
-					hx3 = "80";
 					width = 3;
 					break;
 				case "tertiary_link":
-					hx3 = "60";
 					width = 2;
 					break;
 				case "residential":
-					hx3 = "FF";
 					width = 2;
 					break;
 				case "living_street":
-					hx3 = "FF";
 					break;
 				case "service":
-					hx3 = "80";
 					break;
 				case "motorway":
-					hx3 = "80";
 					width = 5;
 					break;
 				case "motorway_link":
-					hx3 = "40";
 					width = 4;
 					break;
 				case "rail":
 				case "subway":
 				case "subway_entrance":
 				case "station":
-					hx3 = "FF";
-					width = 3;
+					width = 8;
 					break;
 				case "road":
-					hx3 = "00";
 					width = 1;
 					break;
 				case "trunk":
 				case "trunk_link":
-					hx3 = "00";
 					width = 1;
 					break;
 				case "pedestrian":
 				case "footway":
 				case "path":
 				case "steps":
-					hx3 = "FF";
 					width = 1;
 					break;
 				case "unclassified":
-					hx3 = "00";
 					width = 1;
 					break;
 				case "null":
-					hx3 = "00";
 					width = 1;
 					break;
 				case "platform":
-					hx3 = "66";
 					width = 10;
 					break;
 				default:
-					hx3 = "00";
 					width = 1;
 					break;
 				}
-				int mx = (int)((mapEdge.getScore() * 25) / maxScore);
+				int mx = (int)((mapEdge.getConfidence() * 255));
 				if(mx > 255)
 				{
 					mx = 255;
 				}
-				String hx = Integer.toHexString(0x100 | mx).substring(1);
-				String hx2 = Integer.toHexString(0x100 | mapEdge.getWeight()).substring(1);
-				String color = "#" + hx + hx2 + hx3;
-				
-				if(mapEdge.getWeight() > 0)
+				else if(mx < 0)
 				{
-					width = 10;
+					mx = 0;
 				}
+				String hx = Integer.toHexString(0x100 | mx).substring(1);
+				int mw = (int)(mapEdge.getWeight() * 25);
+				if(mw > 255)
+				{
+					mw = 255;
+				}
+				String hx2 = Integer.toHexString(0x100 | mw).substring(1);
+				String color = "#" + hx2 + "00" + hx3;
+				String color2 = "#00" + hx + "00";
+				
+				width += mapEdge.getWeight();
 				
 				// writer.drawCanvasLine("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
-				writer.drawCanvasLineAsRect("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
+				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
 				// writer.drawVertex("mapCanvas", 2, (startPointX+drawPointX)/2, (startPointY+drawPointY)/2, String.valueOf(mapEdge.getId()), "#606060");
 			}
 		}
@@ -950,6 +938,7 @@ public class AftermathHandler extends DefaultHandler{
 			writer.td_End();
 			writer.td(mapEdge.getMode().toString());
 			writer.td(mapEdge.getHistogramDataString());
+			writer.td(mapEdge.getHistogramTimeString());
 			writer.tr_End();
 		}
 		writer.tBody_End();
