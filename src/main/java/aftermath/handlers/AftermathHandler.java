@@ -472,19 +472,6 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	@GET
-	@HandlerInfo(schema="/map/edge/weights")
-	public void getMapEdgeWeights(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
-	{
-		List<HashMap<Long, Float>> weightList = AftermathServer.getInstance().getAftermathController().getWeightInputList();
-		HashMap<Long, Integer> weightCounts = AftermathServer.getInstance().getAftermathController().getWeightInputCounts();
-		
-		JsonWriter jw = new JsonWriter(weightList);
-		JsonWriter jw2 = new JsonWriter(weightCounts);
-		response.setContentType("application/json");
-		response.getWriter().print("[" + jw.toString() + ", " + jw2.toString()+ "]");
-	}
-
-	@GET
 	@HandlerInfo(schema="/map/edge/(edgeId)/weight/(weight)")
 	public void getMapEdgeSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="edgeId") Long edgeId,
@@ -545,8 +532,6 @@ public class AftermathHandler extends DefaultHandler{
 		String inputString = br.readLine();
 		
 		String[] s = inputString.split("&");
-		List<HashMap<Long, Float>> weightList = AftermathServer.getInstance().getAftermathController().getWeightInputList();
-		HashMap<Long, Integer> weightCounts = AftermathServer.getInstance().getAftermathController().getWeightInputCounts();
 		
 		HashMap<Long, Float> weightInput = new HashMap<Long, Float>();
 		
@@ -624,14 +609,6 @@ public class AftermathHandler extends DefaultHandler{
 		{
 			long edge = item.edge;
 			int weight = item.weight;
-			if(!weightCounts.containsKey(edge))
-			{
-				weightCounts.put(edge, weightList.size()); // Next add index
-			}
-			else
-			{
-				weightCounts.replace(edge, weightList.size());
-			}
 			
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
 			int newWeight = (previousWeight==0)?(int)(previousWeight+(weight*normalize)):(int)((previousWeight+(weight*normalize))/2) ;
@@ -657,7 +634,6 @@ public class AftermathHandler extends DefaultHandler{
 			writer.tr_End();
 		}
 		writer.table_End();
-		weightList.add(weightInput);
 		
 		writer.text("<a href=\"" + referer + "\">Go Back</a><br/>");
 		response.getWriter().print(writer.getString(locale));
@@ -829,6 +805,10 @@ public class AftermathHandler extends DefaultHandler{
 				String color2 = "#00" + hx + "00";
 				
 				width += mapEdge.getWeight();
+				if(zoom >= 65535)
+				{
+					width *= zoom/65536;
+				}
 				
 				// writer.drawCanvasLine("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);

@@ -79,7 +79,7 @@ public class OSMReader {
 		String fileName;
 		try
 		{
-			fileName = getClass().getClassLoader().getResource(RESOURCE).getFile().replace("%20", " ");
+			fileName = getClass().getClassLoader().getResource(RESOURCE).getFile().replace("%20", " ").replace("%5c", "//");
 		}
 		catch(NullPointerException e)
 		{
