@@ -227,6 +227,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.script_End();
 		writer.table_Start();
 
+		writeSummaryNode(writer, locale, initialNode, zoom, depth);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
@@ -324,6 +325,7 @@ public class AftermathHandler extends DefaultHandler{
 					writer.table_Start();
 						writer.tr_Start();
 							writer.td_Start();
+								writeSummaryNode(writer, locale, initialNode, zoom, depth);
 								writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 								writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 							writer.td_End();
@@ -804,7 +806,6 @@ public class AftermathHandler extends DefaultHandler{
 				String color = "#" + hx2 + "00" + hx3;
 				String color2 = "#00" + hx + "00";
 				
-				width += mapEdge.getWeight();
 				if(zoom >= 65535)
 				{
 					width *= zoom/65536;
@@ -898,6 +899,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.th("Vertices");
 		writer.th("Mode");
 		writer.th("Inputs");
+		writer.th("Times");
 		writer.tr_End();
 		writer.tHead_End();
 
@@ -918,7 +920,7 @@ public class AftermathHandler extends DefaultHandler{
 			writer.td_End();
 			writer.td(mapEdge.getMode().toString());
 			writer.td(mapEdge.getHistogramDataString());
-			writer.td(mapEdge.getHistogramTimeString());
+			writer.td(mapEdge.getHistogramTimeDeltaString());
 			writer.tr_End();
 		}
 		writer.tBody_End();

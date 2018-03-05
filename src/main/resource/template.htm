@@ -37,6 +37,7 @@ function loadJSON(data_uri, zoom)
 			{
 				delete inputData[chosenEdge];
 			}
+			
 			canvasInput.firstChild.value = "";
 		}
 		
@@ -135,7 +136,9 @@ function loadJSON(data_uri, zoom)
 			}
 		}
 		console.log("Chosen Edge: " + chosenEdge);
-		
+
+		const selectedRoad = document.getElementById("selectedRoadType");
+		selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"];		
 		if(typeof inputData[chosenEdge] != 'undefined')
 		{
 			canvasInput.firstChild.value = inputData[chosenEdge];

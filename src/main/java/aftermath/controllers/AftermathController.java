@@ -49,7 +49,7 @@ public class AftermathController {
 	public void run() {
 		try {
 			engine = new AftermathEngine(this);
-			Future future = executor.submit(engine);
+			Future future = executor.submit(engine); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
