@@ -1,6 +1,5 @@
 package main.java.aftermath.controllers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +15,6 @@ import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.profiler.CountMeter;
 import main.java.encephalon.profiler.Profiler;
-import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.EncephalonThreadPoolExecutor;
 import main.java.encephalon.spatialIndex.SpatialIndex;
 
@@ -25,6 +23,7 @@ public class AftermathController {
 	private Runnable engine;
 	private HashMap<Long, MapVertex> mapData;
 	private HashMap<Long, MapEdge> edgeData;
+	private HashMap<Long, Depot> depotData;
 	private SpatialIndex<MapVertex> spatialIndex;
 	private SpatialIndex<Depot> spatialIndexDepot;
 
@@ -39,6 +38,7 @@ public class AftermathController {
 
 		this.mapData = new HashMap<Long, MapVertex>();
 		this.edgeData = new HashMap<Long, MapEdge>();
+		this.depotData = new HashMap<Long, Depot>();
 		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
 		this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
 		
@@ -49,7 +49,7 @@ public class AftermathController {
 	public void run() {
 		try {
 			engine = new AftermathEngine(this);
-			Future future = executor.submit(engine); 
+			Future<?> future = executor.submit(engine); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -63,6 +63,11 @@ public class AftermathController {
 
 	public HashMap<Long, MapEdge> getEdgeData() {
 		return edgeData;
+	}
+	
+	public HashMap<Long, Depot> getDepotData()
+	{
+		return depotData;
 	}
 
 	public SpatialIndex<MapVertex> getSpatialIndex() {

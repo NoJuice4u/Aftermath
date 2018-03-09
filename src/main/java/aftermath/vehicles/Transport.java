@@ -31,7 +31,7 @@ public class Transport extends Bin{
 
 	public Transport(AftermathController controller, long e) throws Exception
 	{
-		super(500);
+		super(500, 0, 0);
 		this.controller = controller;
 		this.id = Transport.incrementAndGetId();
 		this.node = controller.getMapData().get(controller.getEdgeData().get(e).getVertices()[0]);

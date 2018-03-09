@@ -9,7 +9,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
-import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.server.EncephalonServer;
 
 public class StartServer extends main.java.encephalon.sample.StartServer

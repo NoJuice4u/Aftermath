@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
-import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.server.*;
 
