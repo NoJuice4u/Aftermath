@@ -1,6 +1,5 @@
 package main.java.aftermath.handlers;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -11,13 +10,11 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 
 import main.java.aftermath.server.AftermathServer;
-import main.java.aftermath.locale.*;
-import main.java.encephalon.annotations.*;
-import main.java.encephalon.annotations.methods.*;
+import main.java.encephalon.annotations.HandlerInfo;
+import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.writers.HtmlWriter;
-import main.java.encephalon.writers.JsonWriter;
 
 public class WCEncephalonHandler extends DefaultHandler{
 	private AftermathServer es;

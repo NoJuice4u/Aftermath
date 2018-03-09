@@ -5,13 +5,14 @@ import java.util.List;
 
 import main.java.encephalon.dto.Coordinates;
 
-public class Bin{
+public class Bin extends Coordinates{
 	private double binCapacity, finalBinCapacity;
 	private double binCurrentLoad;
 	private final float efficiency = 0.8f; 
 	
-	public Bin(double capacity) throws Exception
+	public Bin(double capacity, float longitude, float latitude) throws Exception
 	{
+		super(longitude, latitude);
 		this.binCapacity = capacity;
 		this.finalBinCapacity = capacity * efficiency;
 		this.binCurrentLoad = 0;

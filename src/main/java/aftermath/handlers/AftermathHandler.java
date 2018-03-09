@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
 
-import main.java.aftermath.vehicles.Transport;
+import main.java.aftermath.engine.Depot;
+import main.java.aftermath.locale.LocaleBase;
 import main.java.aftermath.server.AftermathServer;
-import main.java.aftermath.locale.*;
-
+import main.java.aftermath.vehicles.Transport;
 import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.POST;
@@ -27,15 +27,13 @@ import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
-import main.java.encephalon.dto.InputEntry;
+import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
 import main.java.encephalon.dto.MapEdge;
+import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.dto.MapResponseDto;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
 import main.java.encephalon.histogram.HistogramBase;
-import main.java.encephalon.locale.Localizer;
-import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
-import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.spatialIndex.SpatialIndex;
@@ -146,15 +144,6 @@ public class AftermathHandler extends DefaultHandler{
 		response.setContentType("application/json");
 		response.getWriter().print(jw.toString());
 	}
-	
-	@GET
-	@HandlerInfo(schema="/map/depot/node/(uid)/edge/(edgeId)")
-	public void addDepotNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="node") Long uid, @QueryParam(value="edge:") Long edgeId) throws Exception
-	{
-		MapEdge edge = es.getAftermathController().getEdgeData().get(edgeId);
-		es.getAftermathController().getSpatialIndexDepot().add(uid, edge);
-	}
 
 	@GET
 	@HandlerInfo(schema="/delay")
@@ -248,13 +237,15 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	@GET
-	@HandlerInfo(schema="/map/add/depot/edge/(edgeId)")
+	@HandlerInfo(schema="/map/add/depot/name/(name)/edge/(edgeId)")
 	public void getMapAddDepotEdge(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="edgeId") Long edgeId) throws Exception
+			@QueryParam(value="name") String name, @QueryParam(value="edgeId") Long edgeId) throws Exception
 	{
 		MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edgeId);
+		Depot d = new Depot(name, 100, mapEdge);
 		
-		es.getAftermathController().getSpatialIndexDepot().add(edgeId, mapEdge);
+		es.getAftermathController().getDepotData().put(d.getId(), d);
+		es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
 	}
 	
 	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
@@ -853,14 +844,14 @@ public class AftermathHandler extends DefaultHandler{
 
 		for(Long depotId : depotIds)
 		{
-			Coordinates edgeCoords = es.getAftermathController().getEdgeData().get(depotId);
+			Depot depot = es.getAftermathController().getDepotData().get(depotId);
 
-			double[] point = edgeCoords.getBearing(focalPoint, zoom);
+			double[] point = depot.getBearing(focalPoint, zoom);
 			int edgeBearingX = (int)point[0]+MapVertex.WIDTH/2;
 			int edgeBearingY = (int)point[1]+MapVertex.HEIGHT/2;
 			
 			writer.drawArc(edgeBearingX, edgeBearingY, 5, 5, "#00FFFF");
-			writer.drawVertex("mapCanvas", 16, edgeBearingX+5, edgeBearingY+5, "Depot", "#0080FF");
+			writer.drawVertex("mapCanvas", 16, edgeBearingX+5, edgeBearingY+5, depot.getName(), "#0080FF");
 		}
 	}
 

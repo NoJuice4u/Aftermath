@@ -1,10 +1,8 @@
 package main.java.aftermath.server;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,9 +10,6 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import com.sun.xml.internal.stream.buffer.stax.StreamReaderBufferCreator;
-
-import main.java.encephalon.locale.LocaleBase;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.writers.HtmlWriter;
 
