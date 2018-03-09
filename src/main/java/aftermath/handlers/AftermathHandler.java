@@ -715,7 +715,6 @@ public class AftermathHandler extends DefaultHandler{
 				int drawPointY = (int)drawBearing[1]+MapVertex.HEIGHT/2;
 
 				RoadTypes mode = mapEdge.getMode();
-				String hx3 = "00";
 				int width = 1;
 				
 				if(filterSet.size() == 0 || filterSet.contains(String.valueOf(mode))) { } else
@@ -803,7 +802,11 @@ public class AftermathHandler extends DefaultHandler{
 					mw = 255;
 				}
 				String hx2 = Integer.toHexString(0x100 | mw).substring(1);
-				String color = "#" + hx2 + "00" + hx3;
+				int mC = (int)(Math.abs(1-mapEdge.getConfidence())*mw*0.75);
+				
+				String hx3 = Integer.toHexString(0x100 | mC).substring(1);
+				
+				String color = "#" + hx2 + hx3 + "00";
 				String color2 = "#00" + hx + "00";
 				
 				if(zoom >= 65535)
