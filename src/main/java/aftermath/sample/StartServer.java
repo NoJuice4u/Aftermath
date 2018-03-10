@@ -9,6 +9,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
+import main.java.encephalon.API.scope.Scope;
 import main.java.encephalon.server.EncephalonServer;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
@@ -26,19 +27,19 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 			List<Connector> connectors = new ArrayList<Connector>();
 			
 			ServerConnector publicConnector = new ServerConnector(aftermath);
-			publicConnector.setName("Public");
+			publicConnector.setName(Scope.publicPort.name());
 			publicConnector.setPort(8080);
 			publicConnector.setAcceptQueueSize(50);
 			aftermath.addConnector(publicConnector);
 			
 			ServerConnector privateConnector = new ServerConnector(aftermath);
-			privateConnector.setName("Private");
+			privateConnector.setName(Scope.privatePort.name());
 			privateConnector.setPort(8081);
 			privateConnector.setAcceptQueueSize(50);
 			aftermath.addConnector(privateConnector);
 			
 			ServerConnector debugConnector = new ServerConnector(aftermath);
-			debugConnector.setName("Debug");
+			debugConnector.setName(Scope.debugPort.name());
 			debugConnector.setPort(8082);
 			debugConnector.setAcceptQueueSize(20);
 			aftermath.addConnector(debugConnector);
@@ -57,7 +58,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 				sslContext.setTrustStorePassword(trustStorePass);
 				
 				ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
-				sslConnector.setName("SSL");
+				sslConnector.setName(Scope.publicSSLPort.name());
 				sslConnector.setPort(8443);
 				sslConnector.setAcceptQueueSize(1000);
 				aftermath.addConnector(sslConnector);	
@@ -81,7 +82,6 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 	public static void registerAftermathHandlers(EncephalonServer server) throws Exception
 	{
 		server.registerUri("/aftermath", "aftermath", new AftermathHandler((AftermathServer)server));
-		server.registerUri("/metro", "metro", new MetroHandler((AftermathServer)server));
 		server.registerUri("/", "wcencephalon", new WCEncephalonHandler((AftermathServer)server));
 	}
 }

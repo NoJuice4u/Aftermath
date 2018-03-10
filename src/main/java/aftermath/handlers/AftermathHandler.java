@@ -158,10 +158,10 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid, 
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
-			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
+			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{	
 		// @QueryString(value="zoom", _default="18")
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawSpatialGrid);
 	}
 
 	@GET
@@ -169,12 +169,12 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
-			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
+			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{
 		Coordinates coords = new Coordinates(longitude, latitude);
 		
 		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices, drawSpatialGrid);
 	}
 	
 	@GET
@@ -194,7 +194,8 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNodeByVehicle(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="vehicleId") Integer vehicleId,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
-			@QueryString(value="roadType", _default="") String filter, @QueryString(value="drawMap", _default="true") Boolean drawMap) throws Exception
+			@QueryString(value="roadType", _default="") String filter, @QueryString(value="drawMap", _default="true") Boolean drawMap,
+			@QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{	
 		List<Transport> transporters = es.getAftermathController().getTransporters();
 		Transport transport = transporters.get(vehicleId);
@@ -208,7 +209,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.initializeCanvasJS("mapCanvas");
 
 		int zm = (int)(AftermathServer.GOOGLE_MAP_ZOOMSCALE*Math.pow(2, zoom));
-		drawSpatialIndex(writer, initialNode, zm);
+		if(drawSpatialGrid) drawSpatialIndex(writer, initialNode, zm);
 		drawRoads(writer, initialNode, zm, depth, filter);
 		drawDepot(writer, initialNode, zm);
 		drawTransport(writer, transport, initialNode, zm, depth);
@@ -241,15 +242,37 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapAddDepotEdge(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="name") String name, @QueryParam(value="edgeId") Long edgeId) throws Exception
 	{
+		HtmlWriter writer = new HtmlWriter(2, es);
 		MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edgeId);
 		Depot d = new Depot(name, 100, mapEdge);
 		
 		es.getAftermathController().getDepotData().put(d.getId(), d);
 		es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
+		writer.text(String.valueOf(d.getId()));
+		response.getWriter().print(writer.getString(locale));
+	}
+	
+	@GET
+	@HandlerInfo(schema="/map/depots")
+	public void getMapDepotList(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	{
+		HtmlWriter writer = new HtmlWriter(2, es);
+		
+		Iterator<Entry<Long, Depot>> iter = es.getAftermathController().getDepotData().entrySet().iterator();
+		writer.table_Start();
+		while(iter.hasNext())
+		{
+			Entry<Long, Depot> entry = iter.next();
+			writer.tr_Start();
+			writer.td(entry.getKey().toString() + " : " + entry.getValue().getName());
+			writer.tr_End();
+		}
+		writer.table_End();
+		response.getWriter().print(writer.getString(locale));
 	}
 	
 	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			Long uid, int depth, int zoom, String filter, Boolean drawVertices) throws Exception
+			Long uid, int depth, int zoom, String filter, Boolean drawVertices, Boolean drawSpatialGrid) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		HtmlWriter writer = new HtmlWriter(2, es);
@@ -261,7 +284,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.initializeCanvasJS("mapCanvas");
 
 		int zm = (int)(AftermathServer.GOOGLE_MAP_ZOOMSCALE*Math.pow(2, zoom));
-		drawSpatialIndex(writer, initialNode, zm);
+		if(drawSpatialGrid) drawSpatialIndex(writer, initialNode, zm);
 		drawRoads(writer, initialNode, zm, depth, filter);
 		if(drawVertices) drawVertices(writer, initialNode, zm, depth, filter);
 		drawDepot(writer, initialNode, zm);
@@ -283,9 +306,10 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
-			@QueryString(value="roadType", _default="") String filter, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices) throws Exception
+			@QueryString(value="roadType", _default="") String filter, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices,
+			@QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawSpatialGrid);
 	}
 
 	@GET
@@ -804,10 +828,12 @@ public class AftermathHandler extends DefaultHandler{
 				{
 					width *= zoom/65536;
 				}
-				
-				// writer.drawCanvasLine("mapCanvas", width, color, startPointX, startPointY, drawPointX, drawPointY);
+				if(width < 2)
+				{
+					width = 2;
+				}
+
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
-				// writer.drawVertex("mapCanvas", 2, (startPointX+drawPointX)/2, (startPointY+drawPointY)/2, String.valueOf(mapEdge.getId()), "#606060");
 			}
 		}
 	}
