@@ -12,7 +12,8 @@ function loadJSON(data_uri, zoom)
 	var jsonObj;
 
 	const mapCanvas = document.getElementById("mapCanvas");
-	const canvasInput = document.getElementById("canvasInput");
+	const canvasInputBox = document.getElementById("canvasInputBox");
+	const canvasInput = document.getElementById("canvasInputBoxInput");
 	const tempLineCanvas = document.getElementById("tempLineCanvas");
 	const canvasA = mapCanvas.getContext("2d");
 
@@ -28,17 +29,17 @@ function loadJSON(data_uri, zoom)
 		
 		if(chosenEdge > 0)
 		{
-			if(canvasInput.firstChild.value > 0)
+			if(canvasInput.value > 0)
 			{
-				console.log("Set Edge: " + chosenEdge + " : " + canvasInput.firstChild.value);
-				inputData[chosenEdge] = canvasInput.firstChild.value;
+				console.log("Set Edge: " + chosenEdge + " : " + canvasInput.value);
+				inputData[chosenEdge] = canvasInput.value;
 			}
 			else
 			{
 				delete inputData[chosenEdge];
 			}
 			
-			canvasInput.firstChild.value = "";
+			canvasInput.value = "";
 		}
 		
 		var distance = 9999;
@@ -138,19 +139,18 @@ function loadJSON(data_uri, zoom)
 		console.log("Chosen Edge: " + chosenEdge);
 
 		const selectedRoad = document.getElementById("selectedRoadType");
-		selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"];		
+		selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + "<br/>Confidence: " + jsonObj["mapEdges"][chosenEdge]["confidence"];		
 		if(typeof inputData[chosenEdge] != 'undefined')
 		{
-			canvasInput.firstChild.value = inputData[chosenEdge];
+			canvasInput.value = inputData[chosenEdge];
 		}
 		else
 		{
-			canvasInput.firstChild.value = "";
+			canvasInput.value = "";
 		}
 		
 		// FOR LOOP HERE
 		var length = jsonObj["mapEdges"][chosenEdge]["vertices"].length;
-		console.log("FLEGN: " + length)
 		for(var i = 0; i < length-1; i++)
 		{
 			var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i]];
@@ -161,7 +161,7 @@ function loadJSON(data_uri, zoom)
 			
 			console.log("FinalDraw: " + i + " :: " + coordinatesA['x'] + ":" + coordinatesA['y'])
 			
-			var lineWidth = 4;
+			var lineWidth = 12;
 			var dx = coordinatesB['x'] - coordinatesA['x'];
 			var dy = coordinatesB['y'] - coordinatesA['y'];
 			var rotation = Math.atan2(dy, dx);
@@ -170,8 +170,8 @@ function loadJSON(data_uri, zoom)
 			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
-			canvasInput.style.left = xPos;
-			canvasInput.style.top = yPos;
+			canvasInputBox.style.left = xPos;
+			canvasInputBox.style.top = yPos;
 			
 			// canvasInput.style.left = xRange + xPos;
 			// canvasInput.style.top = yRange + yPos;
@@ -218,7 +218,6 @@ function loadJSON(data_uri, zoom)
 			for(edge in jsonObj["mapEdges"])
 			{
 				var length = jsonObj["mapEdges"][edge]["vertices"].length;
-				console.log("FLEGN: " + length)
 				for(var i = 0; i < length-1; i++)
 				{
 					var vertexAId = jsonObj["mapEdges"][edge]["vertices"][i];
@@ -254,7 +253,7 @@ function loadJSON(data_uri, zoom)
 					var dy = coordinatesB['y'] - coordinatesA['y'];
 					var rotation = Math.atan2(dy, dx);
 					var lineLength = Math.sqrt(dx * dx + dy * dy);
-					var lineWidth = 6;
+					var lineWidth = 12;
 					
 					drawn += 1;
 					// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
@@ -271,20 +270,26 @@ function loadJSON(data_uri, zoom)
 					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
 					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
 					
-					weightHex = edgeObj.weight * 25;
-					weightHexStroke = edgeObj.confidence * 255;
-					if(weightHex > 255) weightHex = 255;
-					if(weightHexStroke > 255) weightHexStroke = 255;
-					if(weightHexStroke < 0) weightHexStroke = 0;
-					hxresult = weightHex.toString(16);
-					hxresultStroke = weightHexStroke.toString(16);
+					weightScore = Math.round(edgeObj.weight * 25);
+					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255 * 1.25);
+					if(confidenceScore > weightScore)
+					{
+						confidenceScore = Math.round(weightScore / 2);
+					}
+					else if(confidenceScore <= 0)
+					{
+						confidenceScore = 0;
+					}
+					weightHex = ("00" + weightScore.toString(16)).substr(-2);
+					weightHexStroke = ("00" + confidenceScore.toString(16)).substr(-2);
+					// console.log("A: " + weightHex + ":" + weightHexStroke + " - " + edgeObj.weight + " // " + weightScore);
+					colorHex = weightHex + weightHexStroke + "00";
 	
-					canvasA.fillStyle = "#" + hxresult + "0000";
-					canvasA.strokeStyle = "#00" + hxresultStroke + "00";
-					// console.log("HXR: " + hxresultStroke)
+					canvasA.fillStyle = "#" + colorHex;
+					// canvasA.strokeStyle = "#00" + hxresultStroke + "00";
 	
 					canvasA.fill();
-					canvasA.stroke();
+					// canvasA.stroke();
 					canvasA.restore();
 					canvasA.closePath();
 				}

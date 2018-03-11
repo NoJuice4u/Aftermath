@@ -253,6 +253,22 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	@GET
+	@HandlerInfo(schema="/map/remove/depot/(depotId)")
+	public void getMapRemoveDepotEdge(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+			@QueryParam(value="depot") long depotId) throws Exception
+	{
+		HtmlWriter writer = new HtmlWriter(2, es);
+		
+		Depot d = es.getAftermathController().getDepotData().remove(depotId);
+
+		if(d != null)
+		{
+			writer.text(String.valueOf(d.getId()));
+		}
+		response.getWriter().print(writer.getString(locale));
+	}
+	
+	@GET
 	@HandlerInfo(schema="/map/depots")
 	public void getMapDepotList(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
@@ -333,7 +349,7 @@ public class AftermathHandler extends DefaultHandler{
 									// This one is offset too low.  Overlaying issues.
 									writer.canvas("tempLineCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, -MapVertex.HEIGHT, 30, "none");
 								writer.div_End();
-								writer.canvasInputDiv("canvasInput", "#FF0000");
+								writer.canvasInputDiv("canvasInputBox", "#FF0000");
 							writer.td_End();
 						writer.tr_End();
 					writer.table_End();
