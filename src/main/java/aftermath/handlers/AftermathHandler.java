@@ -505,15 +505,6 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	@GET
-	@HandlerInfo(schema="/map/edge/(edgeId)/weight/(weight)")
-	public void getMapEdgeSetWeight(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="edgeId") Long edgeId,
-			@QueryParam(value="weight") Integer weight) throws Exception
-	{
-		es.getAftermathController().getEdgeData().get(edgeId).addWeight(weight);
-	}
-	
-	@GET
 	@HandlerInfo(schema="/map/vehicles/json")
 	public void getVehiclesJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
@@ -652,8 +643,6 @@ public class AftermathHandler extends DefaultHandler{
 			es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId, timeStamp, weight);
 			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).getWeightInputs();
 			float finalWeight = weightInputs.calculateValue();
-			
-			es.getAftermathController().getEdgeData().get(edge).setWeight((int)(finalWeight), edge);
 			
 			writer.tr_Start();
 			writer.td(String.valueOf(edge));
