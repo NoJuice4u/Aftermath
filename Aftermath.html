@@ -273,25 +273,37 @@ function loadJSON(data_uri, zoom)
 					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
 					
 					weightScore = Math.round(edgeObj.weight * 25);
-					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255 * 1.25);
-					if(confidenceScore > weightScore)
-					{
-						confidenceScore = Math.round(weightScore / 2);
-					}
-					else if(confidenceScore <= 0)
+					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255);
+					if(confidenceScore <= 0)
 					{
 						confidenceScore = 0;
+					} else if (confidenceScore > 255)
+					{
+						confidenceScore = 255;
+					}
+					if(weightScore < confidenceScore)
+					{
+						differential = (255-confidenceScore) * confidenceScore;
+						weightScore = confidenceScore + differential;
+						if(weightScore > 255) weightScore = 255;
 					}
 					weightHex = ("00" + weightScore.toString(16)).substr(-2);
-					weightHexStroke = ("00" + confidenceScore.toString(16)).substr(-2);
-					// console.log("A: " + weightHex + ":" + weightHexStroke + " - " + edgeObj.weight + " // " + weightScore);
-					colorHex = weightHex + weightHexStroke + "00";
+					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
+					if(jsonObj["mapEdges"][edge]["marked"] == true)
+					{
+						hxResultStroke = "FF";
+					}
+					else
+					{
+						hxResultStroke = "00";
+					}
+					colorHex = weightHex + confidenceHex + "00";
 	
 					canvasA.fillStyle = "#" + colorHex;
-					// canvasA.strokeStyle = "#00" + hxresultStroke + "00";
+					canvasA.strokeStyle = "#" + hxResultStroke + hxResultStroke + "00";
 	
 					canvasA.fill();
-					// canvasA.stroke();
+					canvasA.stroke();
 					canvasA.restore();
 					canvasA.closePath();
 				}

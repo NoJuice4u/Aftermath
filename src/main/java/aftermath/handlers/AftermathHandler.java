@@ -693,6 +693,31 @@ public class AftermathHandler extends DefaultHandler{
 		response.getWriter().print(writer.getString(locale));
 	}
 	
+	@POST
+	@HandlerInfo(schema="/map/mark")
+	public void postMapEdgesSetMark(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	{
+		BufferedReader br = request.getReader();
+		String inputString = br.readLine();
+		
+		String[] s = inputString.split("&");
+		
+		for(String item : s)
+		{
+			String[] s2 = item.split("=");
+			if(s2.length != 2)
+			{
+				continue;
+			}
+			
+			long edge = Long.valueOf(s2[0]);
+			int weight = Math.round(Float.valueOf(s2[1]));
+			
+			MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
+			mEdge.setMarked(true);
+		}
+	}
+	
 	private void drawVertices(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter) throws Exception
 	{
 		SpatialIndex<Coordinates> diveQuadrant = es.getAftermathController().getSpatialIndex().dive(focalPoint);
