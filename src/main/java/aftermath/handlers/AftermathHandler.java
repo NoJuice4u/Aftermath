@@ -441,12 +441,44 @@ public class AftermathHandler extends DefaultHandler{
 		response.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
 		response.getWriter().print(s);
 	}
+	
+	@GET
+	@HandlerInfo(schema="/map/node/(uid)/clear")
+	public void getMapNodeClearWeights(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+			@QueryParam(value="uid") Long uid, @QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth,
+			@QueryString(value="roadType", _default="") String filter) throws Exception
+	{
+		HashSet<String> filterSet = new HashSet<String>();
+		StringTokenizer st = new StringTokenizer(filter, ",");
+		while (st.hasMoreTokens())
+		{
+			filterSet.add(st.nextToken());
+		}
+		
+		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
+		HashMap<Long, Integer> masterDepthList = new HashMap<Long, Integer>(200);
+
+		List<Long> edges = initialNode.getEdges();
+		
+		MapVertex focalPoint = es.getAftermathController().getMapData().get(uid);
+		DistinctOrderedSet masterEdgeList = buildMasterEdgeListFromDepth(focalPoint, masterDepthList, edges, depth, zoom);
+
+		masterEdgeList.reset(OrderType.FIFO);
+		
+		while(masterEdgeList.hasNext())
+		{
+			Long edge = masterEdgeList.next();
+			MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edge);
+			
+			mapEdge.resetWeights();
+		}
+	}
 
 	@GET
 	@HandlerInfo(schema="/map/node/(uid)/json")
 	public void getMapNodeJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			@QueryParam(value="uid") Long uid,
-			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter) throws Exception
+			@QueryParam(value="uid") Long uid, @QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
+			@QueryString(value="roadType", _default="") String filter) throws Exception
 	{
 		HashSet<String> filterSet = new HashSet<String>();
 		StringTokenizer st = new StringTokenizer(filter, ",");
@@ -972,20 +1004,16 @@ public class AftermathHandler extends DefaultHandler{
 		writer.tHead_End();
 		writer.form_Start("/aftermath/map/weight", "POST");
 
-		HashMap<Long, Coordinates> mapVertices = es.getAftermathController().getSpatialIndex().dive(focalPoint).getIndex();
-		Iterator<Entry<Long, Coordinates>> iter = mapVertices.entrySet().iterator();
+		/// xxxx
+		HashMap<Long, Integer> masterDepthList = new HashMap<Long, Integer>(200);
+		List<Long> edges = focalPoint.getEdges();
+		DistinctOrderedSet masterEdgeList = buildMasterEdgeListFromDepth(focalPoint, masterDepthList, edges, 5, zoom);
+		masterEdgeList.reset(OrderType.FIFO);
 
-		HashSet<Long> edgeList = new HashSet<Long>();
-		while(iter.hasNext())
-		{
-			Map.Entry<Long, Coordinates> kvPair = (Map.Entry<Long, Coordinates>) iter.next();
-			
-			edgeList.addAll(es.getAftermathController().getMapData().get(kvPair.getKey()).getEdges());
-		}
-		
 		writer.tBody_Start();
-		for (Long e : edgeList)
+		while(masterEdgeList.hasNext())
 		{
+			long e = masterEdgeList.next();
 			MapEdge mapEdge = es.getAftermathController().getEdgeData().get(e);
 			
 			int weight = es.getAftermathController().getEdgeData().get(e).getWeight();
