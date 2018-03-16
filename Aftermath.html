@@ -283,9 +283,10 @@ function loadJSON(data_uri, zoom)
 					}
 					if(weightScore < confidenceScore)
 					{
-						differential = (255-confidenceScore) * confidenceScore;
-						weightScore = confidenceScore + differential;
-						if(weightScore > 255) weightScore = 255;
+						// differential = (255-confidenceScore) * confidenceScore;
+						// weightScore = confidenceScore + differential;
+						if(weightScore < confidenceScore) weightScore = confidenceScore;
+						else if(weightScore > 255) weightScore = 255;
 					}
 					weightHex = ("00" + weightScore.toString(16)).substr(-2);
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
@@ -331,7 +332,7 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 
 function runLoop()
 {
-	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/2394665718/json?depth=30&zoom=16",16);
+	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/2394665718/json?depth=40&zoom=16",16);
 }
 		</script>
 		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>

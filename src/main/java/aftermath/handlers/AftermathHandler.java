@@ -863,36 +863,36 @@ public class AftermathHandler extends DefaultHandler{
 					width = 1;
 					break;
 				}
-				int mx = (int)((mapEdge.getConfidence() * 255));
-				if(mx > 255)
-				{
-					mx = 255;
-				}
-				else if(mx < 0)
-				{
-					mx = 0;
-				}
-				String hx = Integer.toHexString(0x100 | mx).substring(1);
+				
 				int mw = (int)(mapEdge.getWeight() * 25);
 				if(mw > 255)
 				{
 					mw = 255;
 				}
-				String hx2 = Integer.toHexString(0x100 | mw).substring(1);
-				int mC = (int)(Math.abs(1-mapEdge.getConfidence())*mw*0.75);
+				int mx = (int)((Math.abs(mapEdge.getConfidence()-1) * 255 * 1.25));
+				if(mx > mw)
+				{
+					mx = mw/2;
+				}
+				else if(mx < 0)
+				{
+					mx = 0;
+				}
 				
-				String hx3 = Integer.toHexString(0x100 | mC).substring(1);
+				String hx = Integer.toHexString(0x100 | mw).substring(1);
+				String hx2 = Integer.toHexString(0x100 | mx).substring(1);
+				String hx3 = (mapEdge.getMarked()?"FF":"00");
 				
-				String color = "#" + hx2 + hx3 + "00";
-				String color2 = "#00" + hx + "00";
+				String color = "#" + hx + hx2 + "00";
+				String color2 = "#" + hx3 + hx3 + "00";
 				
 				if(zoom >= 65535)
 				{
 					width *= zoom/65536;
 				}
-				if(width < 2)
+				if(width < 6)
 				{
-					width = 2;
+					width = 6;
 				}
 
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
