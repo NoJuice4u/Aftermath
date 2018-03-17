@@ -18,7 +18,7 @@ function loadJSON(data_uri, zoom)
 	const canvasA = mapCanvas.getContext("2d");
 
 	var chosenEdge = -1;
-	var inputData = { }
+	var inputData = { };
 	
 	mapCanvas.addEventListener('click', (e) => {
 		const mousePos = {
@@ -214,6 +214,8 @@ function loadJSON(data_uri, zoom)
 			ref_lon = jsonObj["focus"]["longitude"];
 			ref_lat = jsonObj["focus"]["latitude"];
 			
+			document.getElementById("mapCanvas").getContext("2d").clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+			
 			var zm = Math.pow(2, zoom);
 			for(edge in jsonObj["mapEdges"])
 			{
@@ -253,8 +255,7 @@ function loadJSON(data_uri, zoom)
 					var dy = coordinatesB['y'] - coordinatesA['y'];
 					var rotation = Math.atan2(dy, dx);
 					var lineLength = Math.sqrt(dx * dx + dy * dy);
-					var lineWidth = 12;
-					
+
 					drawn += 1;
 					// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
 					// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
@@ -264,32 +265,51 @@ function loadJSON(data_uri, zoom)
 					canvasA.beginPath();
 	
 					canvasA.globalAlpha = 1;
-	
+
+					weightScore = Math.round(edgeObj.weight * 25);
+					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255);
+					if(confidenceScore <= 0)
+					{
+						confidenceScore = 0;
+					} else if (confidenceScore > 255)
+					{
+						confidenceScore = 255;
+					}
+					if(weightScore < confidenceScore)
+					{
+						// differential = (255-confidenceScore) * confidenceScore;
+						// weightScore = confidenceScore + differential;
+						if(weightScore < confidenceScore) weightScore = confidenceScore;
+						else if(weightScore > 255) weightScore = 255;
+					}
+					weightHex = ("00" + weightScore.toString(16)).substr(-2);
+					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
+					if(jsonObj["mapEdges"][edge]["marked"] == true)
+					{
+						hxResultStroke = "FF";
+					}
+					else
+					{
+						hxResultStroke = "00";
+					}
+					colorHex = weightHex + confidenceHex + "00";
+					var lineWidth = 8;
+					var strokeAlpha = "80";
+					if(edgeObj["mode"] == "primary" || edgeObj["mode"] == "secondary" || edgeObj["mode"] == "rail")
+					{
+						lineWidth = 12;
+						strokeAlpha = "FF";
+					}
+
 					canvasA.translate(coordinatesA['x'], coordinatesA['y']);
 					canvasA.rotate(rotation);
 					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
 					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
-					
-					weightScore = Math.round(edgeObj.weight * 25);
-					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255 * 1.25);
-					if(confidenceScore > weightScore)
-					{
-						confidenceScore = Math.round(weightScore / 2);
-					}
-					else if(confidenceScore <= 0)
-					{
-						confidenceScore = 0;
-					}
-					weightHex = ("00" + weightScore.toString(16)).substr(-2);
-					weightHexStroke = ("00" + confidenceScore.toString(16)).substr(-2);
-					// console.log("A: " + weightHex + ":" + weightHexStroke + " - " + edgeObj.weight + " // " + weightScore);
-					colorHex = weightHex + weightHexStroke + "00";
-	
 					canvasA.fillStyle = "#" + colorHex;
-					// canvasA.strokeStyle = "#00" + hxresultStroke + "00";
+					canvasA.strokeStyle = "#" + hxResultStroke + hxResultStroke + "00" + strokeAlpha;
 	
 					canvasA.fill();
-					// canvasA.stroke();
+					canvasA.stroke();
 					canvasA.restore();
 					canvasA.closePath();
 				}

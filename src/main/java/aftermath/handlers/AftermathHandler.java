@@ -503,6 +503,7 @@ public class AftermathHandler extends DefaultHandler{
 		{
 			Long edge = masterEdgeList.next();
 			MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edge);
+			mapEdge.update();
 			
 			if(filterSet.size() == 0 || filterSet.contains(String.valueOf(mapEdge.getMode().name()))) { } else
 			{
@@ -801,54 +802,54 @@ public class AftermathHandler extends DefaultHandler{
 				switch(String.valueOf(mode))
 				{
 				case "secondary":
-					width = 4;
+					width = 10;
 					break;
 				case "secondary_link":
-					width = 3;
+					width = 9;
 					break;
 				case "primary":
-					width = 5;
+					width = 10;
 					break;
 				case "primary_link":
-					width = 4;
+					width = 9;
 					break;
 				case "tertiary":
-					width = 3;
+					width = 8;
 					break;
 				case "tertiary_link":
-					width = 2;
+					width = 7;
 					break;
 				case "residential":
-					width = 2;
+					width = 8;
 					break;
 				case "living_street":
 					break;
 				case "service":
 					break;
 				case "motorway":
-					width = 5;
+					width = 10;
 					break;
 				case "motorway_link":
-					width = 4;
+					width = 9;
 					break;
 				case "rail":
 				case "subway":
 				case "subway_entrance":
 				case "station":
-					width = 8;
+					width = 12;
 					break;
 				case "road":
-					width = 1;
+					width = 4;
 					break;
 				case "trunk":
 				case "trunk_link":
-					width = 1;
+					width = 4;
 					break;
 				case "pedestrian":
 				case "footway":
 				case "path":
 				case "steps":
-					width = 1;
+					width = 2;
 					break;
 				case "unclassified":
 					width = 1;
@@ -857,7 +858,7 @@ public class AftermathHandler extends DefaultHandler{
 					width = 1;
 					break;
 				case "platform":
-					width = 10;
+					width = 14;
 					break;
 				default:
 					width = 1;
