@@ -884,9 +884,9 @@ public class AftermathHandler extends DefaultHandler{
 				{
 					width *= zoom/65536;
 				}
-				if(width < 6)
+				if(width < 4)
 				{
-					width = 6;
+					width = 4;
 				}
 				
 				String hx = Integer.toHexString(0x100 | mw).substring(1);
