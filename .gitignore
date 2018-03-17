@@ -8,3 +8,4 @@
 /bin/
 /target/
 /src/main/resource/noupload/*
+/noupload/*

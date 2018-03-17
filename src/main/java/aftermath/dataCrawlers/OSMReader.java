@@ -74,17 +74,8 @@ public class OSMReader {
 
 	private void read() throws Exception
 	{
-		String fileName;
-		try
-		{
-			fileName = getClass().getClassLoader().getResource(RESOURCE).getFile().replace("%20", " ").replace("%5c", "//");
-		}
-		catch(NullPointerException e)
-		{
-			throw new NullPointerException("FILE [" + RESOURCE + "] NOT FOUND");
-		}
-
-		File file = new File(fileName);
+		// File file = new File(fileName);
+		File file = new File(RESOURCE);
 		FileReader fr = new FileReader(file);
 		
 		XmlParser xP = new XmlParser();

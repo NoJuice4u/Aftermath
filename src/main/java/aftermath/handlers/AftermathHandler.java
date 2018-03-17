@@ -880,13 +880,6 @@ public class AftermathHandler extends DefaultHandler{
 					mx = 0;
 				}
 				
-				String hx = Integer.toHexString(0x100 | mw).substring(1);
-				String hx2 = Integer.toHexString(0x100 | mx).substring(1);
-				String hx3 = (mapEdge.getMarked()?"FF":"00");
-				
-				String color = "#" + hx + hx2 + "00";
-				String color2 = "#" + hx3 + hx3 + "00";
-				
 				if(zoom >= 65535)
 				{
 					width *= zoom/65536;
@@ -895,7 +888,15 @@ public class AftermathHandler extends DefaultHandler{
 				{
 					width = 6;
 				}
-
+				
+				String hx = Integer.toHexString(0x100 | mw).substring(1);
+				String hx2 = Integer.toHexString(0x100 | mx).substring(1);
+				String hx3 = (mapEdge.getMarked()?"FF":"00");
+				String lineAlpha = (width>8)?"00":"80";
+				
+				String color = "#" + hx + hx2 + "00";
+				String color2 = "#" + hx3 + hx3 + "00" + lineAlpha;
+				
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
 			}
 		}
