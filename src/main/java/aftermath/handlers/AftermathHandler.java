@@ -349,7 +349,8 @@ public class AftermathHandler extends DefaultHandler{
 									// This one is offset too low.  Overlaying issues.
 									writer.canvas("tempLineCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, -MapVertex.HEIGHT, 30, "none");
 								writer.div_End();
-								writer.canvasInputDiv("canvasInputBox", "#FF0000");
+								String submitDataForm = "submitDataForm('" + baseRequest.getRootURL() + "/aftermath/map/weight');";
+								writer.canvasInputDiv("canvasInputBox", "#FF0000", submitDataForm);
 							writer.td_End();
 						writer.tr_End();
 					writer.table_End();
@@ -367,12 +368,23 @@ public class AftermathHandler extends DefaultHandler{
 		writer.table_End();
 		
 		writer.script_Start("application/javascript");
-		writer.text("loadJSON("
+		writer.text("	const mapCanvas = document.getElementById(\"mapCanvas\");\n" + 
+				"	const canvasInputBox = document.getElementById(\"canvasInputBox\");\n" + 
+				"	const canvasInput = document.getElementById(\"canvasInputBoxInput\");\n" + 
+				"	const tempLineCanvas = document.getElementById(\"tempLineCanvas\");\n" + 
+				"	const canvasA = mapCanvas.getContext(\"2d\");\n" + 
+				"\n" + 
+				"	var chosenEdge = -1;\n" +
+				"	var listenerLoaded = false;\n" + 
+				"	var inputData = { };");
+		writer.text("function refresh()"
+				+ "{loadJSON("
 				+ "\"" + baseRequest.getRootURL() + "/aftermath/map/node/"
 				+ uid + "/json?depth=" 
 				+ depth + "&zoom=" 
 				+ zoom + "\"," 
-				+ zoom + ");");
+				+ zoom + ");}");
+		writer.text("refresh();");
 		writer.script_End();
 
 		response.getWriter().print(writer.getString(locale));
