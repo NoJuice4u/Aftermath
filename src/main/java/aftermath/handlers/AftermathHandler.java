@@ -20,6 +20,8 @@ import main.java.aftermath.engine.Depot;
 import main.java.aftermath.locale.LocaleBase;
 import main.java.aftermath.server.AftermathServer;
 import main.java.aftermath.vehicles.Transport;
+import main.java.aftermath.writers.HtmlWriter;
+
 import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.POST;
@@ -37,7 +39,6 @@ import main.java.encephalon.histogram.HistogramBase;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.spatialIndex.SpatialIndex;
-import main.java.encephalon.writers.HtmlWriter;
 import main.java.encephalon.writers.JsonWriter;
 
 public class AftermathHandler extends DefaultHandler{
@@ -66,7 +67,7 @@ public class AftermathHandler extends DefaultHandler{
 	@HandlerInfo(schema="/")
 	public void getMap(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
-		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude";
+		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
 		
 		HtmlWriter writer = new HtmlWriter(2, es);
 		writer.script_Start();
@@ -164,6 +165,32 @@ public class AftermathHandler extends DefaultHandler{
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawSpatialGrid);
 	}
 
+	private long findNearestMajorRoad(Double longitude, Double latitude) throws Exception
+	{
+		Coordinates coords = new Coordinates(longitude, latitude);
+		
+		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
+		List<Long> nodeIds = es.getAftermathController().getSpatialIndex().getNearestNodeRegion(coords);
+		for(Long nId : nodeIds)
+		{
+			MapVertex vtx = es.getAftermathController().getMapData().get(nId);
+			for(Long eId : vtx.getEdges())
+			{
+				MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
+				switch(String.valueOf(edge.getMode()))
+				{
+				case "secondary":
+				case "primary":
+				case "residential":
+					return nId;
+				default:
+					break;
+				}
+			}
+		}
+		return nodeId;
+	}
+	
 	@GET
 	@HandlerInfo(schema="/map/coord/(longitude)/(latitude)")
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
@@ -171,9 +198,7 @@ public class AftermathHandler extends DefaultHandler{
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
 			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{
-		Coordinates coords = new Coordinates(longitude, latitude);
-		
-		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
+		Long nodeId = findNearestMajorRoad(longitude, latitude);
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices, drawSpatialGrid);
 	}
 	
@@ -183,9 +208,7 @@ public class AftermathHandler extends DefaultHandler{
 			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
-		Coordinates coords = new Coordinates(longitude, latitude);
-
-		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
+		Long nodeId = findNearestMajorRoad(longitude, latitude);
 		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth);
 	}
 
@@ -336,6 +359,13 @@ public class AftermathHandler extends DefaultHandler{
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		HtmlWriter writer = new HtmlWriter(2, es);
+		writer.importScript(AftermathServer.CANVAS_RENDER_JS + "function refresh()"
+				+ "{loadJSON("
+				+ "\"" + baseRequest.getRootURL() + "/aftermath/map/node/"
+				+ uid + "/json?depth=" 
+				+ depth + "&zoom=" 
+				+ zoom + "\"," 
+				+ zoom + ");}refresh();");
 	
 		renderMap(writer, initialNode, zoom);
 		writer.table_Start(null, null, "tableContainer", 100, null);
@@ -344,7 +374,7 @@ public class AftermathHandler extends DefaultHandler{
 					writer.table_Start("Map", null, "GlobalMap", MapVertex.WIDTH, MapVertex.HEIGHT, "hidden");
 						writer.tr_Start();
 							writer.td_Start(1, MapVertex.WIDTH, MapVertex.HEIGHT);
-								writer.div_Start("overflow:hidden; height:600px");
+								writer.div_Start("overflow:hidden; height:" + MapVertex.HEIGHT + "px");
 									writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, 0, 25);
 									// This one is offset too low.  Overlaying issues.
 									writer.canvas("tempLineCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, -MapVertex.HEIGHT, 30, "none");
@@ -366,26 +396,6 @@ public class AftermathHandler extends DefaultHandler{
 				writer.td_End();
 			writer.tr_End();
 		writer.table_End();
-		
-		writer.script_Start("application/javascript");
-		writer.text("	const mapCanvas = document.getElementById(\"mapCanvas\");\n" + 
-				"	const canvasInputBox = document.getElementById(\"canvasInputBox\");\n" + 
-				"	const canvasInput = document.getElementById(\"canvasInputBoxInput\");\n" + 
-				"	const tempLineCanvas = document.getElementById(\"tempLineCanvas\");\n" + 
-				"	const canvasA = mapCanvas.getContext(\"2d\");\n" + 
-				"\n" + 
-				"	var chosenEdge = -1;\n" +
-				"	var listenerLoaded = false;\n" + 
-				"	var inputData = { };");
-		writer.text("function refresh()"
-				+ "{loadJSON("
-				+ "\"" + baseRequest.getRootURL() + "/aftermath/map/node/"
-				+ uid + "/json?depth=" 
-				+ depth + "&zoom=" 
-				+ zoom + "\"," 
-				+ zoom + ");}");
-		writer.text("refresh();");
-		writer.script_End();
 
 		response.getWriter().print(writer.getString(locale));
 	}
@@ -945,7 +955,7 @@ public class AftermathHandler extends DefaultHandler{
 
 	private void drawDepot(HtmlWriter writer, Coordinates focalPoint, int zoom) throws Exception
 	{
-		List<Long> depotIds = es.getAftermathController().getSpatialIndexDepot().getNearestNodeRegion(focalPoint, 2);
+		List<Long> depotIds = es.getAftermathController().getSpatialIndexDepot().getNearestNodeRegion(focalPoint);
 
 		for(Long depotId : depotIds)
 		{
@@ -1043,7 +1053,6 @@ public class AftermathHandler extends DefaultHandler{
 		writer.tHead_End();
 		writer.form_Start("/aftermath/map/weight", "POST");
 
-		/// xxxx
 		HashMap<Long, Integer> masterDepthList = new HashMap<Long, Integer>(200);
 		List<Long> edges = focalPoint.getEdges();
 		DistinctOrderedSet masterEdgeList = buildMasterEdgeListFromDepth(focalPoint, masterDepthList, edges, 5, zoom);
@@ -1060,8 +1069,8 @@ public class AftermathHandler extends DefaultHandler{
 			float confidence = es.getAftermathController().getEdgeData().get(e).getConfidence();
 			
 			writer.tr_Start();
-			writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[0] + "?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[0] + "</A>");
-			writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[1] + "?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[1] + "</A>");
+			writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[0] + "/canvas?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[0] + "</A>");
+			writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[1] + "/canvas?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[1] + "</A>");
 			writer.td(String.valueOf(mapEdge.getId()));
 			writer.td(mapEdge.toString());
 			writer.td(mapEdge.getMode().name());
@@ -1104,7 +1113,7 @@ public class AftermathHandler extends DefaultHandler{
 			writer.tr_Start();
 			Coordinates coordinates = es.getAftermathController().getMapData().get(vertexId);
 			writer.td("<A href=\"/aftermath/map/vehicle/" + i + "?depth=" + depth + "&zoom=" + zoom + "\">" + t.getId() + "</A>");
-			writer.td("<A href=\"/aftermath/map/coord/" + coordinates.getLongitude() + "/" + coordinates.getLatitude() + "\">" + coordinates.toString() + "</A>");
+			writer.td("<A href=\"/aftermath/map/coord/" + coordinates.getLongitude() + "/" + coordinates.getLatitude() + "/canvas\">" + coordinates.toString() + "</A>");
 			writer.td(String.valueOf(t.getTicks()));
 			try
 			{

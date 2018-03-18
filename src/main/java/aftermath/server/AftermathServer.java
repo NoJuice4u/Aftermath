@@ -10,13 +10,19 @@ import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
 import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.server.*;
+import main.java.encephalon.utils.ResourceUtils;
 
 public class AftermathServer extends EncephalonServer
 {
 	public static final AftermathServer as = new AftermathServer();
+	
+	public static final String CANVAS_RENDER_JS = ResourceUtils.resourceToString(as, "main/resource/canvasRender.js");
+	
 	public static final String GOOGLE_MAP_API_KEY = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
 	public static final double GOOGLE_MAP_ZOOMSCALE = 1.0; // 591657550.5;
 	private static AftermathController aftermathController = new AftermathController();
+	
+	public final Gson gsonRequest = new Gson();
 	
 	public Map<String, Localizer<LocaleBase>> localeList = new HashMap<String, Localizer<LocaleBase>>();
 	{
@@ -26,8 +32,6 @@ public class AftermathServer extends EncephalonServer
 		lMap.put("undefined", new Localizer<LocaleBase>(new LocaleBase()));
 		localeList = Collections.unmodifiableMap(lMap);
 	}
-
-	public final Gson gsonRequest = new Gson();
 
 	protected AftermathServer()
 	{

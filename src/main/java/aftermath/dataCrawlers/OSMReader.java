@@ -14,6 +14,7 @@ import org.eclipse.jetty.xml.XmlParser.Node;
 
 import main.java.aftermath.engine.Depot;
 import main.java.aftermath.server.AftermathServer;
+import main.java.aftermath.writers.HtmlWriter;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.dto.MapVertex;
@@ -74,7 +75,6 @@ public class OSMReader {
 
 	private void read() throws Exception
 	{
-		// File file = new File(fileName);
 		File file = new File(RESOURCE);
 		FileReader fr = new FileReader(file);
 		
