@@ -259,23 +259,29 @@ function loadJSON(data_uri, zoom)
 	
 					canvasA.globalAlpha = 1;
 
-					weightScore = Math.round(edgeObj.weight * 25);
-					confidenceScore = Math.round(Math.abs(edgeObj.confidence-1) * 255);
+					var weightRange = edgeObj.weight/10;
+					var confidenceRange = edgeObj.confidence;
+					weightScore = Math.round(weightRange * 254);
+					confidenceScore = Math.round(Math.abs(confidenceRange-1) * 254);
 					if(confidenceScore <= 0)
 					{
 						confidenceScore = 0;
-					} else if (confidenceScore > 255)
+					} else if (confidenceScore > 254)
 					{
-						confidenceScore = 255;
+						confidenceScore = 254;
 					}
 					if(weightScore < confidenceScore)
 					{
 						// differential = (255-confidenceScore) * confidenceScore;
 						// weightScore = confidenceScore + differential;
 						if(weightScore < confidenceScore) weightScore = confidenceScore;
-						else if(weightScore > 255) weightScore = 255;
+						else if(weightScore > 254) weightScore = 254;
 					}
-					weightHex = ("00" + weightScore.toString(16)).substr(-2);
+					rr = (weightRange>confidenceRange)?confidenceScore:weightScore;
+					rrHex = ("00" + rr.toString(16)).substr(-2);
+
+					gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
+					ggHex = ("00" + gg.toString(16)).substr(-2);
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
 					if(jsonObj["mapEdges"][edge]["marked"] == true)
 					{
@@ -285,7 +291,8 @@ function loadJSON(data_uri, zoom)
 					{
 						hxResultStroke = "00";
 					}
-					colorHex = weightHex + confidenceHex + "00";
+					colorHex = rrHex + ggHex + "00";
+					console.log(colorHex + " : " + gg);
 					var lineWidth = 8;
 					var strokeAlpha = "80";
 					if(edgeObj["mode"] == "primary" || edgeObj["mode"] == "secondary" || edgeObj["mode"] == "rail")
