@@ -272,16 +272,15 @@ function loadJSON(data_uri, zoom)
 					}
 					if(weightScore < confidenceScore)
 					{
-						// differential = (255-confidenceScore) * confidenceScore;
-						// weightScore = confidenceScore + differential;
-						if(weightScore < confidenceScore) weightScore = confidenceScore;
-						else if(weightScore > 254) weightScore = 254;
+						weightScore = confidenceScore;
 					}
-					rr = (weightRange>confidenceRange)?confidenceScore:weightScore;
-					rrHex = ("00" + rr.toString(16)).substr(-2);
-
 					gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
 					ggHex = ("00" + gg.toString(16)).substr(-2);
+					
+					rr = Math.round(confidenceRange * weightScore);
+					if(rr < gg) rr = gg;
+					rrHex = ("00" + rr.toString(16)).substr(-2);
+					
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
 					if(jsonObj["mapEdges"][edge]["marked"] == true)
 					{
@@ -291,8 +290,7 @@ function loadJSON(data_uri, zoom)
 					{
 						hxResultStroke = "00";
 					}
-					colorHex = rrHex + ggHex + "00";
-					console.log(colorHex + " : " + gg);
+					colorHex = rrHex + ggHex + "00ff";
 					var lineWidth = 8;
 					var strokeAlpha = "80";
 					if(edgeObj["mode"] == "primary" || edgeObj["mode"] == "secondary" || edgeObj["mode"] == "rail")
