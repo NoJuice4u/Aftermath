@@ -66,6 +66,8 @@ const canvasInputBox = document.getElementById("canvasInputBox");
 const canvasInput = document.getElementById("canvasInputBoxInput");
 const tempLineCanvas = document.getElementById("tempLineCanvas");
 const canvasA = mapCanvas.getContext("2d");
+const cTop = [[1, 0.5], [1, 0]];
+const cBot = [[1, 1], [0, 0]];
 
 var chosenEdge = -1;
 var listenerLoaded = false;
@@ -340,8 +342,7 @@ function loadJSON(data_uri, zoom)
 					gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
 					ggHex = ("00" + gg.toString(16)).substr(-2);
 					
-					rr = Math.round(confidenceRange * weightScore);
-					if(rr < gg) rr = gg;
+					rr = (confidenceScore>weightScore)?confidenceScore:weightScore;
 					rrHex = ("00" + rr.toString(16)).substr(-2);
 					
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
@@ -429,7 +430,7 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 }
 
 function refresh()
-{loadJSON("http://localhost:8080/aftermath/map/node/1521125927/json?depth=16&zoom=18",18);}
+{loadJSON("https://www.wc-encephalon.com/aftermath/map/node/681578979/json?depth=34&zoom=16",16);}
 
 window.setInterval(refresh, 5000);
 </script>

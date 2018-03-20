@@ -277,8 +277,7 @@ function loadJSON(data_uri, zoom)
 					gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
 					ggHex = ("00" + gg.toString(16)).substr(-2);
 					
-					rr = Math.round(confidenceRange * weightScore);
-					if(rr < gg) rr = gg;
+					rr = (confidenceScore>weightScore)?confidenceScore:weightScore;
 					rrHex = ("00" + rr.toString(16)).substr(-2);
 					
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
