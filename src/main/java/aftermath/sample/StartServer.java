@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
 import main.java.encephalon.API.scope.Scope;
+import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.server.EncephalonServer;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
@@ -20,7 +22,11 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 		{
 			AftermathServer aftermath = AftermathServer.getInstance();
 			aftermath.initializeMap();
-			aftermath.setHandler(new DefaultHandler());
+			
+			GzipHandler gzipHandler = new GzipHandler();
+			gzipHandler.setHandler(new DefaultHandler());
+			aftermath.setHandler(gzipHandler);
+			
 			registerAftermathHandlers(aftermath);
 			registerEncephalonHandlers(aftermath);
 			
