@@ -35,6 +35,7 @@ import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.dto.MapResponseDto;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
+import main.java.encephalon.exceptions.ResponseException;
 import main.java.encephalon.histogram.HistogramBase;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
@@ -314,6 +315,10 @@ public class AftermathHandler extends DefaultHandler{
 			Long uid, int depth, int zoom, String filter, Boolean drawVertices, Boolean drawSpatialGrid) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
+		if(initialNode == null)
+		{
+			throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
+		}
 		HtmlWriter writer = new HtmlWriter(2, es);
 
 		renderMap(writer, initialNode, zoom);
@@ -358,6 +363,11 @@ public class AftermathHandler extends DefaultHandler{
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
+		if(initialNode == null)
+		{
+			throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
+		}
+		
 		HtmlWriter writer = new HtmlWriter(2, es);
 		writer.importScript(AftermathServer.CANVAS_RENDER_JS + "function refresh()"
 				+ "{loadJSON("
@@ -366,7 +376,7 @@ public class AftermathHandler extends DefaultHandler{
 				+ depth + "&zoom=" 
 				+ zoom + "\"," 
 				+ zoom + ");}refresh();");
-	
+
 		renderMap(writer, initialNode, zoom);
 		writer.table_Start(null, null, "tableContainer", 100, null);
 			writer.tr_Start();
@@ -626,8 +636,6 @@ public class AftermathHandler extends DefaultHandler{
 		ArrayList<EdgeWeightInfo> intArray = new ArrayList<EdgeWeightInfo>();
 		float minNormalization = Float.MAX_VALUE;
 		float maxNormalization = 0.0f;
-		int confidenceCount = 0;
-		float confidence = 1.0f;
 		for(String item : s)
 		{
 			String[] s2 = item.split("=");
@@ -659,25 +667,17 @@ public class AftermathHandler extends DefaultHandler{
 					normalizationDelta = 20;
 				}
 				
-				confidence += 1 / (normalizationDelta + 1);
-			}
-			else
-			{
-				confidence += 0.25f;
 			}
 		}
-		
-		if(confidenceCount < 4) confidence /= 4;
-		else confidence /= confidenceCount;
-			
+
 		float normalize = 1;
 		if(count > 0) normalize = normalizationFactor / count;
 		writer.table_Start();
 		writer.tr_Start();
 		writer.td("edge");
-		writer.td("weight");
-		writer.td("weightnormalize");
 		writer.td("previousWeight");
+		writer.td("newWeight");
+		writer.td("finalWeight");
 		writer.td("normalize");
 		writer.td("minNormalization");
 		writer.td("maxNormalization");
@@ -691,6 +691,7 @@ public class AftermathHandler extends DefaultHandler{
 			
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
 			int newWeight = (previousWeight==0)?(int)(previousWeight+(weight*normalize)):(int)((previousWeight+(weight*normalize))/2) ;
+			float confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
 
 			weightInput.put(edge, Float.valueOf(newWeight));
 			
@@ -701,9 +702,9 @@ public class AftermathHandler extends DefaultHandler{
 			
 			writer.tr_Start();
 			writer.td(String.valueOf(edge));
-			writer.td(String.valueOf(weight));
-			writer.td(String.valueOf(newWeight));
 			writer.td(String.valueOf(previousWeight));
+			writer.td(String.valueOf(newWeight));
+			writer.td(String.valueOf(finalWeight));
 			writer.td(String.valueOf(normalize));
 			writer.td(String.valueOf(minNormalization));
 			writer.td(String.valueOf(maxNormalization));
@@ -887,21 +888,6 @@ public class AftermathHandler extends DefaultHandler{
 					break;
 				}
 				
-				int mw = (int)(mapEdge.getWeight() * 25);
-				if(mw > 255)
-				{
-					mw = 255;
-				}
-				int mx = (int)((Math.abs(mapEdge.getConfidence()-1) * 255 * 1.25));
-				if(mx > mw)
-				{
-					mx = mw/2;
-				}
-				else if(mx < 0)
-				{
-					mx = 0;
-				}
-				
 				if(zoom >= 65535)
 				{
 					width *= zoom/65536;
@@ -911,12 +897,23 @@ public class AftermathHandler extends DefaultHandler{
 					width = 4;
 				}
 				
-				String hx = Integer.toHexString(0x100 | mw).substring(1);
-				String hx2 = Integer.toHexString(0x100 | mx).substring(1);
-				String hx3 = (mapEdge.getMarked()?"FF":"00");
-				String lineAlpha = (width>8)?"00":"80";
+				float weightRange = (float) (mapEdge.getWeight()/(mapEdge.getWeightRangeCeiling()-1.0));
+				int weightScore = Math.round(weightRange) * 255;
+				int confidenceScore = Math.round(Math.abs(mapEdge.getConfidence()-1) * 255);
+				if(weightScore < confidenceScore)
+				{
+					weightScore = confidenceScore;
+				}
 				
-				String color = "#" + hx + hx2 + "00";
+				int rr = (confidenceScore>weightScore)?confidenceScore:weightScore;
+				int gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
+				
+				String rrHex = Integer.toHexString(0x100 | rr).substring(1);
+				String ggHex = Integer.toHexString(0x100 | gg).substring(1);
+				String hx3 = (mapEdge.getMarked()?"FF":"00");
+				String lineAlpha = (width>8)?"FF":"80";
+				
+				String color = "#" + rrHex + ggHex + "00";
 				String color2 = "#" + hx3 + hx3 + "00" + lineAlpha;
 				
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
@@ -1133,9 +1130,8 @@ public class AftermathHandler extends DefaultHandler{
 		writer.table_End();
 	}
 
-	public void renderMap(HtmlWriter writer, MapVertex node, int zoom)
+	public void renderMap(HtmlWriter writer, MapVertex node, int zoom) throws ResponseException
 	{
-		// if(true) return;
 		writer.tr_Start();
 		writer.td_Start();
 		writer.text("<div id=\"googleMap\" style=\"width:" + MapVertex.WIDTH +"px;height:" + MapVertex.HEIGHT + "px;position:absolute; z-index:-5\"></div>");

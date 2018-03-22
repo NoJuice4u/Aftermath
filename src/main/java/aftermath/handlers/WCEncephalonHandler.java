@@ -29,25 +29,17 @@ public class WCEncephalonHandler extends DefaultHandler{
 	@HandlerInfo(schema="/")
 	public void getWCServer(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{	
-		HtmlWriter writer = new HtmlWriter(2, es);
-
-		Iterator<Entry<String, Handler>> iter = es.getHandlerBaseList().entrySet().iterator();
+		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
 		
-		writer.table_Start(null, null, "sortable");
-		writer.tHead_Start();
-		writer.th("URI");
-		writer.th("Handler");
-		writer.tHead_End();
-		while(iter.hasNext())
-		{
-			Entry<String, Handler> next = iter.next();
-			
-			writer.tr_Start();
-			writer.td(next.getKey());
-			writer.td(next.getValue().toString());
-			writer.tr_End();
-		}
-		writer.table_End();
+		HtmlWriter writer = new HtmlWriter(2, es);
+		writer.script_Start();
+		writer.text("if(navigator && navigator.geolocation) {");
+		writer.text("navigator.geolocation.getCurrentPosition(showPosition);");
+		writer.text("} else {");
+		writer.text("document.write(\"Beef\")");
+		writer.text("}");
+		writer.text("function showPosition(position) { document.write(\"Relocating!\"); window.location = \"" + destination + "; }");
+		writer.script_End();
 		
 		response.getWriter().print(writer.getString(locale));
 	}

@@ -77,6 +77,7 @@ public class AftermathEngine implements Runnable {
 	private void traverse() throws Exception
 	{
 		Task task = new Task(controller.getProfiler(), null, "Aftermath Engine Tick", null);
+		
 		for(Transport t : transporters)
 		{
 			try
@@ -87,11 +88,8 @@ public class AftermathEngine implements Runnable {
 			{
 				th.printStackTrace();
 			}
-			finally
-			{
-				task.end();
-			}
 		}
+		task.end();
 	}
 
 	public List<Transport> getTransporters()
