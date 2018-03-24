@@ -300,11 +300,18 @@ public class AftermathHandler extends DefaultHandler{
 		
 		Iterator<Entry<Long, Depot>> iter = es.getAftermathController().getDepotData().entrySet().iterator();
 		writer.table_Start();
+		writer.tHead_Start();
+		writer.tr_Start();
+		writer.th("ID");
+		writer.th("Link");
+		writer.tr_End();
+		writer.tHead_End();
 		while(iter.hasNext())
 		{
 			Entry<Long, Depot> entry = iter.next();
 			writer.tr_Start();
-			writer.td(entry.getKey().toString() + " : " + entry.getValue().getName());
+			writer.td(entry.getKey().toString());
+			writer.td("<A href=\"/aftermath/map/coord/" + String.valueOf(entry.getValue().getLongitude()) + "/" + String.valueOf(entry.getValue().getLatitude()) + "/canvas\">" + entry.getValue().getName() + "</A>");
 			writer.tr_End();
 		}
 		writer.table_End();

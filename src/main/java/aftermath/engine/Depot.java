@@ -17,6 +17,14 @@ public class Depot extends Bin{
 		this.name = name;
 	}
 	
+	public Depot(String name, double capacity, float lon, float lat) throws Exception {
+		super(capacity, lon, lat);
+		
+		this.id = idIncrement++;
+		this.edgeLocation = 0;
+		this.name = name;
+	}
+	
 	public long getId()
 	{
 		return id;

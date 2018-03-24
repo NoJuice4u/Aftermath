@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.jetty.xml.XmlParser;
+import org.eclipse.jetty.xml.XmlParser.Attribute;
 import org.eclipse.jetty.xml.XmlParser.Node;
 
 import main.java.aftermath.engine.Depot;
@@ -93,16 +94,19 @@ public class OSMReader {
 		while(nodeIterator.hasNext())
 		{
 			Node nD = null;
+			Object obj = nodeIterator.next();
 			try
 			{
-				Object obj = nodeIterator.next();
 				nD = (Node) obj;
 			}
 			catch (Exception e)
 			{
+				new Task(this.profiler, "", osmProcessingTask, ((String)obj).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null).end();
 				continue;
 			}
-			Task tagTypeTask = new Task(this.profiler, osmProcessingTask, "Encountered Node [" + nD.getTag() + "]", null);
+
+			String attributes = processAttributes(nD, osmProcessingTask);
+			Task tagTypeTask = new Task(this.profiler, osmProcessingTask, "Encountered Node [" + nD.getTag() + "] with attributes [" + attributes + "]", null);
 			switch(nD.getTag())
 			{
 			case "node":
@@ -111,6 +115,39 @@ public class OSMReader {
 				long id = Long.valueOf(nD.getAttribute("id"));
 				mapData.put(id, new MapVertex(lon, lat, id));
 				OSMDataVertexCountMeter.increment();
+				Iterator<Object> ndIterator = nD.iterator();
+				while(ndIterator.hasNext())
+				{
+					Node ndNode = null;
+					Object ndIteratorNext = ndIterator.next();
+					
+					try
+					{
+						ndNode = (Node) ndIteratorNext;
+					}
+					catch (Exception e)
+					{
+						new Task(this.profiler, "", osmProcessingTask, ((String)ndIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null).end();
+						continue;
+					}
+					
+					String ndAttributes = processAttributes(ndNode, osmProcessingTask);
+					Task.entry(this.profiler, tagTypeTask, "Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
+					switch(ndNode.getTag())
+					{
+					case "tag":
+						if(ndNode.getAttribute("v").toLowerCase().indexOf("shelter") >= 0 || ndNode.getAttribute("v").toLowerCase().indexOf("bus_stop") >= 0)
+						{
+							Depot d = new Depot(ndNode.getAttribute("v"), 100, lon, lat);
+							
+							es.getAftermathController().getDepotData().put(d.getId(), d);
+							es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
+						}
+						break;
+					default:
+						Task.entry(this.profiler, tagTypeTask, "MISSED CHILDNODETAG: [" + nD.getTag() + "]", null);
+					}
+				}
 				break;
 			case "way":
 				List<Long> edgeRefNodes = new ArrayList<Long>();
@@ -129,9 +166,12 @@ public class OSMReader {
 					}
 					catch (Exception e)
 					{
+						new Task(this.profiler, "", osmProcessingTask, ((String)wayIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null).end();
 						continue;
 					}
 
+					String ndAttributes = processAttributes(wayNode, osmProcessingTask);
+					Task.entry(this.profiler, tagTypeTask, "Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
 					switch(wayNode.getTag())
 					{
 					case "nd":
@@ -147,35 +187,38 @@ public class OSMReader {
 							}
 							catch(IllegalArgumentException e)
 							{
-								Task.entry(this.profiler, null, "[WARNING] NO ENUM FOR WAYTAG: " + wayNode.getAttribute("v"), null);
+								Task.entry(this.profiler, tagTypeTask, "##WARNING## NO ENUM FOR WAYTAG: " + wayNode.getAttribute("v"), null);
 								continue;
 							}
 						}
 						else
 						{
-							Task.entry(this.profiler, tagTypeTask, "MISSED WAYTAG: " + nD.getTag(), null);
+							Task.entry(this.profiler, tagTypeTask, "\"k\" Unknown: [" + wayNode.getAttribute("k") + "]", null);
 						}
+						break;
+					default:
+						Task.entry(this.profiler, tagTypeTask, "MISSED WAYTAG: [" + nD.getTag() + "]", null);
 						break;
 					}
 				}
 				
-                long previousNode = 0L;
-                long currentNode = 0L;
-                for(long l : edgeRefNodes)
-                {
-                        previousNode = currentNode;
-                        currentNode = l;
-                        if(previousNode != 0L)
-                        {
-                                MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode), mode);
-                                edgeListForReduction.add(edgeId);
-                                edgeData.put(edgeId, mapEdge);
-                                OSMDataEdgeCountMeter.increment();
-                                mapData.get(previousNode).addEdge(edgeId);
-                                mapData.get(currentNode).addEdge(edgeId);
-                                edgeId++;
-                        }
-                }
+				long previousNode = 0L;
+				long currentNode = 0L;
+				for(long l : edgeRefNodes)
+				{
+					previousNode = currentNode;
+					currentNode = l;
+					if(previousNode != 0L)
+					{
+						MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode), mode);
+						edgeListForReduction.add(edgeId);
+						edgeData.put(edgeId, mapEdge);
+						OSMDataEdgeCountMeter.increment();
+						mapData.get(previousNode).addEdge(edgeId);
+						mapData.get(currentNode).addEdge(edgeId);
+						edgeId++;
+					}
+				}
 
 				break;
 			default:
@@ -295,5 +338,17 @@ public class OSMReader {
 			}
 			buildSpatialIndexTask.end();
 		}
+	}
+	
+	private String processAttributes(Node nD, Task parent)
+	{
+		StringBuilder attributeList = new StringBuilder();
+		for(Attribute a : nD.getAttributes())
+		{
+			attributeList.append(", " + a.getName());
+		}
+		
+		int pos = (attributeList.length() > 2)?2:0; //Trim the string if we have attributes
+		return attributeList.substring(pos);
 	}
 }
