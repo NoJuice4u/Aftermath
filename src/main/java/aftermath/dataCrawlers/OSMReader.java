@@ -116,6 +116,7 @@ public class OSMReader {
 				mapData.put(id, new MapVertex(lon, lat, id));
 				OSMDataVertexCountMeter.increment();
 				Iterator<Object> ndIterator = nD.iterator();
+				String preName = null;
 				while(ndIterator.hasNext())
 				{
 					Node ndNode = null;
@@ -136,9 +137,17 @@ public class OSMReader {
 					switch(ndNode.getTag())
 					{
 					case "tag":
-						if(ndNode.getAttribute("v").toLowerCase().indexOf("shelter") >= 0 || ndNode.getAttribute("v").toLowerCase().indexOf("bus_stop") >= 0)
+						if(ndNode.getAttribute("k").toLowerCase().indexOf("name") >= 0)
 						{
-							Depot d = new Depot(ndNode.getAttribute("v"), 100, lon, lat);
+							preName = ndNode.getAttribute("v");
+						}
+						if(ndNode.getAttribute("v").toLowerCase().indexOf("shelter") >= 0 || ndNode.getAttribute("k").toLowerCase().indexOf("shelter") >= 0)
+						{
+							if(preName == null)
+							{
+								preName = ndNode.getAttribute("v");
+							}
+							Depot d = new Depot(preName, 100, lon, lat);
 							
 							es.getAftermathController().getDepotData().put(d.getId(), d);
 							es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);

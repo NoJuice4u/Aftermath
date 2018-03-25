@@ -160,10 +160,10 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="uid") Long uid, 
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
-			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
+			@QueryString(value="transports", _default="false") Boolean drawTransports, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{	
 		// @QueryString(value="zoom", _default="18")
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawSpatialGrid);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawTransports, drawSpatialGrid);
 	}
 
 	private long findNearestMajorRoad(Double longitude, Double latitude) throws Exception
@@ -197,10 +197,10 @@ public class AftermathHandler extends DefaultHandler{
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value="longitude") Double longitude, @QueryParam(value="latitude") Double latitude,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, @QueryString(value="roadType", _default="") String filter,
-			@QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
+			@QueryString(value="transports", _default="false") Boolean drawTransports, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{
 		Long nodeId = findNearestMajorRoad(longitude, latitude);
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices, drawSpatialGrid);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter, drawVertices, drawTransports, drawSpatialGrid);
 	}
 	
 	@GET
@@ -319,7 +319,7 @@ public class AftermathHandler extends DefaultHandler{
 	}
 	
 	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-			Long uid, int depth, int zoom, String filter, Boolean drawVertices, Boolean drawSpatialGrid) throws Exception
+			Long uid, int depth, int zoom, String filter, Boolean drawVertices, Boolean drawTransports, Boolean drawSpatialGrid) throws Exception
 	{
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		if(initialNode == null)
@@ -339,7 +339,7 @@ public class AftermathHandler extends DefaultHandler{
 		drawRoads(writer, initialNode, zm, depth, filter);
 		if(drawVertices) drawVertices(writer, initialNode, zm, depth, filter);
 		drawDepot(writer, initialNode, zm);
-		drawTransports(writer, initialNode, zm, depth);
+		if(drawTransports)drawTransports(writer, initialNode, zm, depth);
 
 		writer.script_End();
 		writer.table_Start();
@@ -358,9 +358,9 @@ public class AftermathHandler extends DefaultHandler{
 			@QueryParam(value="uid") Long uid,
 			@QueryString(value="zoom", _default="18") Integer zoom, @QueryString(value="depth", _default="6") Integer depth, 
 			@QueryString(value="roadType", _default="") String filter, @QueryString(value="nodeVertices", _default="false") Boolean drawVertices,
-			@QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
+			@QueryString(value="transports", _default="false") Boolean drawTransports, @QueryString(value="drawSpatialGrid", _default="false") Boolean drawSpatialGrid) throws Exception
 	{
-		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawSpatialGrid);
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter, drawVertices, drawTransports, drawSpatialGrid);
 	}
 
 	@GET

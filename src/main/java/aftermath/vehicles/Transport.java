@@ -51,7 +51,7 @@ public class Transport extends Bin{
 	public boolean traverse() throws Exception
 	{
 		List<Long> edges = node.getEdges();
-		// edges.remove(previousEdge); // This destroys stuff
+
 		int rnd = randomizer.nextInt(edges.size());
 		edge = controller.getEdgeData().get(edges.get(rnd));
 		
@@ -64,8 +64,9 @@ public class Transport extends Bin{
 		lastTick = System.currentTimeMillis();
 		nextTick = System.currentTimeMillis() - 20;
 		
+		ticks++;
+		
 		return true;
-		// return nextTick > lastTick;
 	}
 	
 	public void setWeightChange(int value)

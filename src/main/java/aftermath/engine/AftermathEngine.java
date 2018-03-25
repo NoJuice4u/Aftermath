@@ -54,8 +54,6 @@ public class AftermathEngine implements Runnable {
 
 		while(true)
 		{
-			MapVertex mvv = this.controller.getMapData().get(630971621L);
-			
 			try {
 				Thread.sleep(250);
 				traverse();
