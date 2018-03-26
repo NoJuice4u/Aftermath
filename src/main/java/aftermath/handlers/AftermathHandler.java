@@ -629,8 +629,6 @@ public class AftermathHandler extends DefaultHandler{
 		
 		String[] s = inputString.split("&");
 		
-		HashMap<Long, Float> weightInput = new HashMap<Long, Float>();
-		
 		String referer = baseRequest.getHeader("Referer");
 		HtmlWriter writer = new HtmlWriter(2, es);
 		
@@ -640,7 +638,7 @@ public class AftermathHandler extends DefaultHandler{
 
 		float normalizationFactor = 0;
 		int count = 0;
-		ArrayList<EdgeWeightInfo> intArray = new ArrayList<EdgeWeightInfo>();
+		HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
 		float minNormalization = Float.MAX_VALUE;
 		float maxNormalization = 0.0f;
 		for(String item : s)
@@ -654,7 +652,7 @@ public class AftermathHandler extends DefaultHandler{
 			long edge = Long.valueOf(s2[0]);
 			int weight = Math.round(Float.valueOf(s2[1]));
 			
-			intArray.add(new EdgeWeightInfo(edge, weight));
+			edgeWeightMap.put(edge, weight);
 			
 			MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
 			if(mEdge.getWeight() > 0 && weight > 0)
@@ -673,46 +671,34 @@ public class AftermathHandler extends DefaultHandler{
 					new Task(es.getAftermathController().getProfiler(), parent, "NormalizationDelta Exceeded 20!", null).end();
 					normalizationDelta = 20;
 				}
-				
 			}
 		}
 
-		float normalize = 1;
-		if(count > 0) normalize = normalizationFactor / count;
 		writer.table_Start();
 		writer.tr_Start();
 		writer.td("edge");
 		writer.td("previousWeight");
 		writer.td("newWeight");
 		writer.td("finalWeight");
-		writer.td("normalize");
 		writer.td("minNormalization");
 		writer.td("maxNormalization");
 		writer.td("confidence");
 		writer.tr_End();
 		
-		for(EdgeWeightInfo item : intArray)
+		for(long edge : edgeWeightMap.keySet())
 		{
-			long edge = item.edge;
-			int weight = item.weight;
-			
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
-			int newWeight = (previousWeight==0)?(int)(previousWeight+(weight*normalize)):(int)((previousWeight+(weight*normalize))/2) ;
-			float confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
-
-			weightInput.put(edge, Float.valueOf(newWeight));
+			int weight = edgeWeightMap.get(edge);
+			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId, timeStamp, weight);
 			
-			// TEMP
-			es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId, timeStamp, weight);
-			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).getWeightInputs();
-			float finalWeight = weightInputs.calculateValue();
+			float confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
+			int finalWeight = weightInputs.getWeight();
 			
 			writer.tr_Start();
 			writer.td(String.valueOf(edge));
 			writer.td(String.valueOf(previousWeight));
-			writer.td(String.valueOf(newWeight));
+			writer.td(String.valueOf(weight));
 			writer.td(String.valueOf(finalWeight));
-			writer.td(String.valueOf(normalize));
 			writer.td(String.valueOf(minNormalization));
 			writer.td(String.valueOf(maxNormalization));
 			writer.td(String.valueOf(confidence));
@@ -904,8 +890,11 @@ public class AftermathHandler extends DefaultHandler{
 					width = 4;
 				}
 				
-				float weightRange = (float) (mapEdge.getWeight()/(mapEdge.getWeightRangeCeiling()-1.0));
-				int weightScore = Math.round(weightRange) * 255;
+				float weight = (float)mapEdge.getWeight();
+				float weightCeiling = mapEdge.getWeightRangeCeiling()-1.0f;
+				float weightRange = weight/weightCeiling;
+				int weightScore = Math.round(weightRange * 255);
+				
 				int confidenceScore = Math.round(Math.abs(mapEdge.getConfidence()-1) * 255);
 				if(weightScore < confidenceScore)
 				{
