@@ -11,6 +11,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
 import main.java.encephalon.API.scope.Scope;
+import main.java.encephalon.cluster.ClusteringManager;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.server.EncephalonServer;
 
@@ -22,6 +23,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 		{
 			AftermathServer aftermath = AftermathServer.getInstance();
 			aftermath.initializeMap();
+			ClusteringManager.init(aftermath.getProfiler(), aftermath.getAftermathController().getEdgeData());
 			
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(new DefaultHandler());

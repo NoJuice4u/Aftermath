@@ -9,6 +9,7 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	public String TH_SCORE = "[*UNDEFINED*]";
 	public String TH_WEIGHT = "[*UNDEFINED*]";
 	public String TH_CONFIDENCE = "[*UNDEFINED*]";
+	public String TH_GROUP = "[*UNDEFINED*]";
 	public String TH_SET_WEIGHT = "[*UNDEFINED*]";
 	public String TH_NODE = "[*UNDEFINED*]";
 	public String TH_ID_GENERIC = "[*UNDEFINED*]";

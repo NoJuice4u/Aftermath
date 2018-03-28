@@ -27,6 +27,7 @@ import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
+import main.java.encephalon.cluster.ClusteringManager;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
 import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
@@ -673,6 +674,8 @@ public class AftermathHandler extends DefaultHandler{
 				}
 			}
 		}
+		
+		ClusteringManager.tryMerge(edgeWeightMap.keySet());
 
 		writer.table_Start();
 		writer.tr_Start();
@@ -1040,6 +1043,7 @@ public class AftermathHandler extends DefaultHandler{
 		writer.th(localizer.TH_TYPE);
 		writer.th(localizer.TH_SCORE);
 		writer.th(localizer.TH_WEIGHT);
+		writer.th(localizer.TH_GROUP);
 		writer.th(localizer.TH_CONFIDENCE);
 		writer.th(localizer.TH_SET_WEIGHT);
 		writer.tr_End();
@@ -1060,6 +1064,7 @@ public class AftermathHandler extends DefaultHandler{
 			int weight = es.getAftermathController().getEdgeData().get(e).getWeight();
 			int score = es.getAftermathController().getEdgeData().get(e).getScore();
 			float confidence = es.getAftermathController().getEdgeData().get(e).getConfidence();
+			Long group = es.getAftermathController().getEdgeData().get(e).getGroup();
 			
 			writer.tr_Start();
 			writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[0] + "/canvas?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[0] + "</A>");
@@ -1069,6 +1074,14 @@ public class AftermathHandler extends DefaultHandler{
 			writer.td(mapEdge.getMode().name());
 			writer.td(String.valueOf(score));
 			writer.td(String.valueOf(weight));
+			if(group == null)
+			{
+				writer.td("0");
+			}
+			else
+			{
+				writer.td(String.valueOf(group));
+			}
 			writer.td(String.valueOf(confidence));
 			writer.td("<input type=\"text\" name=\"" + e + "\" value=\"\">");
 			writer.tr_End();

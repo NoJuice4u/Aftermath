@@ -14,6 +14,7 @@ public class EN_US extends LocaleBase{
 		this.TH_SCORE = "Score";
 		this.TH_WEIGHT = "Weight";
 		this.TH_CONFIDENCE = "Confidence";
+		this.TH_GROUP = "Group";
 		this.TH_SET_WEIGHT = "Set Weight";
 		this.TH_NODE = "Node";
 		this.TH_ID_GENERIC = "ID";
