@@ -39,7 +39,7 @@ public class AftermathController {
 		this.mapData = new HashMap<Long, MapVertex>();
 		this.edgeData = new HashMap<Long, MapEdge>();
 		this.depotData = new HashMap<Long, Depot>();
-		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
+		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null);
 		this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
 		
 		es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);

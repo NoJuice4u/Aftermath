@@ -28,6 +28,7 @@ import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
 import main.java.encephalon.cluster.ClusteringManager;
+import main.java.encephalon.dto.CoordinateRange;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
 import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
@@ -619,6 +620,18 @@ public class AftermathHandler extends DefaultHandler{
 		response.setContentType("application/json");
 		response.getWriter().print(jw.toString());
 	}
+	
+	@GET
+	@HandlerInfo(schema="/map/roots")
+	public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	{
+		HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
+		
+		JsonWriter jw = new JsonWriter(rootSet);
+		
+		response.setContentType("application/json");
+		response.getWriter().print(jw.toString());
+	}
 
 	@POST
 	@HandlerInfo(schema="/map/weight")
@@ -642,6 +655,8 @@ public class AftermathHandler extends DefaultHandler{
 		HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
 		float minNormalization = Float.MAX_VALUE;
 		float maxNormalization = 0.0f;
+		CoordinateRange coordRange = new CoordinateRange();
+		
 		for(String item : s)
 		{
 			String[] s2 = item.split("=");
@@ -656,6 +671,8 @@ public class AftermathHandler extends DefaultHandler{
 			edgeWeightMap.put(edge, weight);
 			
 			MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
+			coordRange.add(mEdge.getLongitude(), mEdge.getLatitude());
+			
 			if(mEdge.getWeight() > 0 && weight > 0)
 			{
 				float normalizeWeight = mEdge.getWeight() / weight;
@@ -675,7 +692,7 @@ public class AftermathHandler extends DefaultHandler{
 			}
 		}
 		
-		ClusteringManager.tryMerge(edgeWeightMap.keySet());
+		ClusteringManager.tryMerge(edgeWeightMap.keySet(), coordRange);
 
 		writer.table_Start();
 		writer.tr_Start();
