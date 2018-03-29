@@ -80,6 +80,27 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 
 		stringBuilder.append("ctx.restore();" + System.lineSeparator());
 	}
+	
+	public void drawRect(String name, float width, String color, String color2, float alpha, int xA, int yA, int xB, int yB)
+	{
+		// Math.atan2(dy, dx)
+		int dx = xB - xA;
+		int dy = yB - yA;
+
+		stringBuilder.append("ctx.save();" + System.lineSeparator());
+		stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
+		stringBuilder.append("ctx.globalAlpha = " + alpha + ";" + System.lineSeparator());
+		stringBuilder.append("ctx.rect(" + xA + ", " + yA + ", " + dx + ", " + dy + ");" + System.lineSeparator());
+		
+		stringBuilder.append("ctx.fillStyle=\"" + color + "\";" + System.lineSeparator());
+		stringBuilder.append("ctx.fill();" + System.lineSeparator());
+
+		stringBuilder.append("ctx.lineWidth=\"2\";" + System.lineSeparator());
+		stringBuilder.append("ctx.strokeStyle=\"" + color2 + "\";" + System.lineSeparator());
+		stringBuilder.append("ctx.stroke();" + System.lineSeparator());
+
+		stringBuilder.append("ctx.restore();" + System.lineSeparator());
+	}
 
 	public void drawVertex(String name, int size, double x, double y, String str, String color)
 	{
