@@ -488,8 +488,6 @@ public class AftermathHandler extends DefaultHandler {
 			shortTransportList.put(t.getId(), vertex);
 		}
 
-		MapResponseDto responseDto = new MapResponseDto(initialNode.getLongitude(), initialNode.getLatitude(), zoom,
-				shortTransportList, new HashMap<Long, MapEdge>());
 		JsonWriter jw = new JsonWriter(shortTransportList);
 
 		String s = jw.toString();
@@ -583,7 +581,7 @@ public class AftermathHandler extends DefaultHandler {
 
 		MapVertex focusVertex = es.getAftermathController().getMapData().get(uid);
 		MapResponseDto responseDto = new MapResponseDto(focusVertex.getLongitude(), focusVertex.getLatitude(), zoom,
-				vertexData, edgeData);
+				vertexData, edgeData, ClusteringManager.getRoots());
 
 		JsonWriter jw = new JsonWriter(responseDto);
 
@@ -643,6 +641,18 @@ public class AftermathHandler extends DefaultHandler {
 	public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
+
+		JsonWriter jw = new JsonWriter(rootSet);
+
+		response.setContentType("application/json");
+		response.getWriter().print(jw.toString());
+	}
+	
+	@GET
+	@HandlerInfo(schema = "/map/roots/clear")
+	public void getMapRootsClear(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		HashMap<Long, CoordinateRange> rootSet = ClusteringManager.clearRoots();
 
 		JsonWriter jw = new JsonWriter(rootSet);
 
