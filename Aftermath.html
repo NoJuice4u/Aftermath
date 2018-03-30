@@ -1,74 +1,10 @@
 <html>
 	<head>
+		<meta charset="UTF-8"/>
 		<title>
 Aftermath
 		</title>
-		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-		<style type="text/css">
-			body {Font-Family:Tahoma; margin: 0pt 0pt 0pt 0pt}
-			table {border-collapse: collapse; padding: 0pt}
-			th {padding: 0pt; font-size:10pt; border: 1pt ridge #CCCCCC}
-			td {padding: 0pt; font-size:10pt; border: 1pt ridge #CCCCCC}
-			td.absolute {position: absolute}
-			td.centered {text-align: center}
-			td.title {font-size: 26pt}
-			td.canvasContainer {text-align: center; width: 1200pt}
-			table.header {width: 100%; border: 2pt ridge; Font-Family:Helvetica; Font-Weight:bold; background-color:#808080; font-size:24pt; color:#FFFFFF; text-align:center}
-			table.tableContainer {width: 100%}
-			table.baseMethodContainer {width: 100%}
-			td.methodIndent {width: 12pt; background-color:#FF8080}
-			td.spacer {background-color:#80FF80}
-			td.methodCategory {Font-Family:Helvetica; Font-Weight:bold; background-color:#8080FF; font-size:10pt; color:#FFFFFF}
-			td.function {Font-Weight:bold}
-			input.textEntry { background-color: #FFFFFF; border: none; color: black; padding: 8pt 8pt; text-align: center; text-decoration: none; display: inline-block; font-size: 16pt;}
-			button { background-color: #4CAF50; border: none; color: white; padding: 8pt 32pt; text-align: center; text-decoration: none; display: inline-block; font-size: 16pt;}
-		</style>
-	</head>
-	<body>
-		<table class="header">
-			<tr>
-				<td class="title">
-Aftermath
-				</td>
-			</tr>
-		</table>
-		<tr>
-			<td>
-<div id="googleMap" style="width:600px;height:1000px;position:absolute; z-index:-5"></div><script>function myMap() {var mapProp= { center:new google.maps.LatLng(35.66929244995117,139.7013702392578), zoom:18 };var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);}var drawingManager = new google.maps.drawing.DrawingManager();drawingManager.setMap(map);</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>			</td>
-		</tr>
-		<table class="tableContainer" width="100" height="null" style="overflow: visible">
-			<tr>
-				<td class="canvasContainer">
-					<table name="Map" class="GlobalMap" width="600" height="1000" style="overflow: hidden">
-						<tr>
-							<td width="600" height="1000" colspan="1">
-									<div style="overflow:hidden; height:1000px">
-<canvas id="mapCanvas" width="600" height="1000" style="border:1pt solid #d3d3d3; position:relative; top:0; z-index:25">Your browser does not support the HTML5 canvas tag.</canvas>
-<canvas id="tempLineCanvas" width="600" height="1000" style="border:1pt solid #d3d3d3; position:relative; top:-1000; z-index:30; pointer-events:none">Your browser does not support the HTML5 canvas tag.</canvas>
-								</div>
-<div id="canvasInputBox" style="text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30">
-<div id="selectedRoadType" style="">&lt;PH&gt;</div>
-<div><input type="number" min="0" max="10" class="textEntry" id="canvasInputBoxInput" name="entry" size="3" style="border-width:2pt; border-style:solid; border-color:#FF0000"/></div>
-<div><button onclick="submitDataForm('http://localhost:8080/aftermath/map/weight');"/>Send Data!</button></div>
-</div>
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-
-	</body>
-<script type='application/javascript'>
-
-const mapCanvas = document.getElementById("mapCanvas");
-const canvasInputBox = document.getElementById("canvasInputBox");
-const canvasInput = document.getElementById("canvasInputBoxInput");
-const tempLineCanvas = document.getElementById("tempLineCanvas");
-const canvasA = mapCanvas.getContext("2d");
-const cTop = [[1, 0.5], [1, 0]];
-const cBot = [[1, 1], [0, 0]];
-
+		<script type="application/javascript">
 var chosenEdge = -1;
 var listenerLoaded = false;
 var inputData = { };
@@ -86,7 +22,6 @@ function loadJSON(data_uri, zoom)
 				y: e.clientY - mapCanvas.offsetLeft - 50 // -50 is hacky!  Need to factor in screen position as well!!
 			};
 			var zm = Math.pow(2, zoom);
-			
 			if(chosenEdge > 0)
 			{
 				if(canvasInput.value > 0)
@@ -113,8 +48,8 @@ function loadJSON(data_uri, zoom)
 					continue;
 				}
 				
-				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
-				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
+				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
 
 				var min, max, minX, maxX, minY, maxY, mPos;
 				if (coordinatesA['x']<coordinatesB['x'])
@@ -188,8 +123,8 @@ function loadJSON(data_uri, zoom)
 					var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
 					var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
 					
-					var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
-					var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
+					var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+					var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
 
 					// console.log("Mousey: " + mousePos.x + ", " + mousePos.y + " : " + distance);
 					// console.log("ToDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
@@ -214,8 +149,8 @@ function loadJSON(data_uri, zoom)
 				var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i]];
 				var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i+1]];
 				
-				var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
-				var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
+				var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+				var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
 				
 				var lineWidth = 12;
 				var dx = coordinatesB['x'] - coordinatesA['x'];
@@ -273,6 +208,7 @@ function loadJSON(data_uri, zoom)
 			ref_lat = jsonObj["focus"]["latitude"];
 			
 			document.getElementById("mapCanvas").getContext("2d").clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+			document.getElementById("regionBox").getContext("2d").clearRect(0, 0, regionBox.width, regionBox.height);
 			
 			var zm = Math.pow(2, zoom);
 			for(edge in jsonObj["mapEdges"])
@@ -294,8 +230,8 @@ function loadJSON(data_uri, zoom)
 						continue;
 					}
 				
-					var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
-					var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
+					var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+					var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
 					
 					// console.log(coordinatesA['x'] + " -- " + coordinatesA['y'] + " :: " + coordinatesB['x'] + " -- " + coordinatesB['y']);
 				
@@ -381,6 +317,30 @@ function loadJSON(data_uri, zoom)
 			canvasA.fillText("Drawn: " + drawn, 20, 20);
 			canvasA.fillText("Not Drawn: " + notdrawn, 20, 40);
 			canvasA.closePath();
+			
+			for(group in jsonObj["groups"])
+			{
+				grpItem = jsonObj["groups"][group];
+				var minCoord = getBearing(ref_lon, ref_lat, grpItem["lonMin"], grpItem["latMin"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+				var maxCoord = getBearing(ref_lon, ref_lat, grpItem["lonMax"], grpItem["latMax"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
+				var dx = maxCoord['x'] - minCoord['x'];
+				var dy = maxCoord['y'] - minCoord['y'];
+
+				canvasB.beginPath();
+				canvasB.save();
+
+				// regionBox.translate(coordinatesA['x'], coordinatesA['y']);
+				canvasB.rect(minCoord['x'], minCoord['y'], dx, dy);
+				// regionBox.translate(-coordinatesA['x'], -coordinatesA['y']);
+				canvasB.lineWidth = 2;
+				canvasB.fillStyle = "#00FFFF40";
+				canvasB.strokeStyle = "#000000FF";
+
+				canvasB.fill();
+				canvasB.stroke();
+				canvasB.restore();
+				canvasB.closePath();
+			}
 		}
 	}
 
@@ -429,10 +389,84 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 	return coords;
 }
 
-function refresh()
-{loadJSON("https://www.wc-encephalon.com/aftermath/map/node/681578979/json?depth=34&zoom=16",16);}
+function startLoop()
+{
+	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/2255060404/json?depth=45&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
+}
+		</script>
+		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+		<style type="text/css">
+			body {Font-Family:Tahoma; margin: 0pt 0pt 0pt 0pt}
+			table {border-collapse: collapse; padding: 0pt}
+			th {padding: 0pt; font-size:10pt; border: 1pt ridge #CCCCCC}
+			td {padding: 0pt; font-size:10pt; border: 1pt ridge #CCCCCC}
+			td.absolute {position: absolute}
+			td.centered {text-align: center}
+			td.title {font-size: 26pt}
+			td.canvasContainer {text-align: center; width: 1200pt}
+			table.header {width: 100%; border: 2pt ridge; Font-Family:Helvetica; Font-Weight:bold; background-color:#808080; font-size:24pt; color:#FFFFFF; text-align:center}
+			table.tableContainer {width: 100%}
+			table.baseMethodContainer {width: 100%}
+			td.methodIndent {width: 12pt; background-color:#FF8080}
+			td.spacer {background-color:#80FF80}
+			td.methodCategory {Font-Family:Helvetica; Font-Weight:bold; background-color:#8080FF; font-size:10pt; color:#FFFFFF}
+			td.function {Font-Weight:bold}
+			input.textEntry { background-color: #FFFFFF; border: none; color: black; padding: 8pt 8pt; text-align: center; text-decoration: none; display: inline-block; font-size: 16pt;}
+			button { background-color: #4CAF50; border: none; color: white; padding: 8pt 32pt; text-align: center; text-decoration: none; display: inline-block; font-size: 16pt;}
+		</style>
+	</head>
+	<body>
+		<table class="header">
+			<tr>
+				<td class="title">
+Aftermath
+				</td>
+			</tr>
+		</table>
+		<tr>
+			<td>
+<div id="googleMap" style="width:1200px;height:600px;position:absolute; z-index:-5"></div><script>function myMap() {var mapProp= { center:new google.maps.LatLng(35.658203125,139.72750854492188), zoom:16 };var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);}var drawingManager = new google.maps.drawing.DrawingManager();drawingManager.setMap(map);</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>			</td>
+		</tr>
+		<table class="tableContainer" width="100" height="null" style="overflow: visible">
+			<tr>
+				<td class="canvasContainer">
+					<table name="Map" class="GlobalMap" width="1200" height="600" style="overflow: hidden">
+						<tr>
+							<td width="1200" height="600" colspan="1">
+								<div style="overflow:hidden; height:600px">
+<canvas id="mapCanvas" width="1200" height="600" style="border:1px solid #d3d3d3; position:relative; top:0; z-index:25">Your browser does not support the HTML5 canvas tag.</canvas>
+<canvas id="tempLineCanvas" width="1200" height="600" style="border:1px solid #d3d3d3; position:relative; top:-600; z-index:30; pointer-events:none">Your browser does not support the HTML5 canvas tag.</canvas>
+<canvas id="regionBox" width="1200" height="600" style="border:1px solid #d3d3d3; position:relative; top:-1200; z-index:40; pointer-events:none">Your browser does not support the HTML5 canvas tag.</canvas>
+								</div>
+								<div id="canvasInputBox" style="text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30">
+									<div id="selectedRoadType" style="">&lt;PH&gt;</div>
+									<div><input type="number" min="0" max="10" class="textEntry" id="canvasInputBoxInput" name="entry" size="3" style="border-width:2pt; border-style:solid; border-color:#FF0000"/></div>
+									<div><button onclick="submitDataForm('https://www.wc-encephalon.com/aftermath/map/weight');"/>Send Data!</button></div>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<div name="scratch">Scratch Pad</scratch>
+		<script type="application/javascript">
+const mapCanvas = document.getElementById("mapCanvas");
+const canvasInputBox = document.getElementById("canvasInputBox");
+const canvasInput = document.getElementById("canvasInputBoxInput");
+const tempLineCanvas = document.getElementById("tempLineCanvas");
+const regionBox = document.getElementById("regionBox");
+const canvasA = mapCanvas.getContext("2d");
+const canvasB = regionBox.getContext("2d");
+const MAP_WIDTH = 1200;
+const MAP_HEIGHT = 600;
+const ZOOMFACTOR = 14;
 
-window.setInterval(refresh, 5000);
-</script>
+var register = true;
+var inputData = { };
+var chosenEdge = -1;
 
+setInterval(startLoop, 5000);
+		</script>
+	</body>
 </html>
