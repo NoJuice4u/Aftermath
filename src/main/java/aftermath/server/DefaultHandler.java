@@ -1,6 +1,8 @@
 package main.java.aftermath.server;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +48,8 @@ public class DefaultHandler extends AbstractHandler
 			}
 			catch(Exception e2)
 			{
-				System.err.println("[EXCEPTION] -- Second Exception!");
+				Timestamp time = new Timestamp(System.currentTimeMillis());
+				System.err.println(time.toString().replace(" ", "T") + " [EXCEPTION] -- Second Exception!");
 				e2.printStackTrace();
 			}
 		}

@@ -995,7 +995,7 @@ public class AftermathHandler extends DefaultHandler {
 			int xMax = ((int) (maxPoint[0])) + (MapVertex.WIDTH/2);
 			int yMax = ((int) (maxPoint[1])) + (MapVertex.HEIGHT/2);
 
-			writer.drawRect("mapCanvas", 2.0f, "#80408040", "#402040", 1.0f, xMin, yMin, xMax, yMax);
+			writer.drawRect("mapCanvas", 2.0f, "#00FFFF40", "#000000FF", 1.0f, xMin, yMin, xMax, yMax);
 		}
 	}
 
