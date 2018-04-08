@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ import main.java.aftermath.writers.HtmlWriter;
 
 import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
+import main.java.encephalon.annotations.methods.MenuItem;
 import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
@@ -76,6 +78,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Node List")
 	@HandlerInfo(schema = "/map")
 	public void getMapData(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -164,11 +167,14 @@ public class AftermathHandler extends DefaultHandler {
 				drawVertices, drawTransports, drawSpatialGrid, drawGroups);
 	}
 
-	private long findNearestMajorRoad(Double longitude, Double latitude) throws Exception {
+	private long findNearestMajorRoad(Double longitude, Double latitude, int diveOutDepth) throws Exception {
 		Coordinates coords = new Coordinates(longitude, latitude);
 
 		SpatialIndex<Coordinates> index = es.getAftermathController().getSpatialIndex().getNearestNodeRegionIndex(coords);
-		index = index.getParent().getParent().getParent().getParent().getParent();
+		for(int i = 0; i < diveOutDepth; i++)
+		{
+			index = index.getParent();
+		}
 		
 		List<Long> nodeIds = index.getVerticesWithinBounds();
 		
@@ -211,8 +217,9 @@ public class AftermathHandler extends DefaultHandler {
 			@QueryString(value = "transports", _default = "false") Boolean drawTransports,
 			@QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
 			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
-			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups) throws Exception {
-		Long nodeId = findNearestMajorRoad(longitude, latitude);
+			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
+			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth) throws Exception {
+		Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter,
 				drawVertices, drawTransports, drawSpatialGrid, drawGroups);
 	}
@@ -222,8 +229,9 @@ public class AftermathHandler extends DefaultHandler {
 	public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
 			@QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
-			@QueryString(value = "depth", _default = "6") Integer depth) throws Exception {
-		Long nodeId = findNearestMajorRoad(longitude, latitude);
+			@QueryString(value = "depth", _default = "6") Integer depth,
+			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth) throws Exception {
+		Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
 		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth);
 	}
 
@@ -314,6 +322,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Depot List")
 	@HandlerInfo(schema = "/map/depots")
 	public void getMapDepotList(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -694,7 +703,21 @@ public class AftermathHandler extends DefaultHandler {
 				else
 				{
 					writer.tr_Start();
-					writer.td(spatialIndex.getQuadrantByIndex(i).getIndex().keySet().toString());
+					Set<Long> setLong = spatialIndex.getQuadrantByIndex(i).getIndex().keySet();
+					if(setLong.size() > 0)
+					{
+						StringBuilder sb = new StringBuilder();
+						for(Long l : setLong)
+						{
+							sb.append(",<a href=\"/aftermath/map/node/" + l + "\">" + l + "</a>");
+						}
+						writer.td(sb.substring(1));
+					}
+					else
+					{
+						writer.td("&nbsp;");
+					}
+					
 					writer.tr_End();
 				}
 			}
