@@ -48,16 +48,6 @@ public class AftermathHandler extends DefaultHandler {
 	private AftermathServer es;
 	private long maxScore = 1;
 
-	private class EdgeWeightInfo {
-		public long edge;
-		public int weight;
-
-		public EdgeWeightInfo(long edge, int weight) {
-			this.edge = edge;
-			this.weight = weight;
-		}
-	}
-
 	public AftermathHandler(AftermathServer instance) {
 		super();
 
@@ -177,23 +167,38 @@ public class AftermathHandler extends DefaultHandler {
 	private long findNearestMajorRoad(Double longitude, Double latitude) throws Exception {
 		Coordinates coords = new Coordinates(longitude, latitude);
 
-		Long nodeId = es.getAftermathController().getSpatialIndex().getNearestNode(coords);
-		List<Long> nodeIds = es.getAftermathController().getSpatialIndex().getNearestNodeRegion(coords);
-		for (Long nId : nodeIds) {
-			MapVertex vtx = es.getAftermathController().getMapData().get(nId);
-			for (Long eId : vtx.getEdges()) {
-				MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
-				switch (String.valueOf(edge.getMode())) {
-				case "secondary":
-				case "primary":
-				case "residential":
-					return nId;
-				default:
-					break;
+		SpatialIndex<Coordinates> index = es.getAftermathController().getSpatialIndex().getNearestNodeRegionIndex(coords);
+		index = index.getParent().getParent().getParent().getParent().getParent();
+		
+		List<Long> nodeIds = index.getVerticesWithinBounds();
+		
+		if(nodeIds.size() > 0)
+		{
+			MapVertex nearestNode = null;
+			for (Long nId : nodeIds) {
+				MapVertex vtx = es.getAftermathController().getMapData().get(nId);
+				for (Long eId : vtx.getEdges()) {
+					MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
+					switch (String.valueOf(edge.getMode())) {
+					case "secondary":
+					case "primary":
+					case "residential":
+						if(nearestNode == null || nearestNode.getDistance(coords) > vtx.getDistance(coords))
+						{
+							nearestNode = vtx;
+						}
+					default:
+						break;
+					}
 				}
 			}
+			if(nearestNode != null)
+			{
+				return nearestNode.getId();
+			}
 		}
-		return nodeId;
+
+		return es.getAftermathController().getSpatialIndex().getNearestNode(coords);
 	}
 
 	@GET
@@ -658,6 +663,53 @@ public class AftermathHandler extends DefaultHandler {
 
 		response.setContentType("application/json");
 		response.getWriter().print(jw.toString());
+	}
+	
+	@GET
+	@HandlerInfo(schema = "/map/spatialindex/(index)/dive/(diveparams)")
+	public void getSpatialIndexDive(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+			HttpServletResponse response, @QueryParam(value = "index") String index, @QueryParam(value = "diveparams") String diveparams) throws Exception {
+		SpatialIndex<?> spatialIndex = es.getAftermathController().getSpatialIndex(index);
+		
+		HtmlWriter writer = new HtmlWriter(2, es);
+		
+		String[] divisors = diveparams.split("(?!^)");
+		
+		for(String s : divisors)
+		{
+			spatialIndex = spatialIndex.getQuadrantByIndex(Integer.valueOf(s));
+		}
+		
+		if(spatialIndex.getIndex() == null)
+		{
+			writer.table_Start();
+			for(int i = 0; i < 4; i++)
+			{
+				if(spatialIndex.getQuadrantByIndex(i).getIndex() == null)
+				{
+					writer.tr_Start();
+					writer.td("<a href=\"/aftermath/map/spatialindex/" + index + "/dive/"  + diveparams + i +"\">" + spatialIndex.getQuadrantByIndex(i).toString() + "</a>");
+					writer.tr_End();
+				}
+				else
+				{
+					writer.tr_Start();
+					writer.td(spatialIndex.getQuadrantByIndex(i).getIndex().keySet().toString());
+					writer.tr_End();
+				}
+			}
+			writer.table_End();
+		}
+		else
+		{
+			writer.table_Start();
+			writer.tr_Start();
+			writer.text("EMPTY");
+			writer.tr_End();
+			writer.table_End();
+		}
+
+		response.getWriter().print(writer.getString());
 	}
 
 	@POST
