@@ -57,6 +57,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Item/Base")
 	@HandlerInfo(schema = "/")
 	public void getMap(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -78,7 +79,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@MenuItem(name = "Map/Node List")
+	@MenuItem(name = "Map/Item/Node List")
 	@HandlerInfo(schema = "/map")
 	public void getMapData(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
