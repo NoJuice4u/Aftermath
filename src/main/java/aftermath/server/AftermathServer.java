@@ -57,16 +57,23 @@ public class AftermathServer extends EncephalonServer
 	}
 
 	public LocaleBase getLocale(String string) throws Exception {
-		String[] presplit = string.split(",");
-		
-		for(int i = 0; i < presplit.length; i++)
+		try
 		{
-			String[] locales = presplit[i].split(";");
-			Localizer<LocaleBase> loc = localeList.get(locales[0].toLowerCase());
-			if(loc != null)
+			String[] presplit = string.split(",");
+			
+			for(int i = 0; i < presplit.length; i++)
 			{
-				return loc.getLocale();
+				String[] locales = presplit[i].split(";");
+				Localizer<LocaleBase> loc = localeList.get(locales[0].toLowerCase());
+				if(loc != null)
+				{
+					return loc.getLocale();
+				}
 			}
+		}
+		catch(Exception e)
+		{
+			
 		}
 		return localeList.get("undefined").getLocale();
 	}

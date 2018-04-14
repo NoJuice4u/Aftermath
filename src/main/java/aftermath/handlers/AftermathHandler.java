@@ -121,6 +121,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Json/Base")
 	@HandlerInfo(schema = "/map/json")
 	public void getMapDataJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -608,6 +609,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Json/Vehicles")
 	@HandlerInfo(schema = "/map/vehicles/json")
 	public void getVehiclesJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -652,6 +654,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
+	@MenuItem(name = "Map/Json/Roots")
 	@HandlerInfo(schema = "/map/roots")
 	public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
