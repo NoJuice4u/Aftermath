@@ -1,5 +1,6 @@
 package main.java.aftermath.handlers;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -15,6 +16,7 @@ import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.writers.HtmlWriter;
+import main.java.encephalon.writers.TextWriter;
 
 public class WCEncephalonHandler extends DefaultHandler{
 	private AftermathServer es;
@@ -42,5 +44,21 @@ public class WCEncephalonHandler extends DefaultHandler{
 		writer.script_End();
 		
 		response.getWriter().print(writer.getString(locale));
+	}
+	
+	@GET()
+	@HandlerInfo(schema="robots.txt")
+	public void getRobots(String target, String locale, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	{
+		response.setContentType("text/plain;charset=utf-8");
+		response.setStatus(HttpServletResponse.SC_OK);
+		baseRequest.setHandled(true);
+		
+		TextWriter writer = new TextWriter();
+		
+		writer.writeln("User-Agent: *", 0);
+		writer.writeln("Disallow: /", 0);
+		
+		response.getWriter().print(writer.getString());
 	}
 }
