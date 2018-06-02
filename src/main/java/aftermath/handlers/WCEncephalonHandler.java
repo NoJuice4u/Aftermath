@@ -1,9 +1,5 @@
 package main.java.aftermath.handlers;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,13 +38,12 @@ public class WCEncephalonHandler extends DefaultHandler{
 		writer.text("}");
 		writer.text("function showPosition(position) { document.write(\"Relocating!\"); window.location = \"" + destination + "; }");
 		writer.script_End();
-		
 		response.getWriter().print(writer.getString(locale));
 	}
 	
 	@GET()
 	@HandlerInfo(schema="robots.txt")
-	public void getRobots(String target, String locale, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getRobots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		response.setContentType("text/plain;charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
