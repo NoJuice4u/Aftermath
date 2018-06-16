@@ -38,6 +38,7 @@ public class EN_US extends LocaleBase{
 		this.REQUEST_LOCAL_NAME = "Local Name";
 		this.REQUEST_PATH_TRANSLATED = "Path Translated";
 		this.REQUEST_REMOTE_HOST = "Remote Host";
+		this.REQUEST_REMOTE_ADDR = "Remote Address";
 		this.REQUEST_LOCAL_PORT = "Local Port";
 		this.REQUEST_SERVER_NAME = "Server Name";
 		this.REQUEST_CONTENT_LENGTH = "Content Length";
