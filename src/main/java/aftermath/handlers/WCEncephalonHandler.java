@@ -48,7 +48,7 @@ public class WCEncephalonHandler extends DefaultHandler{
 	
 	@GET()
 	@HandlerInfo(schema="robots.txt")
-	public void getRobots(String target, String locale, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	public void getRobots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		response.setContentType("text/plain;charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
