@@ -50,84 +50,31 @@ function loadJSON(data_uri, zoom)
 				
 				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
 				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
-
-				var min, max, minX, maxX, minY, maxY, mPos;
-				if (coordinatesA['x']<coordinatesB['x'])
-				{
-					minX = coordinatesA['x'];
-					maxX = coordinatesB['x'];
-					minY = coordinatesA['y'];
-					maxY = coordinatesB['y'];
-					mPos = mousePos.x;
-				}
-				else if (coordinatesA['x']<coordinatesB['x'])
-				{
-					minX = coordinatesB['x'];
-					maxX = coordinatesA['x'];
-					minY = coordinatesB['y'];
-					maxY = coordinatesA['y'];
-					mPos = mousePos.x;
-				} else if (coordinatesA['y']<coordinatesB['y'])
-				{
-					minX = coordinatesA['x'];
-					maxX = coordinatesB['x'];
-					minY = coordinatesA['y'];
-					maxY = coordinatesB['y'];
-					mPos = mousePos.y;
-				}
-				else
-				{
-					minX = coordinatesB['x'];
-					maxX = coordinatesA['x'];
-					minY = coordinatesB['y'];
-					maxY = coordinatesA['y'];
-					mPos = mousePos.y;
-				}
 				
-				if(minX == maxX)
-				{
-					min = minY;
-					max = maxY;
-				}
-				else
-				{
-					min = minX;
-					max = maxX;
-				}
+				var diff = new Object();
+				diff['x'] = coordinatesB['x'] - coordinatesA['x'];
+				diff['y'] = coordinatesB['y'] - coordinatesA['y'];
+				var slopeA = diff['x']/diff['y'];
+				var slopeB = Math.tan(Math.atan(1/-slopeA));
+				var y1 = coordinatesB['y']-coordinatesA['y'];
+				var y2 = mousePos.y; // Minus Canvas Zero Point!!
+				var xIntersect = (y2-y1)/(slopeA-slopeB);
+				var yIntersect = coordinatesA['y'] - mousePos.y; // y Intersection
 				
-				// CrossPoint - the X-Value position on the line (only works for straight lines.)
-				var crossPoint = (max - mPos) / (max - min);
-				var xRange = Math.abs(maxX - minX);
-				var yRange = Math.abs(maxY - minY);
+				var xDst = mousePos.x - xIntersect;
+				var yDst = mousePos.y - yIntersect;
 				
-				if(crossPoint >= 0 && crossPoint <= 1)
+				intersect = xIntersect > 0 && xIntersect < Math.abs(diff['x']);
+				console.log(mousePos.x + " -> " + xIntersect);
+				if(intersect == true)
 				{
-					// Need stricter box testing
-					var xPt = (xRange * crossPoint) + minX;
-					var yPt = (yRange * crossPoint) + minY;
-					
-					var xDst = xPt - mousePos.x;
-					var yDst = yPt - mousePos.y;
-					
-					var finalDst = Math.sqrt(Math.pow(xDst, 2) + Math.pow(yDst, 2));
-					// range between xPt; mosue
-					
-					var nearestPoint = { x: xPt, y: yPt};
-
+					var finalDst = Math.sqrt(Math.pow(xIntersect, 2) + Math.pow(yIntersect, 2));
 					if(distance > finalDst)
 					{
 						chosenEdge = edge;
 						distance = finalDst;
+						console.log("FDST  " + finalDst);
 					}
-					
-					var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
-					var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
-					
-					var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
-					var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, MAP_WIDTH/2, MAP_HEIGHT/2);
-
-					// console.log("Mousey: " + mousePos.x + ", " + mousePos.y + " : " + distance);
-					// console.log("ToDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
 				}
 			}
 
@@ -368,7 +315,7 @@ function submitDataForm(data_uri)
 	var rawData = "";
 	for(item in inputData)
 	{
-		rawData += item + "=" + inputData[item] + "&";
+		rawData += item + "=" + inputData[item] + "&";www.wc
 	}
 	console.log(rawData);
 	request.send(rawData);
@@ -391,7 +338,7 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 
 function startLoop()
 {
-	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/3010443310/json?depth=45&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
+	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/1831717492/json?depth=" + DEPTHFACTOR + "&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
 }
 		</script>
 		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
