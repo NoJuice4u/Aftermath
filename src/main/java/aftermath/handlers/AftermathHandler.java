@@ -58,7 +58,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Item/Base")
-	@HandlerInfo(schema = "/")
+	@HandlerInfo(schema = "/", description = "Details not defined yet because the programmer was lazy.")
 	public void getMap(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		String destination = baseRequest.getRootURL()
@@ -80,7 +80,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Item/Node List")
-	@HandlerInfo(schema = "/map")
+	@HandlerInfo(schema = "/map", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapData(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
@@ -122,7 +122,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Json/Base")
-	@HandlerInfo(schema = "/map/json")
+	@HandlerInfo(schema = "/map/json", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapDataJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HashMap<Long, MapVertex> mapData = es.getAftermathController().getMapData();
@@ -133,7 +133,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/json")
+	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/json", description = "Details not defined yet because the programmer was lazy.")
 	public void getVehicleInfo(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value = "vehicleId") Integer vehicleId) throws Exception {
@@ -146,7 +146,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/delay")
+	@HandlerInfo(schema = "/delay", description = "Details not defined yet because the programmer was lazy.")
 	public void getDelay(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		Thread.sleep(5000);
@@ -154,7 +154,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)")
+	@HandlerInfo(schema = "/map/node/(uid)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -210,7 +210,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/coord/(longitude)/(latitude)")
+	@HandlerInfo(schema = "/map/coord/(longitude)/(latitude)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
 			@QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -227,7 +227,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/coord/(longitude)/(latitude)/canvas")
+	@HandlerInfo(schema = "/map/coord/(longitude)/(latitude)/canvas", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
 			@QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -238,7 +238,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/vehicle/(vehicleId)")
+	@HandlerInfo(schema = "/map/vehicle/(vehicleId)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeByVehicle(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value = "vehicleId") Integer vehicleId,
@@ -281,7 +281,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/canvas")
+	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/canvas", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapCanvasNodeByVehicle(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value = "vehicleId") Integer vehicleId,
@@ -294,7 +294,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/add/depot/name/(name)/edge/(edgeId)")
+	@HandlerInfo(schema = "/map/add/depot/name/(name)/edge/(edgeId)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapAddDepotEdge(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "name") String name,
 			@QueryParam(value = "edgeId") Long edgeId) throws Exception {
@@ -309,7 +309,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/remove/depot/(depotId)")
+	@HandlerInfo(schema = "/map/remove/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRemoveDepotEdge(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depot") long depotId)
 			throws Exception {
@@ -325,7 +325,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Depot List")
-	@HandlerInfo(schema = "/map/depots")
+	@HandlerInfo(schema = "/map/depots", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapDepotList(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HtmlWriter writer = new HtmlWriter(2, es);
@@ -390,7 +390,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)")
+	@HandlerInfo(schema = "/map/node/(uid)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -405,7 +405,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)/canvas")
+	@HandlerInfo(schema = "/map/node/(uid)/canvas", description = "Details not defined yet because the programmer was lazy.")
 	public void getTestCanvas(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -454,7 +454,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/start/(sLat)/(sLon)/end/(eLat)/(eLon)")
+	@HandlerInfo(schema = "/map/start/(sLat)/(sLon)/end/(eLat)/(eLon)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodesWithinBounds(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "sLat") Long sLat,
 			@QueryParam(value = "sLon") Long sLon, @QueryParam(value = "eLat") Long eLat,
@@ -485,7 +485,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)/vehicles/json")
+	@HandlerInfo(schema = "/map/node/(uid)/vehicles/json", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapVehiclesJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -514,7 +514,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)/clear")
+	@HandlerInfo(schema = "/map/node/(uid)/clear", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeClearWeights(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -546,7 +546,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/node/(uid)/json")
+	@HandlerInfo(schema = "/map/node/(uid)/json", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
@@ -610,7 +610,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Json/Vehicles")
-	@HandlerInfo(schema = "/map/vehicles/json")
+	@HandlerInfo(schema = "/map/vehicles/json", description = "Details not defined yet because the programmer was lazy.")
 	public void getVehiclesJson(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		List<Transport> transports = es.getAftermathController().getTransporters();
@@ -632,7 +632,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/capacity/(capacity)")
+	@HandlerInfo(schema = "/map/vehicle/(vehicleId)/capacity/(capacity)", description = "Details not defined yet because the programmer was lazy.")
 	public void getVehicleSetWeight(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value = "vehicleId") Integer vehicleId, @QueryParam(value = "capacity") Integer capacity)
@@ -642,7 +642,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@HandlerInfo(schema = "/map/edge/(edgeId)")
+	@HandlerInfo(schema = "/map/edge/(edgeId)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapEdgeInfo(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "edgeId") Long edgeId)
 			throws Exception {
@@ -655,7 +655,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	@GET
 	@MenuItem(name = "Map/Json/Roots")
-	@HandlerInfo(schema = "/map/roots")
+	@HandlerInfo(schema = "/map/roots", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
@@ -667,7 +667,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 	
 	@GET
-	@HandlerInfo(schema = "/map/roots/clear")
+	@HandlerInfo(schema = "/map/roots/clear", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRootsClear(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		HashMap<Long, CoordinateRange> rootSet = ClusteringManager.clearRoots();
@@ -679,7 +679,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 	
 	@GET
-	@HandlerInfo(schema = "/map/spatialindex/(index)/dive/(diveparams)")
+	@HandlerInfo(schema = "/map/spatialindex/(index)/dive/(diveparams)", description = "Details not defined yet because the programmer was lazy.")
 	public void getSpatialIndexDive(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response, @QueryParam(value = "index") String index, @QueryParam(value = "diveparams") String diveparams) throws Exception {
 		SpatialIndex<?> spatialIndex = es.getAftermathController().getSpatialIndex(index);
@@ -740,7 +740,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@POST
-	@HandlerInfo(schema = "/map/weight")
+	@HandlerInfo(schema = "/map/weight", description = "Details not defined yet because the programmer was lazy.")
 	public void postMapEdgesSetWeight(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		long inId = parent.getTaskId();
@@ -836,7 +836,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@POST
-	@HandlerInfo(schema = "/map/mark")
+	@HandlerInfo(schema = "/map/mark", description = "Details not defined yet because the programmer was lazy.")
 	public void postMapEdgesSetMark(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		BufferedReader br = request.getReader();

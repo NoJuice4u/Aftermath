@@ -24,7 +24,7 @@ public class WCEncephalonHandler extends DefaultHandler{
 	}
 
 	@GET
-	@HandlerInfo(schema="/")
+	@HandlerInfo(schema="/", description = "Details not defined yet because the programmer was lazy.")
 	public void getWCServer(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{	
 		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
@@ -42,7 +42,7 @@ public class WCEncephalonHandler extends DefaultHandler{
 	}
 	
 	@GET()
-	@HandlerInfo(schema="robots.txt")
+	@HandlerInfo(schema="robots.txt", description = "The robots file to tell the Google Spider to leave me alone.")
 	public void getRobots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		response.setContentType("text/plain;charset=utf-8");
