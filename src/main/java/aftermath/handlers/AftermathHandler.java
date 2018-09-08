@@ -163,10 +163,11 @@ public class AftermathHandler extends DefaultHandler {
 			@QueryString(value = "transports", _default = "false") Boolean drawTransports,
 			@QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
 			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
-			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups) throws Exception {
+			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		// @QueryString(value="zoom", _default="18")
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter,
-				drawVertices, drawTransports, drawSpatialGrid, drawGroups);
+				drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
 	}
 
 	private long findNearestMajorRoad(Double longitude, Double latitude, int diveOutDepth) throws Exception {
@@ -220,10 +221,11 @@ public class AftermathHandler extends DefaultHandler {
 			@QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
 			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
 			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
-			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth) throws Exception {
+			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter,
-				drawVertices, drawTransports, drawSpatialGrid, drawGroups);
+				drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
 	}
 
 	@GET
@@ -232,9 +234,10 @@ public class AftermathHandler extends DefaultHandler {
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
 			@QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
 			@QueryString(value = "depth", _default = "6") Integer depth,
-			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth) throws Exception {
+			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
-		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth);
+		getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative);
 	}
 
 	@GET
@@ -247,7 +250,8 @@ public class AftermathHandler extends DefaultHandler {
 			@QueryString(value = "roadType", _default = "") String filter,
 			@QueryString(value = "drawMap", _default = "true") Boolean drawMap,
 			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
-			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups) throws Exception {
+			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups, 
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		List<Transport> transporters = es.getAftermathController().getTransporters();
 		Transport transport = transporters.get(vehicleId);
 
@@ -263,7 +267,7 @@ public class AftermathHandler extends DefaultHandler {
 		int zm = (int) (AftermathServer.GOOGLE_MAP_ZOOMSCALE * Math.pow(2, zoom));
 		if (drawSpatialGrid)
 			drawSpatialIndex(writer, initialNode, zm);
-		drawRoads(writer, initialNode, zm, depth, filter);
+		drawRoads(writer, initialNode, zm, depth, filter, authorative);
 		drawDepot(writer, initialNode, zm);
 		drawTransport(writer, transport, initialNode, zm, depth);
 		if (drawGroups)
@@ -272,7 +276,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNode(writer, locale, initialNode, zoom, depth);
+		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
@@ -286,11 +290,12 @@ public class AftermathHandler extends DefaultHandler {
 			HttpServletRequest request, HttpServletResponse response,
 			@QueryParam(value = "vehicleId") Integer vehicleId,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
-			@QueryString(value = "depth", _default = "6") Integer depth) throws Exception {
+			@QueryString(value = "depth", _default = "6") Integer depth,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		Transport t = es.getAftermathController().getTransporters().get(vehicleId);
 		MapVertex initialNode = t.getNode();
 
-		getTestCanvas(target, locale, parent, baseRequest, request, response, initialNode.getId(), zoom, depth);
+		getTestCanvas(target, locale, parent, baseRequest, request, response, initialNode.getId(), zoom, depth, authorative);
 	}
 
 	@GET
@@ -353,7 +358,7 @@ public class AftermathHandler extends DefaultHandler {
 
 	public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, Long uid, int depth, int zoom, String filter,
-			Boolean drawVertices, Boolean drawTransports, Boolean drawSpatialGrid, Boolean drawGroups) throws Exception {
+			Boolean drawVertices, Boolean drawTransports, Boolean drawSpatialGrid, Boolean drawGroups, Boolean authorative) throws Exception {
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		if (initialNode == null) {
 			throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
@@ -369,7 +374,7 @@ public class AftermathHandler extends DefaultHandler {
 		int zm = (int) (AftermathServer.GOOGLE_MAP_ZOOMSCALE * Math.pow(2, zoom));
 		if (drawSpatialGrid)
 			drawSpatialIndex(writer, initialNode, zm);
-		drawRoads(writer, initialNode, zm, depth, filter);
+		drawRoads(writer, initialNode, zm, depth, filter, authorative);
 		if (drawVertices)
 			drawVertices(writer, initialNode, zm, depth, filter);
 		drawDepot(writer, initialNode, zm);
@@ -381,7 +386,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.script_End();
 		writer.table_Start();
 
-		writeSummaryNode(writer, locale, initialNode, zoom, depth);
+		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.table_End();
@@ -399,9 +404,10 @@ public class AftermathHandler extends DefaultHandler {
 			@QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
 			@QueryString(value = "transports", _default = "false") Boolean drawTransports,
 			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
-			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups) throws Exception {
+			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups, 
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter,
-				drawVertices, drawTransports, drawSpatialGrid, drawGroups);
+				drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
 	}
 
 	@GET
@@ -409,7 +415,8 @@ public class AftermathHandler extends DefaultHandler {
 	public void getTestCanvas(String target, String locale, Task parent, Request baseRequest,
 			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
 			@QueryString(value = "zoom", _default = "18") Integer zoom,
-			@QueryString(value = "depth", _default = "6") Integer depth) throws Exception {
+			@QueryString(value = "depth", _default = "6") Integer depth,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
 		if (initialNode == null) {
 			throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
@@ -440,7 +447,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.table_Start();
 		writer.tr_Start();
 		writer.td_Start();
-		writeSummaryNode(writer, locale, initialNode, zoom, depth);
+		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
 		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
 		writer.td_End();
@@ -742,7 +749,8 @@ public class AftermathHandler extends DefaultHandler {
 	@POST
 	@HandlerInfo(schema = "/map/weight", description = "Details not defined yet because the programmer was lazy.")
 	public void postMapEdgesSetWeight(String target, String locale, Task parent, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response) throws Exception {
+			HttpServletRequest request, HttpServletResponse response,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
 		long inId = parent.getTaskId();
 		BufferedReader br = request.getReader();
 		String inputString = br.readLine();
@@ -813,7 +821,7 @@ public class AftermathHandler extends DefaultHandler {
 		for (long edge : edgeWeightMap.keySet()) {
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
 			int weight = edgeWeightMap.get(edge);
-			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(inId,
+			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(authorative, inId,
 					timeStamp, weight);
 
 			float confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
@@ -886,7 +894,7 @@ public class AftermathHandler extends DefaultHandler {
 		}
 	}
 
-	private void drawRoads(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter)
+	private void drawRoads(HtmlWriter writer, MapVertex focalPoint, int zoom, int depth, String filter, boolean authorative)
 			throws Exception {
 		HashSet<String> filterSet = new HashSet<String>();
 		StringTokenizer st = new StringTokenizer(filter, ",");
@@ -1007,7 +1015,7 @@ public class AftermathHandler extends DefaultHandler {
 				}
 
 				float weight = (float) mapEdge.getWeight();
-				float weightCeiling = mapEdge.getWeightRangeCeiling() - 1.0f;
+				float weightCeiling = mapEdge.getWeightRangeCeiling(authorative) - 1.0f;
 				float weightRange = weight / weightCeiling;
 				int weightScore = Math.round(weightRange * 255);
 
@@ -1120,7 +1128,7 @@ public class AftermathHandler extends DefaultHandler {
 				carPrevBearingY);
 	}
 
-	public void writeSummaryNode(HtmlWriter writer, String locale, MapVertex focalPoint, int zoom, int depth)
+	public void writeSummaryNode(HtmlWriter writer, String locale, MapVertex focalPoint, int zoom, int depth, boolean authorative)
 			throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
 
@@ -1149,8 +1157,8 @@ public class AftermathHandler extends DefaultHandler {
 			}
 			writer.td_End();
 			writer.td(mapEdge.getMode().toString());
-			writer.td(mapEdge.getHistogramDataString());
-			writer.td(mapEdge.getHistogramTimeDeltaString());
+			writer.td(mapEdge.getHistogramDataString(authorative));
+			writer.td(mapEdge.getHistogramTimeDeltaString(authorative));
 			writer.tr_End();
 		}
 		writer.tBody_End();
