@@ -20,6 +20,8 @@ public class EN_US extends LocaleBase{
 		this.TH_ID_GENERIC = "ID";
 		this.TH_DESTINATION = "Destination";
 		this.TH_TICKS = "Ticks";
+		this.TH_AUTHORATIVE_HISTOGRAM = "Authorative Histogram";
+		this.TH_NORMAL_HISTOGRAM = "Normal Histogram";
 		
 		this.BTN_SEND_WEIGHTS = "Send Weights";
 		

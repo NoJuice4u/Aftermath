@@ -17,8 +17,8 @@ function loadJSON(data_uri, zoom)
 	{
 		mapCanvas.addEventListener('click', (e) => {
 			const mousePos = {
-				x: e.clientX - mapCanvas.offsetTop,
-				y: e.clientY - mapCanvas.offsetLeft - 50 // -50 is hacky!  Need to factor in screen position as well!!
+				x: e.clientX - mapCanvas.offsetLeft,
+				y: e.clientY - mapCanvas.offsetTop
 			};
 			var zm = Math.pow(2, zoom);
 			
@@ -50,84 +50,45 @@ function loadJSON(data_uri, zoom)
 				
 				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
 				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
-
-				var min, max, minX, maxX, minY, maxY, mPos;
-				if (coordinatesA['x']<coordinatesB['x'])
-				{
-					minX = coordinatesA['x'];
-					maxX = coordinatesB['x'];
-					minY = coordinatesA['y'];
-					maxY = coordinatesB['y'];
-					mPos = mousePos.x;
-				}
-				else if (coordinatesA['x']<coordinatesB['x'])
-				{
-					minX = coordinatesB['x'];
-					maxX = coordinatesA['x'];
-					minY = coordinatesB['y'];
-					maxY = coordinatesA['y'];
-					mPos = mousePos.x;
-				} else if (coordinatesA['y']<coordinatesB['y'])
-				{
-					minX = coordinatesA['x'];
-					maxX = coordinatesB['x'];
-					minY = coordinatesA['y'];
-					maxY = coordinatesB['y'];
-					mPos = mousePos.y;
-				}
-				else
-				{
-					minX = coordinatesB['x'];
-					maxX = coordinatesA['x'];
-					minY = coordinatesB['y'];
-					maxY = coordinatesA['y'];
-					mPos = mousePos.y;
-				}
 				
-				if(minX == maxX)
-				{
-					min = minY;
-					max = maxY;
-				}
-				else
-				{
-					min = minX;
-					max = maxX;
-				}
+				aX = coordinatesA['x'] - mousePos.x;
+				bX = coordinatesB['x'] - mousePos.x;
+				aY = coordinatesA['y'] - mousePos.y;
+				bY = coordinatesB['y'] - mousePos.y;
 				
-				// CrossPoint - the X-Value position on the line (only works for straight lines.)
-				var crossPoint = (max - mPos) / (max - min);
-				var xRange = Math.abs(maxX - minX);
-				var yRange = Math.abs(maxY - minY);
+				lineAX = bX - aX;
+				lineAY = bY - aY;
 				
-				if(crossPoint >= 0 && crossPoint <= 1)
+				slopeA = lineAX / lineAY;
+				offsetA = slopeA * aX;
+				slopeB = 1 / slopeA;
+				offsetB = 0;
+				
+				xSect = (offsetB - offsetA) / (slopeA - slopeB);
+				
+				mDistance = Math.abs(xSect) ; // Not Entirely Accurate!!
+				
+				if(distance > mDistance)
 				{
-					// Need stricter box testing
-					var xPt = (xRange * crossPoint) + minX;
-					var yPt = (yRange * crossPoint) + minY;
-					
-					var xDst = xPt - mousePos.x;
-					var yDst = yPt - mousePos.y;
-					
-					var finalDst = Math.sqrt(Math.pow(xDst, 2) + Math.pow(yDst, 2));
-					// range between xPt; mosue
-					
-					var nearestPoint = { x: xPt, y: yPt};
-
-					if(distance > finalDst)
+					// Need to pad in mDistance??  Or, use else statements for out of bounds values
+					if((aX >= 0 && 0 >= bX) || (bX >= 0 && 0 >= aX)) 
 					{
 						chosenEdge = edge;
-						distance = finalDst;
+						distance = mDistance;
+						// console.log("  [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
 					}
-					
-					var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
-					var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
-					
-					var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
-					var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
-
-					// console.log("Mousey: " + mousePos.x + ", " + mousePos.y + " : " + distance);
-					// console.log("ToDraw: " + coordinatesA['x'] + ":" + coordinatesA['y'])
+					else
+					{
+						dstA = Math.sqrt(Math.pow(aX, 2) + Math.pow(aY, 2));
+						dstB = Math.sqrt(Math.pow(bX, 2) + Math.pow(bY, 2));
+						mDst = (dstA<dstB)?dstA:dstB;
+						if(distance < mDst)
+						{
+							chosenEdge = edge;
+							distance = mDst;
+							// console.log("# [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
+						}
+					}
 				}
 			}
 

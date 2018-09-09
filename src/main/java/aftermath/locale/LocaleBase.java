@@ -15,6 +15,8 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	public String TH_ID_GENERIC = "[*UNDEFINED*]";
 	public String TH_DESTINATION = "[*UNDEFINED*]";
 	public String TH_TICKS = "[*UNDEFINED*]";
+	public String TH_AUTHORATIVE_HISTOGRAM = "[*UNDEFINED*]";
+	public String TH_NORMAL_HISTOGRAM = "[*UNDEFINED*]";
 	
 	public String BTN_SEND_WEIGHTS = "[*UNDEFINED*]";
 	

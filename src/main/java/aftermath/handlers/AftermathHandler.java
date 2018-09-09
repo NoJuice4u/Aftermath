@@ -674,6 +674,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 	
 	@GET
+	@MenuItem(name = "Debug/Map/Roots/Clear")
 	@HandlerInfo(schema = "/map/roots/clear", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRootsClear(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -749,8 +750,8 @@ public class AftermathHandler extends DefaultHandler {
 	@POST
 	@HandlerInfo(schema = "/map/weight", description = "Details not defined yet because the programmer was lazy.")
 	public void postMapEdgesSetWeight(String target, String locale, Task parent, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response,
-			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Boolean authorative = parent.getSession().isAuthorative();
 		long inId = parent.getTaskId();
 		BufferedReader br = request.getReader();
 		String inputString = br.readLine();
@@ -1182,6 +1183,8 @@ public class AftermathHandler extends DefaultHandler {
 		writer.th(localizer.TH_GROUP);
 		writer.th(localizer.TH_CONFIDENCE);
 		writer.th(localizer.TH_SET_WEIGHT);
+		writer.th(localizer.TH_AUTHORATIVE_HISTOGRAM);
+		writer.th(localizer.TH_NORMAL_HISTOGRAM);
 		writer.tr_End();
 		writer.tHead_End();
 		writer.form_Start("/aftermath/map/weight", "POST");
@@ -1220,6 +1223,8 @@ public class AftermathHandler extends DefaultHandler {
 			}
 			writer.td(String.valueOf(confidence));
 			writer.td("<input type=\"text\" name=\"" + e + "\" value=\"\">");
+			writer.td(mapEdge.getHistogramDataString(true));
+			writer.td(mapEdge.getHistogramDataString(false));
 			writer.tr_End();
 		}
 		writer.tBody_End();
