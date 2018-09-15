@@ -41,6 +41,7 @@ import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
 import main.java.encephalon.exceptions.ResponseException;
 import main.java.encephalon.histogram.HistogramBase;
+import main.java.encephalon.histogram.LowResolutionHistogram;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.spatialIndex.SpatialIndex;
@@ -819,14 +820,29 @@ public class AftermathHandler extends DefaultHandler {
 		writer.td("confidence");
 		writer.tr_End();
 
+		boolean lowRes = edgeWeightMap.size() <= 1;
 		for (long edge : edgeWeightMap.keySet()) {
 			int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
 			int weight = edgeWeightMap.get(edge);
-			HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(authorative, inId,
-					timeStamp, weight);
+			int finalWeight = -1;
+			float confidence = -1;
+			
+			if(lowRes)
+			{
+				LowResolutionHistogram weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInputLowRes(
+						inId, timeStamp, weight);
 
-			float confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
-			int finalWeight = weightInputs.getWeight();
+				confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
+				finalWeight = weightInputs.getWeight();					
+			}
+			else
+			{
+				HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(authorative, inId,
+						timeStamp, weight);
+
+				confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
+				finalWeight = weightInputs.getWeight();				
+			}
 
 			writer.tr_Start();
 			writer.td(String.valueOf(edge));
