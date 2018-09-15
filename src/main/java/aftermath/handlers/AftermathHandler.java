@@ -829,6 +829,7 @@ public class AftermathHandler extends DefaultHandler {
 			
 			if(lowRes)
 			{
+				weight = (int)Math.floor(weight / (float)3.35);
 				LowResolutionHistogram weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInputLowRes(
 						inId, timeStamp, weight);
 
@@ -1201,6 +1202,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.th(localizer.TH_SET_WEIGHT);
 		writer.th(localizer.TH_AUTHORATIVE_HISTOGRAM);
 		writer.th(localizer.TH_NORMAL_HISTOGRAM);
+		writer.th(localizer.TH_LOW_HISTOGRAM);
 		writer.tr_End();
 		writer.tHead_End();
 		writer.form_Start("/aftermath/map/weight", "POST");
@@ -1241,6 +1243,7 @@ public class AftermathHandler extends DefaultHandler {
 			writer.td("<input type=\"text\" name=\"" + e + "\" value=\"\">");
 			writer.td(mapEdge.getHistogramDataString(true));
 			writer.td(mapEdge.getHistogramDataString(false));
+			writer.td(mapEdge.getLowResHistogramDataString());
 			writer.tr_End();
 		}
 		writer.tBody_End();
