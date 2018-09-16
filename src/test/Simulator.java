@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 class Simulator {
 
 	@Test
+	@SuppressWarnings("unchecked")
 	void simulateEntry() throws IOException, InterruptedException {
 		URL url = new URL("http://localhost:8080/aftermath/map/node/1093685732/json?depth=22");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -36,8 +37,10 @@ class Simulator {
 			content.append(inputLine);
 		}
 		
-		Map result = new Gson().fromJson(content.toString(), Map.class);
-		Map vertices = (Map)result.get("mapVertices");
+		Map<?, ?> result = new Gson().fromJson(content.toString(), Map.class);
+		
+		Map<String, ?> vertices = (Map<String, ?>)result.get("mapVertices");
+		
 		Set<String> keySet = vertices.keySet();
 		HashMap<Integer, Integer> edgeWeightMap = new HashMap<Integer, Integer>();
 		
@@ -46,7 +49,7 @@ class Simulator {
 
 		for(int i = 0; i < 10000; i++)
 		{
-			Thread.sleep(5);
+			Thread.sleep(10);
 			int rnd = (int)(Math.random() * keys.length);
 			String s = (String)keys[rnd];
 			Map edgeList = (Map)vertices.get(s);
