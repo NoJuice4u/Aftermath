@@ -36,6 +36,8 @@ function loadJSON(data_uri, zoom)
 				canvasInput.value = "";
 			}
 			
+			var coordFinal = getBearingInverse(ref_lon, ref_lat, mousePos.x, mousePos.y, zm, 300, 500);
+			
 			var distance = 9999;
 			for(edge in jsonObj["mapEdges"])
 			{
@@ -55,6 +57,10 @@ function loadJSON(data_uri, zoom)
 				bX = coordinatesB['x'] - mousePos.x;
 				aY = coordinatesA['y'] - mousePos.y;
 				bY = coordinatesB['y'] - mousePos.y;
+				
+				console.log("# [" + vertexA['longitude'] + " : " + vertexA['latitude']);
+				console.log("C [" + coordFinal['lon'] + " : " + coordFinal['lat']);
+				console.log("Z [" + (vertexA['longitude'] - coordFinal['lon']) + " : " + (vertexA['latitude'] - coordFinal['lat']));
 				
 				lineAX = bX - aX;
 				lineAY = bY - aY;
@@ -321,6 +327,15 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 	var coords = new Object();
 		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+155;
 		coords['y'] = (((rlat - lat)*zoom)+yOffset)*0.9;
+		
+	return coords;
+}
+
+function getBearingInverse(rlon, rlat, x, y, zoom, xOffset, yOffset)
+{
+	var coords = new Object();
+		coords['lon'] = ((((x - 155)/0.725)-xOffset)/zoom) + rlon;
+		coords['lat'] = -((((y/0.9)-yOffset)/zoom)-rlat); 
 		
 	return coords;
 }
