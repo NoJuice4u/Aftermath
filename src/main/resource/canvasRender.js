@@ -39,6 +39,9 @@ function loadJSON(data_uri, zoom)
 			var coordFinal = getBearingInverse(ref_lon, ref_lat, mousePos.x, mousePos.y, zm, 300, 500);
 			
 			var distance = 9999;
+			finalX = 0;
+			finalY = 0;
+				
 			for(edge in jsonObj["mapEdges"])
 			{
 				var vertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
@@ -53,26 +56,44 @@ function loadJSON(data_uri, zoom)
 				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
 				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
 				
+				var mouseCoord = getBearingInverse(ref_lon, ref_lat, mousePos.x, mousePos.y, zm, 300, 500);
+				roadSlope = (vertexB["latitude"] - vertexA["latitude"])/(vertexB["longitude"] - vertexA["longitude"])
+				inverseRoadSlope = -1/roadSlope;
+				
+				// Intersect the slopes.
+				roadZeroPointOffset = (roadSlope * vertexB["latitude"]) - vertexA["latitude"];
+				mouseInversePointOffset = (inverseRoadSlope * mouseCoord["lon"]) - vertexA["latitude"];
+				
+				lonSect = ((mouseInversePointOffset - mouseCoord["lat"]) / (roadSlope - inverseRoadSlope)) + vertexA["latitude"];
+				latSect = inverseRoadSlope * lonSect;
+				intersectCoords = getBearing(ref_lon, ref_lat, lonSect, latSect, zm, 300, 500);
+				
 				aX = coordinatesA['x'] - mousePos.x;
 				bX = coordinatesB['x'] - mousePos.x;
 				aY = coordinatesA['y'] - mousePos.y;
 				bY = coordinatesB['y'] - mousePos.y;
-				
-				console.log("# [" + vertexA['longitude'] + " : " + vertexA['latitude']);
-				console.log("C [" + coordFinal['lon'] + " : " + coordFinal['lat']);
-				console.log("Z [" + (vertexA['longitude'] - coordFinal['lon']) + " : " + (vertexA['latitude'] - coordFinal['lat']));
 				
 				lineAX = bX - aX;
 				lineAY = bY - aY;
 				
 				slopeA = lineAX / lineAY;
 				offsetA = slopeA * aX;
-				slopeB = 1 / slopeA;
+				slopeB = -1 / slopeA;
 				offsetB = 0;
 				
-				xSect = (offsetB - offsetA) / (slopeA - slopeB);
+				xSect = coordinatesA['x'] + (offsetB - offsetA) / (slopeA - slopeB);
+				ySect = -slopeB*xSect; // Something is off with this offset, but should be close!!
 				
-				mDistance = Math.abs(xSect) ; // Not Entirely Accurate!!
+				sideA = Math.pow((xSect - mousePos.x), 2);
+				sideB = Math.pow((ySect - mousePos.y), 2);
+				sideC = Math.sqrt(sideA + sideB);
+				
+				mDistance = sideC;
+			 	
+				console.log("V [" + vertexA["longitude"] + "::" + vertexA["latitude"] + " -- " + roadSlope);
+				console.log("B [" + mouseCoord["lon"] + "::" + mouseCoord["lat"] + " -- " + inverseRoadSlope);				
+				console.log("S [" + xSect + " :: " + roadZeroPointOffset + " ~~ " + mouseInversePointOffset + "] DISTANCE [" + mDistance);
+				console.log("3 [" + sideA + ", " + sideB + ", " + sideC);
 				
 				if(distance > mDistance)
 				{
@@ -82,6 +103,8 @@ function loadJSON(data_uri, zoom)
 						chosenEdge = edge;
 						distance = mDistance;
 						// console.log("  [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
+						finalX = xSect;
+						finalY = ySect;
 					}
 					else
 					{
@@ -93,6 +116,8 @@ function loadJSON(data_uri, zoom)
 							chosenEdge = edge;
 							distance = mDst;
 							// console.log("# [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
+							finalX = xSect;
+							finalY = ySect;
 						}
 					}
 				}
@@ -150,6 +175,17 @@ function loadJSON(data_uri, zoom)
 				tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
 				tempLineCanvasContext.closePath();
 			}
+			
+			tempLineCanvasContext = tempLineCanvas.getContext("2d");
+			tempLineCanvasContext.beginPath();
+			tempLineCanvasContext.globalAlpha = 1;
+			tempLineCanvasContext.moveTo(mousePos.x, mousePos.y);
+      		tempLineCanvasContext.lineTo(finalX, finalY);
+			tempLineCanvasContext.strokeStyle = "#0000FF";
+			tempLineCanvasContext.stroke();
+			tempLineCanvasContext.closePath();
+			
+			console.log("F: " + finalX );
 		});
 		listenerLoaded = true;
 	}
@@ -325,8 +361,8 @@ function submitDataForm(data_uri)
 function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 {
 	var coords = new Object();
-		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+155;
-		coords['y'] = (((rlat - lat)*zoom)+yOffset)*0.9;
+		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+0;
+		coords['y'] = ((((rlat - lat)*zoom)+yOffset)*0.9)+25;
 		
 	return coords;
 }
@@ -334,8 +370,8 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 function getBearingInverse(rlon, rlat, x, y, zoom, xOffset, yOffset)
 {
 	var coords = new Object();
-		coords['lon'] = ((((x - 155)/0.725)-xOffset)/zoom) + rlon;
-		coords['lat'] = -((((y/0.9)-yOffset)/zoom)-rlat); 
+		coords['lon'] = ((((x - 0)/0.725)-xOffset)/zoom) + rlon;
+		coords['lat'] = -(((((y - 25)/0.9)-yOffset)/zoom)-rlat); 
 		
 	return coords;
 }
