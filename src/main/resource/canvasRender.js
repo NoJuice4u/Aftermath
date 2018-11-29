@@ -7,6 +7,8 @@ const canvasA = mapCanvas.getContext("2d");
 var chosenEdge = -1;
 var listenerLoaded = false;
 var inputData = { };
+var offsetMousePosX = 0;
+var offsetMousePosY = 0;
 
 function loadJSON(data_uri, zoom)
 {
@@ -20,6 +22,9 @@ function loadJSON(data_uri, zoom)
 				x: e.clientX - mapCanvas.offsetLeft,
 				y: e.clientY - mapCanvas.offsetTop
 			};
+			offsetMousePosX = mousePos.x;
+			offsetMousePosY = mousePos.y;
+			
 			var zm = Math.pow(2, zoom);
 			
 			if(chosenEdge > 0)
@@ -36,12 +41,14 @@ function loadJSON(data_uri, zoom)
 				canvasInput.value = "";
 			}
 			
-			var coordFinal = getBearingInverse(ref_lon, ref_lat, mousePos.x, mousePos.y, zm, 300, 500);
+			var coordFinal = getBearingInverse(ref_lon, ref_lat, offsetMousePosX, offsetMousePosY, zm, 300, 500);
 			
 			var distance = 9999;
 			finalX = 0;
 			finalY = 0;
-				
+			
+			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
+			
 			for(edge in jsonObj["mapEdges"])
 			{
 				var vertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
@@ -56,7 +63,7 @@ function loadJSON(data_uri, zoom)
 				var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
 				var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
 				
-				var mouseCoord = getBearingInverse(ref_lon, ref_lat, mousePos.x, mousePos.y, zm, 300, 500);
+				var mouseCoord = getBearingInverse(ref_lon, ref_lat, offsetMousePosX, offsetMousePosY, zm, 300, 500);
 				roadSlope = (vertexB["latitude"] - vertexA["latitude"])/(vertexB["longitude"] - vertexA["longitude"])
 				inverseRoadSlope = -1/roadSlope;
 				
@@ -68,32 +75,33 @@ function loadJSON(data_uri, zoom)
 				latSect = inverseRoadSlope * lonSect;
 				intersectCoords = getBearing(ref_lon, ref_lat, lonSect, latSect, zm, 300, 500);
 				
-				aX = coordinatesA['x'] - mousePos.x;
-				bX = coordinatesB['x'] - mousePos.x;
-				aY = coordinatesA['y'] - mousePos.y;
-				bY = coordinatesB['y'] - mousePos.y;
+				aX = -(coordinatesA['x'] - offsetMousePosX);
+				bX = -(coordinatesB['x'] - offsetMousePosX);
+				aY = -(coordinatesA['y'] - offsetMousePosY);
+				bY = -(coordinatesB['y'] - offsetMousePosY);
 				
 				lineAX = bX - aX;
 				lineAY = bY - aY;
 				
 				slopeA = lineAX / lineAY;
-				offsetA = slopeA * aX;
-				slopeB = -1 / slopeA;
-				offsetB = 0;
+				offsetA = aY - (aX * slopeA);
+				slopeB = -(lineAY / lineAX);
+				offsetB = bY - (bX * slopeB);
 				
-				xSect = coordinatesA['x'] + (offsetB - offsetA) / (slopeA - slopeB);
-				ySect = -slopeB*xSect; // Something is off with this offset, but should be close!!
+				// y = slopeA(x)+offsetA
+				ySect = ((slopeA * aX) - offsetA) + mousePos['y'];
 				
-				sideA = Math.pow((xSect - mousePos.x), 2);
-				sideB = Math.pow((ySect - mousePos.y), 2);
-				sideC = Math.sqrt(sideA + sideB);
+				yOffset = coordinatesA['y'] - (coordinatesA['x'] * slopeA); // coordinatesA['x'] + ((offsetB - offsetA) / (slopeA - slopeB));
+				xSect = coordinatesA['x'] + ((offsetB - offsetA) / (slopeA - slopeB));
+
+				mDistance = 99;
 				
-				mDistance = sideC;
-			 	
-				console.log("V [" + vertexA["longitude"] + "::" + vertexA["latitude"] + " -- " + roadSlope);
-				console.log("B [" + mouseCoord["lon"] + "::" + mouseCoord["lat"] + " -- " + inverseRoadSlope);				
-				console.log("S [" + xSect + " :: " + roadZeroPointOffset + " ~~ " + mouseInversePointOffset + "] DISTANCE [" + mDistance);
-				console.log("3 [" + sideA + ", " + sideB + ", " + sideC);
+				tempLineCanvas.getContext("2d").beginPath();
+				tempLineCanvas.getContext("2d").arc(xSect, ySect, 4, 0, 2*Math.PI);
+				tempLineCanvas.getContext("2d").strokeStyle="#FF0033";
+				tempLineCanvas.getContext("2d").closePath();
+				tempLineCanvas.getContext("2d").stroke();
+				tempLineCanvas.getContext("2d").strokeStyle="#000033";
 				
 				if(distance > mDistance)
 				{
@@ -102,7 +110,7 @@ function loadJSON(data_uri, zoom)
 					{
 						chosenEdge = edge;
 						distance = mDistance;
-						// console.log("  [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
+						// console.log("  [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + offsetMousePosX + ", " + offsetMousePosY);
 						finalX = xSect;
 						finalY = ySect;
 					}
@@ -115,14 +123,26 @@ function loadJSON(data_uri, zoom)
 						{
 							chosenEdge = edge;
 							distance = mDst;
-							// console.log("# [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + mousePos.x + ", " + mousePos.y);
+							// console.log("# [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + offsetMousePosX + ", " + offsetMousePosY);
 							finalX = xSect;
 							finalY = ySect;
 						}
 					}
 				}
+				
+				tempLineCanvasContext = tempLineCanvas.getContext("2d");
+				tempLineCanvasContext.beginPath();
+				tempLineCanvasContext.globalAlpha = 1;
+				tempLineCanvasContext.moveTo(offsetMousePosX, offsetMousePosY);
+		  		tempLineCanvasContext.lineTo(finalX, finalY);
+				tempLineCanvasContext.strokeStyle = "#00FFFF";
+				tempLineCanvasContext.stroke();
+				tempLineCanvasContext.closePath();
+				
 			}
 
+
+	// 2 LINES TEMP COMMENT OUT
 			const selectedRoad = document.getElementById("selectedRoadType");
 			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"];		
 			if(typeof inputData[chosenEdge] != 'undefined')
@@ -153,13 +173,11 @@ function loadJSON(data_uri, zoom)
 				var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 				var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 				
-				canvasInputBox.style.left = xPos;
-				canvasInputBox.style.top = yPos;
+				canvasInputBox.style.left = 200;
+				canvasInputBox.style.top = 70;
 				
 				// canvasInput.style.left = xRange + xPos;
 				// canvasInput.style.top = yRange + yPos;
-				
-				tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
 				
 				tempLineCanvasContext = tempLineCanvas.getContext("2d");
 				tempLineCanvasContext.beginPath();
@@ -167,7 +185,7 @@ function loadJSON(data_uri, zoom)
 				tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
 				tempLineCanvasContext.rotate(rotation);
 				tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
-				tempLineCanvasContext.translate(-coordinatesA['x'], -coordinatesA['y']);
+				tempLineCanvasContext.translate(0, 0);
 				tempLineCanvasContext.fillStyle = "#FF00FF";
 				tempLineCanvasContext.strokeStyle = "#0000FF";
 				tempLineCanvasContext.fill();
@@ -175,17 +193,6 @@ function loadJSON(data_uri, zoom)
 				tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
 				tempLineCanvasContext.closePath();
 			}
-			
-			tempLineCanvasContext = tempLineCanvas.getContext("2d");
-			tempLineCanvasContext.beginPath();
-			tempLineCanvasContext.globalAlpha = 1;
-			tempLineCanvasContext.moveTo(mousePos.x, mousePos.y);
-      		tempLineCanvasContext.lineTo(finalX, finalY);
-			tempLineCanvasContext.strokeStyle = "#0000FF";
-			tempLineCanvasContext.stroke();
-			tempLineCanvasContext.closePath();
-			
-			console.log("F: " + finalX );
 		});
 		listenerLoaded = true;
 	}
@@ -304,7 +311,6 @@ function loadJSON(data_uri, zoom)
 					canvasA.translate(coordinatesA['x'], coordinatesA['y']);
 					canvasA.rotate(rotation);
 					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
-					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
 					canvasA.fillStyle = "#" + colorHex;
 					canvasA.strokeStyle = "#" + hxResultStroke + hxResultStroke + "00" + strokeAlpha;
 	
@@ -312,6 +318,7 @@ function loadJSON(data_uri, zoom)
 					canvasA.stroke();
 					canvasA.restore();
 					canvasA.closePath();
+					canvasA.translate(0, 0);
 				}
 			} 
 			
@@ -361,8 +368,10 @@ function submitDataForm(data_uri)
 function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 {
 	var coords = new Object();
-		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+0;
-		coords['y'] = ((((rlat - lat)*zoom)+yOffset)*0.9)+25;
+		// coords['x'] = ((((lon - rlon)*zoom)+xOffset)*0.725)+0;
+		// coords['y'] = ((((rlat - lat)*zoom)+yOffset)*0.9)+25;
+		coords['x'] = ((((lon - rlon)*zoom)+xOffset)*1)+0;
+		coords['y'] = ((((rlat - lat)*zoom)+yOffset)*1)+25;
 		
 	return coords;
 }
@@ -370,8 +379,10 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 function getBearingInverse(rlon, rlat, x, y, zoom, xOffset, yOffset)
 {
 	var coords = new Object();
-		coords['lon'] = ((((x - 0)/0.725)-xOffset)/zoom) + rlon;
-		coords['lat'] = -(((((y - 25)/0.9)-yOffset)/zoom)-rlat); 
-		
+		// coords['lon'] = ((((x - 0)/0.725)-xOffset)/zoom) + rlon;
+		// coords['lat'] = -(((((y - 25)/0.9)-yOffset)/zoom)-rlat);
+		coords['lon'] = ((((x - 0)/1)-xOffset)/zoom) + rlon;
+		coords['lat'] = -(((((y - 25)/1)-yOffset)/zoom)-rlat);
+
 	return coords;
 }

@@ -66,6 +66,9 @@ function loadJSON(data_uri, zoom)
 				
 				intersect = xIntersect > 0 && xIntersect < Math.abs(diff['x']);
 				console.log(mousePos.x + " -> " + xIntersect);
+				
+				// stringBuilder.append("ctx.arc(" + x + "," + y + "," + r + ",0,2*Math.PI);" + System.lineSeparator());
+				
 				if(intersect == true)
 				{
 					var finalDst = Math.sqrt(Math.pow(xIntersect, 2) + Math.pow(yIntersect, 2));
@@ -280,7 +283,7 @@ function loadJSON(data_uri, zoom)
 				canvasB.rect(minCoord['x'], minCoord['y'], dx, dy);
 				// regionBox.translate(-coordinatesA['x'], -coordinatesA['y']);
 				canvasB.lineWidth = 2;
-				canvasB.fillStyle = "#00FFFF40";
+				canvasB.fillStyle = "#00FFFF20";
 				canvasB.strokeStyle = "#000000FF";
 
 				canvasB.fill();
@@ -338,7 +341,7 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 
 function startLoop()
 {
-	loadJSON("https://www.wc-encephalon.com/aftermath/map/node/1831717492/json?depth=" + DEPTHFACTOR + "&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
+	loadJSON("http://localhost:8080/aftermath/map/node/4472707495/json?depth=" + DEPTHFACTOR + "&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
 }
 		</script>
 		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
@@ -372,7 +375,8 @@ Aftermath
 		</table>
 		<tr>
 			<td>
-<div id="googleMap" style="width:1200px;height:600px;position:absolute; z-index:-5"></div><script>function myMap() {var mapProp= { center:new google.maps.LatLng(35.658203125,139.72750854492188), zoom:16 };var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);}var drawingManager = new google.maps.drawing.DrawingManager();drawingManager.setMap(map);</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>			</td>
+				<div id="googleMap" style="width:1200px;height:600px;position:absolute; z-index:-5"></div><script>function myMap() {var mapProp= { center:new google.maps.LatLng(35.67200469970703,139.75279235839844), zoom:16 };var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);}var drawingManager = new google.maps.drawing.DrawingManager();drawingManager.setMap(map);</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>
+			</td>
 		</tr>
 		<table class="tableContainer" width="100" height="null" style="overflow: visible">
 			<tr>
@@ -407,13 +411,14 @@ const canvasA = mapCanvas.getContext("2d");
 const canvasB = regionBox.getContext("2d");
 const MAP_WIDTH = 1200;
 const MAP_HEIGHT = 600;
-const ZOOMFACTOR = 15;
+const DEPTHFACTOR = 30;
+const ZOOMFACTOR = 16;
 
 var register = true;
 var inputData = { };
 var chosenEdge = -1;
 
-setInterval(startLoop, 5000);
+setInterval(startLoop, 2000);
 		</script>
 	</body>
 </html>

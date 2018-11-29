@@ -19,11 +19,14 @@ import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 
 class Simulator {
-
+	public final int DATAENTRIES = 30000;
+	public final float DEVIATION = 0.2f;
+	public final int DELAY = 1;
+	
 	@Test
 	@SuppressWarnings("unchecked")
 	void simulateEntry() throws IOException, InterruptedException {
-		URL url = new URL("http://localhost:8080/aftermath/map/node/1093685732/json?depth=22");
+		URL url = new URL("http://localhost:8080/aftermath/map/node/4472707495/json?depth=22");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		
@@ -45,11 +48,10 @@ class Simulator {
 		HashMap<Integer, Integer> edgeWeightMap = new HashMap<Integer, Integer>();
 		
 		Object[] keys = keySet.toArray();
-		float deviation = 0.5f;
 
-		for(int i = 0; i < 10000; i++)
+		for(int i = 0; i < DATAENTRIES; i++)
 		{
-			Thread.sleep(10);
+			Thread.sleep(DELAY);
 			int rnd = (int)(Math.random() * keys.length);
 			String s = (String)keys[rnd];
 			Map edgeList = (Map)vertices.get(s);
@@ -64,7 +66,7 @@ class Simulator {
 					edgeWeightMap.put(it, weight);
 				}
 				
-				int edgeWeight = edgeWeightMap.get(it) + (int)(deviation * 10 * (Math.random() - 0.5));
+				int edgeWeight = edgeWeightMap.get(it) + (int)(DEVIATION * 10 * (Math.random() - DEVIATION));
 				if(edgeWeight < 0) edgeWeight = 0;
 				else if(edgeWeight > 10) edgeWeight = 10;
 				edgePost.append("&" + it + "=" + edgeWeight);
