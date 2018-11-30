@@ -838,8 +838,7 @@ public class AftermathHandler extends DefaultHandler {
 			}
 			else
 			{
-				HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(authorative, inId,
-						timeStamp, weight);
+				HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge).addWeightInput(authorative, inId, timeStamp, weight);
 
 				confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
 				finalWeight = weightInputs.getWeight();				

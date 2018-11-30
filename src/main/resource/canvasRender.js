@@ -38,7 +38,7 @@ function loadJSON(data_uri, zoom)
 					delete inputData[chosenEdge];
 				}
 				
-				canvasInput.value = "";
+				canvasInput.value = "0";
 			}
 			
 			var coordFinal = getBearingInverse(ref_lon, ref_lat, offsetMousePosX, offsetMousePosY, zm, 300, 500);
@@ -144,14 +144,14 @@ function loadJSON(data_uri, zoom)
 
 	// 2 LINES TEMP COMMENT OUT
 			const selectedRoad = document.getElementById("selectedRoadType");
-			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"];		
+			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"] + "</br>" + JSON.stringify(inputData);		
 			if(typeof inputData[chosenEdge] != 'undefined')
 			{
 				canvasInput.value = inputData[chosenEdge];
 			}
 			else
 			{
-				canvasInput.value = "";
+				canvasInput.value = "0";
 			}
 			
 			// FOR LOOP HERE
@@ -358,7 +358,7 @@ function submitDataForm(data_uri)
 	console.log(rawData);
 	request.send(rawData);
 	inputData = { };
-	canvasInput.value = "";
+	canvasInput.value = "0";
 	canvasInputBox.style.left = "-100pt";
 	canvasInputBox.style.top = "-100pt";
 	tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
