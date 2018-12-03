@@ -17,11 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+
+import main.java.encephalon.dto.MapEdge;
 
 class Simulator {
 	public final int DATAENTRIES = 30000;
-	public final float DEVIATION = 0.75f;
-	public final int DELAY = 10;
+	public final float DEVIATION = 0.20f;
+	public final int DELAY = 3;
 	
 	@Test
 	@SuppressWarnings("unchecked")
@@ -81,8 +84,48 @@ class Simulator {
 		
 			System.out.println("[" + con.getResponseCode() + "]\t" + edgePost.substring(1));
 		}
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void markRoads() throws IOException, InterruptedException {
+		URL url = new URL("http://localhost:8080/aftermath/map/node/1093685711/json?depth=22");
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestMethod("GET");
 		
-		fail(String.valueOf(err));
+		int err = con.getResponseCode();
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		StringBuffer content = new StringBuffer();
+		
+		String inputLine;
+		while((inputLine = in.readLine()) != null)
+		{
+			content.append(inputLine);
+		}
+		
+		Map<?, ?> result = new Gson().fromJson(content.toString(), Map.class);
+		
+		Map<String, ?> edges = (Map<String, ?>)result.get("mapEdges");
+		
+		Set<String> keySet = edges.keySet();
+		
+		for(String edg : keySet)
+		{
+			LinkedTreeMap<?, ?> edgeLinkedTreeMap = (LinkedTreeMap<?, ?>)edges.get(edg);
+			String mode = (String)edgeLinkedTreeMap.get("mode");
+
+			if(mode.equals("primary"))
+			{
+				url = new URL("http://localhost:8080/aftermath/map/mark/");
+				con = (HttpURLConnection) url.openConnection();
+				con.setRequestMethod("POST");
+				con.setDoOutput(true);
+				DataOutputStream out = new DataOutputStream(con.getOutputStream());
+				out.writeBytes(edg + "=2");
+				
+				System.out.println("[" + con.getResponseCode() + "]\t" + edg);
+			}
+		}
 	}
 
 }

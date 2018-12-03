@@ -4,7 +4,7 @@
 		<title>
 Aftermath
 		</title>
-		<img id="lowConfidence" src="https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif">
+		<img id="lowConfidence" src="https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif" style="position: absolute; visibility: hidden">
 		<script type="application/javascript">
 var chosenEdge = -1;
 var listenerLoaded = false;
@@ -109,8 +109,8 @@ function loadJSON(data_uri, zoom)
 				var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 				var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 				
-				canvasInputBox.style.left = xPos;
-				canvasInputBox.style.top = yPos;
+				canvasInputBox.style.left = 300;
+				canvasInputBox.style.top = 50;
 				
 				// canvasInput.style.left = xRange + xPos;
 				// canvasInput.style.top = yRange + yPos;
@@ -201,10 +201,6 @@ function loadJSON(data_uri, zoom)
 					var lineLength = Math.sqrt(dx * dx + dy * dy);
 
 					drawn += 1;
-					// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
-					// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
-					// canvasA.lineWidth = 5;
-					
 					canvasA.save();
 					canvasA.beginPath();
 	
@@ -225,11 +221,11 @@ function loadJSON(data_uri, zoom)
 					{
 						weightScore = confidenceScore;
 					}
-					gg = confidenceScore - Math.round((weightRange * confidenceScore) / 2);
-					ggHex = ("00" + gg.toString(16)).substr(-2);
-					
-					rr = (confidenceScore>weightScore)?confidenceScore:weightScore;
+					rr = weightScore;
 					rrHex = ("00" + rr.toString(16)).substr(-2);
+					
+					gg = (confidenceRange<0.5)?255:0;
+					ggHex = ("00" + gg.toString(16)).substr(-2);
 					
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
 					if(jsonObj["mapEdges"][edge]["marked"] == true)
@@ -240,7 +236,7 @@ function loadJSON(data_uri, zoom)
 					{
 						hxResultStroke = "00";
 					}
-					colorHex = rrHex + ggHex + "00ff";
+					colorHex = rrHex + ggHex + "00FF";
 					var lineWidth = 8;
 					var strokeAlpha = "80";
 					if(edgeObj["mode"] == "primary" || edgeObj["mode"] == "secondary" || edgeObj["mode"] == "rail")
