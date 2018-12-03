@@ -139,6 +139,14 @@ function loadJSON(data_uri, zoom)
 				tempLineCanvasContext.stroke();
 				tempLineCanvasContext.closePath();
 				
+				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
+				if(confidenceRange < 0.5)
+				{
+					var mPosX = ((coordinatesA['x'] + coordinatesB['x']) / 2) - 8;
+					var mPosY = ((coordinatesA['y'] + coordinatesB['y']) / 2) - 8;
+					var cautionImg = document.getElementById("lowConfidence");
+					tempLineCanvasContext.drawImage(cautionImg, mPosX, mPosY, 16, 16);
+				}
 			}
 
 
@@ -162,7 +170,6 @@ function loadJSON(data_uri, zoom)
 				var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i+1]];
 				
 				var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
-				var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
 				
 				var lineWidth = 12;
 				var dx = coordinatesB['x'] - coordinatesA['x'];

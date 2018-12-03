@@ -56,4 +56,13 @@ public class WCEncephalonHandler extends DefaultHandler{
 		
 		response.getWriter().print(writer.getString());
 	}
+	
+	@GET()
+	@HandlerInfo(schema="favicon.ico", description = "Icon")
+	public void getFavIcon(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
+	{
+		response.setContentType("text/plain;charset=utf-8");
+		response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+		baseRequest.setHandled(true);
+	}
 }

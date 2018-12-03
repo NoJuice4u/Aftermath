@@ -261,6 +261,7 @@ public class AftermathHandler extends DefaultHandler {
 
 		if (drawMap == true)
 			renderMap(writer, initialNode, zoom);
+		writer.canvasIcons();
 		writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2);
 		writer.script_Start();
 		writer.initializeCanvasJS("mapCanvas");
@@ -368,6 +369,7 @@ public class AftermathHandler extends DefaultHandler {
 
 		renderMap(writer, initialNode, zoom);
 
+		writer.canvasIcons();
 		writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2);
 		writer.script_Start();
 		writer.initializeCanvasJS("mapCanvas");
@@ -436,6 +438,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.tr_Start();
 		writer.td_Start(1, MapVertex.WIDTH, MapVertex.HEIGHT);
 		writer.div_Start("overflow:hidden; height:" + MapVertex.HEIGHT + "px");
+		writer.canvasIcons();
 		writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, 0, 25);
 		// This one is offset too low. Overlaying issues.
 		writer.canvas("tempLineCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2, -MapVertex.HEIGHT, 30, "none");
@@ -1052,8 +1055,11 @@ public class AftermathHandler extends DefaultHandler {
 				String color = "#" + rrHex + ggHex + "00";
 				String color2 = "#" + hx3 + hx3 + "00" + lineAlpha;
 
-				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX,
-						drawPointY);
+				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
+				if(mapEdge.getConfidence() < 0.5)
+				{
+					writer.drawImage("mapCanvas", 16, 16, "lowConfidence", startPointX, startPointY);
+				}
 			}
 		}
 	}

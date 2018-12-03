@@ -4,6 +4,7 @@
 		<title>
 Aftermath
 		</title>
+		<img id="lowConfidence" src="https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif">
 		<script type="application/javascript">
 var chosenEdge = -1;
 var listenerLoaded = false;
@@ -66,9 +67,6 @@ function loadJSON(data_uri, zoom)
 				
 				intersect = xIntersect > 0 && xIntersect < Math.abs(diff['x']);
 				console.log(mousePos.x + " -> " + xIntersect);
-				
-				// stringBuilder.append("ctx.arc(" + x + "," + y + "," + r + ",0,2*Math.PI);" + System.lineSeparator());
-				
 				if(intersect == true)
 				{
 					var finalDst = Math.sqrt(Math.pow(xIntersect, 2) + Math.pow(yIntersect, 2));
@@ -161,6 +159,8 @@ function loadJSON(data_uri, zoom)
 			document.getElementById("regionBox").getContext("2d").clearRect(0, 0, regionBox.width, regionBox.height);
 			
 			var zm = Math.pow(2, zoom);
+			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
+			
 			for(edge in jsonObj["mapEdges"])
 			{
 				var length = jsonObj["mapEdges"][edge]["vertices"].length;
@@ -261,6 +261,17 @@ function loadJSON(data_uri, zoom)
 					canvasA.restore();
 					canvasA.closePath();
 				}
+				
+				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
+				if(confidenceRange < 0.5)
+				{
+					tempLineCanvasContext = tempLineCanvas.getContext("2d");
+					var mPosX = ((coordinatesA['x'] + coordinatesB['x']) / 2) - 8;
+					var mPosY = ((coordinatesA['y'] + coordinatesB['y']) / 2) - 8;
+				
+					var cautionImg = document.getElementById("lowConfidence");
+					tempLineCanvasContext.drawImage(cautionImg, mPosX, mPosY, 16, 16);
+				}
 			} 
 			
 			canvasA.beginPath();
@@ -283,7 +294,7 @@ function loadJSON(data_uri, zoom)
 				canvasB.rect(minCoord['x'], minCoord['y'], dx, dy);
 				// regionBox.translate(-coordinatesA['x'], -coordinatesA['y']);
 				canvasB.lineWidth = 2;
-				canvasB.fillStyle = "#00FFFF20";
+				canvasB.fillStyle = "#0080FF20";
 				canvasB.strokeStyle = "#000000FF";
 
 				canvasB.fill();
@@ -318,7 +329,7 @@ function submitDataForm(data_uri)
 	var rawData = "";
 	for(item in inputData)
 	{
-		rawData += item + "=" + inputData[item] + "&";www.wc
+		rawData += item + "=" + inputData[item] + "&";
 	}
 	console.log(rawData);
 	request.send(rawData);
@@ -341,7 +352,7 @@ function getBearing(rlon, rlat, lon, lat, zoom, xOffset, yOffset)
 
 function startLoop()
 {
-	loadJSON("http://localhost:8080/aftermath/map/node/4472707495/json?depth=" + DEPTHFACTOR + "&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
+	loadJSON("http://localhost:8080/aftermath/map/node/1093685732/json?depth=" + DEPTHFACTOR + "&zoom=" + ZOOMFACTOR, ZOOMFACTOR);
 }
 		</script>
 		<script src="https://kryogenix.org/code/browser/sorttable/sorttable.js"></script>
@@ -375,7 +386,17 @@ Aftermath
 		</table>
 		<tr>
 			<td>
-				<div id="googleMap" style="width:1200px;height:600px;position:absolute; z-index:-5"></div><script>function myMap() {var mapProp= { center:new google.maps.LatLng(35.67200469970703,139.75279235839844), zoom:16 };var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);}var drawingManager = new google.maps.drawing.DrawingManager();drawingManager.setMap(map);</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>
+				<div id="googleMap" style="width:1200px;height:600px;position:absolute; z-index:-5"></div>
+				<script>
+					function myMap()
+						{
+							var mapProp = { center:new google.maps.LatLng(35.658203125, 139.72750854492188), zoom:16 };
+							var map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
+						}
+					var drawingManager = new google.maps.drawing.DrawingManager();
+					drawingManager.setMap(map);
+				</script>
+				<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM&callback=myMap&libraries=drawing"></script>
 			</td>
 		</tr>
 		<table class="tableContainer" width="100" height="null" style="overflow: visible">
@@ -401,6 +422,8 @@ Aftermath
 			</tr>
 		</table>
 		<div name="scratch">Scratch Pad</div>
+		<div><a href="http://localhost:8080/aftermath/map/roots/clear">Clear Roots</a></div>
+		<div><a href="http://localhost:8080/aftermath/map/node/1093685732/clear?depth=47">Clear Roads</a></div>
 		<script type="application/javascript">
 const mapCanvas = document.getElementById("mapCanvas");
 const canvasInputBox = document.getElementById("canvasInputBox");
@@ -411,8 +434,8 @@ const canvasA = mapCanvas.getContext("2d");
 const canvasB = regionBox.getContext("2d");
 const MAP_WIDTH = 1200;
 const MAP_HEIGHT = 600;
-const DEPTHFACTOR = 30;
 const ZOOMFACTOR = 16;
+const DEPTHFACTOR = 20;
 
 var register = true;
 var inputData = { };

@@ -16,6 +16,11 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 		loadedScript.append("</script>" + System.lineSeparator());
 	}
 	
+	public void canvasIcons()
+	{
+		stringBuilder.append("<img id=\"lowConfidence\" src=\"https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif\"/>");
+	}
+	
 	public void drawCanvasLine(String name, float width, String color, int xA, int yA, int xB, int yB)
 	{
 		drawCanvasLine(name, width, color, 1.0f, xA, yA, xB, yB);
@@ -81,6 +86,14 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 		stringBuilder.append("ctx.restore();" + System.lineSeparator());
 	}
 	
+	public void drawImage(String name, int width, int height, String image, int positionX, int positionY)
+	{
+		stringBuilder.append("var cautionImg = document.getElementById(\"" + image + "\");");
+		stringBuilder.append("ctx.drawImage(cautionImg, " + positionX + ", " + positionY + ", " + width + ", " + height + ");");
+		
+		System.out.println("ctx.drawImage(cautionImg, " + positionX + ", " + positionY + ", " + width + ", " + height + ");");
+	}
+	
 	public void drawRect(String name, float width, String color, String color2, float alpha, int xA, int yA, int xB, int yB)
 	{
 		// Math.atan2(dy, dx)
@@ -121,7 +134,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	{
 		stringBuilder.append("<div id=\"" + name + "\" style=\"text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30\">" + System.lineSeparator()
 				+ "<div id=\"selectedRoadType\" style=\"\">&lt;PH&gt;</div>" + System.lineSeparator()
-				+ "<div>A,  B,  C,  D</div>"
+				+ "<div>Clear, Drivable, Walkable, Destroyed</div>"
 				+ "<div><input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"" + name + "Input\" name=\"entry\" size=\"3\" style=\"border-width:2pt; border-style:solid; border-color:" + borderColor + "\"/></div>" + System.lineSeparator()
 				+ "<div><button onclick=\"" + submitFunction + "\"/>Send Data!</button></div>" + System.lineSeparator()
 				+ "</div>" + System.lineSeparator());

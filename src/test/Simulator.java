@@ -20,13 +20,13 @@ import com.google.gson.Gson;
 
 class Simulator {
 	public final int DATAENTRIES = 30000;
-	public final float DEVIATION = 0.2f;
-	public final int DELAY = 1;
+	public final float DEVIATION = 0.75f;
+	public final int DELAY = 10;
 	
 	@Test
 	@SuppressWarnings("unchecked")
 	void simulateEntry() throws IOException, InterruptedException {
-		URL url = new URL("http://localhost:8080/aftermath/map/node/4472707495/json?depth=22");
+		URL url = new URL("http://localhost:8080/aftermath/map/node/1093685711/json?depth=22");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		
