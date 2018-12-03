@@ -80,14 +80,14 @@ function loadJSON(data_uri, zoom)
 			}
 
 			const selectedRoad = document.getElementById("selectedRoadType");
-			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"];		
+			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"] + "</br>" + JSON.stringify(inputData);
 			if(typeof inputData[chosenEdge] != 'undefined')
 			{
 				canvasInput.value = inputData[chosenEdge];
 			}
 			else
 			{
-				canvasInput.value = "";
+				canvasInput.value = "0";
 			}
 			
 			// FOR LOOP HERE
@@ -408,7 +408,7 @@ Aftermath
 								</div>
 								<div id="canvasInputBox" style="text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30">
 									<div id="selectedRoadType" style="">&lt;PH&gt;</div>
-									<div><input type="number" min="0" max="10" class="textEntry" id="canvasInputBoxInput" name="entry" size="3" style="border-width:2pt; border-style:solid; border-color:#FF0000"/></div>
+									<div><input type="range" min="0" max="10" value="0" class="slider" id="canvasInputBoxInput" name="entry" size="3" style="border-width:2pt; border-style:solid; border-color:#FF0000"/></div>
 									<div><button onclick="submitDataForm('https://www.wc-encephalon.com/aftermath/map/weight');"/>Send Data!</button></div>
 								</div>
 							</td>
@@ -431,7 +431,7 @@ const canvasB = regionBox.getContext("2d");
 const MAP_WIDTH = 1200;
 const MAP_HEIGHT = 600;
 const ZOOMFACTOR = 16;
-const DEPTHFACTOR = 20;
+const DEPTHFACTOR = 35;
 
 var register = true;
 var inputData = { };

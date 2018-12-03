@@ -149,8 +149,6 @@ function loadJSON(data_uri, zoom)
 				}
 			}
 
-
-	// 2 LINES TEMP COMMENT OUT
 			const selectedRoad = document.getElementById("selectedRoadType");
 			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"] + "</br>" + JSON.stringify(inputData);		
 			if(typeof inputData[chosenEdge] != 'undefined')
@@ -182,10 +180,7 @@ function loadJSON(data_uri, zoom)
 				
 				canvasInputBox.style.left = 200;
 				canvasInputBox.style.top = 70;
-				
-				// canvasInput.style.left = xRange + xPos;
-				// canvasInput.style.top = yRange + yPos;
-				
+								
 				tempLineCanvasContext = tempLineCanvas.getContext("2d");
 				tempLineCanvasContext.beginPath();
 				tempLineCanvasContext.globalAlpha = 1;

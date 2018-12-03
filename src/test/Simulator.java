@@ -114,7 +114,7 @@ class Simulator {
 			LinkedTreeMap<?, ?> edgeLinkedTreeMap = (LinkedTreeMap<?, ?>)edges.get(edg);
 			String mode = (String)edgeLinkedTreeMap.get("mode");
 
-			if(mode.equals("primary"))
+			if(mode.equals("primary") || mode.equals("secondary"))
 			{
 				url = new URL("http://localhost:8080/aftermath/map/mark/");
 				con = (HttpURLConnection) url.openConnection();
