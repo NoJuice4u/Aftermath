@@ -2,6 +2,7 @@ const mapCanvas = document.getElementById("mapCanvas");
 const canvasInputBox = document.getElementById("canvasInputBox");
 const canvasInput = document.getElementById("canvasInputBoxInput");
 const tempLineCanvas = document.getElementById("tempLineCanvas");
+const tempLineCanvasContext = tempLineCanvas.getContext("2d");
 const canvasA = mapCanvas.getContext("2d");
 
 var chosenEdge = -1;
@@ -130,7 +131,6 @@ function loadJSON(data_uri, zoom)
 					}
 				}
 				
-				tempLineCanvasContext = tempLineCanvas.getContext("2d");
 				tempLineCanvasContext.beginPath();
 				tempLineCanvasContext.globalAlpha = 1;
 				tempLineCanvasContext.moveTo(offsetMousePosX, offsetMousePosY);
@@ -160,41 +160,38 @@ function loadJSON(data_uri, zoom)
 				canvasInput.value = "0";
 			}
 			
-			// FOR LOOP HERE
 			var length = jsonObj["mapEdges"][chosenEdge]["vertices"].length;
-			for(var i = 0; i < length-1; i++)
-			{
-				var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i]];
-				var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][i+1]];
-				
-				var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
-				
-				var lineWidth = 12;
-				var dx = coordinatesB['x'] - coordinatesA['x'];
-				var dy = coordinatesB['y'] - coordinatesA['y'];
-				var rotation = Math.atan2(dy, dx);
-				var lineLength = Math.sqrt(dx * dx + dy * dy);
-				
-				var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
-				var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
-				
-				canvasInputBox.style.left = 200;
-				canvasInputBox.style.top = 70;
-								
-				tempLineCanvasContext = tempLineCanvas.getContext("2d");
-				tempLineCanvasContext.beginPath();
-				tempLineCanvasContext.globalAlpha = 1;
-				tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
-				tempLineCanvasContext.rotate(rotation);
-				tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
-				tempLineCanvasContext.translate(0, 0);
-				tempLineCanvasContext.fillStyle = "#FF00FF";
-				tempLineCanvasContext.strokeStyle = "#0000FF";
-				tempLineCanvasContext.fill();
-				tempLineCanvasContext.stroke();
-				tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
-				tempLineCanvasContext.closePath();
-			}
+
+			var chosenEdgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]];
+			var chosenEdgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][1]];
+			
+			var coordinatesA = getBearing(ref_lon, ref_lat, chosenEdgeVertexA["longitude"], chosenEdgeVertexA["latitude"], zm, 300, 500);
+			var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
+			
+			var lineWidth = 12;
+			var dx = coordinatesB['x'] - coordinatesA['x'];
+			var dy = coordinatesB['y'] - coordinatesA['y'];
+			var rotation = Math.atan2(dy, dx);
+			var lineLength = Math.sqrt(dx * dx + dy * dy);
+			
+			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
+			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
+			
+			canvasInputBox.style.left = 200;
+			canvasInputBox.style.top = 70;
+							
+			tempLineCanvasContext.beginPath();
+			tempLineCanvasContext.globalAlpha = 1;
+			tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
+			tempLineCanvasContext.rotate(rotation);
+			tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
+			tempLineCanvasContext.fillStyle = "#FF00FF";
+			tempLineCanvasContext.strokeStyle = "#0000FF";
+			tempLineCanvasContext.fill();
+			tempLineCanvasContext.stroke();
+			tempLineCanvasContext.translate(0, 0);
+			tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
+			tempLineCanvasContext.closePath();
 		});
 		listenerLoaded = true;
 	}
@@ -274,14 +271,9 @@ function loadJSON(data_uri, zoom)
 					var weightRange = edgeObj.weight/10;
 					var confidenceRange = edgeObj.confidence;
 					weightScore = Math.round(weightRange * 254);
-					confidenceScore = Math.round(Math.abs(confidenceRange-1) * 254);
-					if(confidenceScore <= 0)
-					{
-						confidenceScore = 0;
-					} else if (confidenceScore > 254)
-					{
-						confidenceScore = 254;
-					}
+
+					confidenceScore = (confidenceRange <= 0.05)?255:0;
+					
 					if(weightScore < confidenceScore)
 					{
 						weightScore = confidenceScore;
@@ -321,6 +313,22 @@ function loadJSON(data_uri, zoom)
 					canvasA.restore();
 					canvasA.closePath();
 					canvasA.translate(0, 0);
+				}
+				
+				// NEEDS UPDATEWORK
+				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
+				if(confidenceRange < 0.5)
+				{
+					var vertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
+					var vertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]];
+					
+					var coordinatesA = getBearing(ref_lon, ref_lat, vertexA["longitude"], vertexA["latitude"], zm, 300, 500);
+					var coordinatesB = getBearing(ref_lon, ref_lat, vertexB["longitude"], vertexB["latitude"], zm, 300, 500);
+				
+					var mPosX = ((coordinatesA['x'] + coordinatesB['x']) / 2) - 8;
+					var mPosY = ((coordinatesA['y'] + coordinatesB['y']) / 2) - 8;
+					var cautionImg = document.getElementById("lowConfidence");
+					tempLineCanvasContext.drawImage(cautionImg, mPosX, mPosY, 16, 16);
 				}
 			} 
 			
