@@ -1159,10 +1159,10 @@ public class AftermathHandler extends DefaultHandler {
 		writer.tHead_Start();
 		writer.tr_Start();
 		writer.th(localizer.TH_EDGE_ID);
-		writer.th("Vertices");
-		writer.th("Mode");
-		writer.th("Inputs");
-		writer.th("Times");
+		writer.th(localizer.TH_VERTICES);
+		writer.th(localizer.TH_MODE);
+		writer.th(localizer.TH_NORMAL_HISTOGRAM);
+		writer.th(localizer.TH_HISTOGRAMTIMES);
 		writer.tr_End();
 		writer.tHead_End();
 

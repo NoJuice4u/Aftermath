@@ -9,6 +9,7 @@ import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
 import main.java.encephalon.locale.Localizer;
+import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.*;
 import main.java.encephalon.utils.ResourceUtils;
 
@@ -28,6 +29,16 @@ public class AftermathServer extends EncephalonServer
 	{
 		Map<String, Localizer<LocaleBase>> lMap = new HashMap<String, Localizer<LocaleBase>>();
 		lMap.put("ja", new Localizer<LocaleBase>(new JP_JP()));
+		lMap.put("jp-jp", new Localizer<LocaleBase>(new JP_JP()));
+		try {
+			lMap.put("debug", new Localizer<LocaleBase>(new DEBUG()));
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		lMap.put("en-us", new Localizer<LocaleBase>(new EN_US()));
 		lMap.put("undefined", new Localizer<LocaleBase>(new LocaleBase()));
 		localeList = Collections.unmodifiableMap(lMap);

@@ -4,8 +4,10 @@ public class JP_JP extends LocaleBase {
 	public JP_JP()
 	{
 		super();
-		this.SERVER_TITLE = "余波";
+		this.SERVER_TITLE = "アーフタマッス";
 		
+		this.TH_VERTICES = "バーテックス";
+		this.TH_MODE = "モード";
 		this.TH_VERTEX_ID_1 = "バーテックス１ ID";
 		this.TH_VERTEX_ID_2 = "バーテックス２ ID";
 		this.TH_EDGE_ID = "エッジ ID";
@@ -14,11 +16,16 @@ public class JP_JP extends LocaleBase {
 		this.TH_SCORE = "点";
 		this.TH_WEIGHT = "重み";
 		this.TH_CONFIDENCE = "自信";
+		this.TH_GROUP = "集団";
 		this.TH_SET_WEIGHT = "重み入れ";
 		this.TH_NODE = "接点";
 		this.TH_ID_GENERIC = "ID";
 		this.TH_DESTINATION = "行き先";
 		this.TH_TICKS = "間";
+		this.TH_AUTHORATIVE_HISTOGRAM = "厳然度数分布図";
+		this.TH_NORMAL_HISTOGRAM = "普通度数分布図";
+		this.TH_LOW_HISTOGRAM = "低解像度度数分布図";
+		this.TH_HISTOGRAMTIMES = "像度度数分布図時間";
 		
 		this.BTN_SEND_WEIGHTS = "値を送信";
 		
@@ -37,6 +44,7 @@ public class JP_JP extends LocaleBase {
 		this.REQUEST_LOCAL_NAME = "JLocal Name";
 		this.REQUEST_PATH_TRANSLATED = "JPath Translated";
 		this.REQUEST_REMOTE_HOST = "JRemote Host";
+		this.REQUEST_REMOTE_ADDR = "JRemote Address";
 		this.REQUEST_LOCAL_PORT = "JLocal Port";
 		this.REQUEST_SERVER_NAME = "JServer Name";
 		this.REQUEST_CONTENT_LENGTH = "JContent Length";

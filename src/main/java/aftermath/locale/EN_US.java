@@ -6,6 +6,8 @@ public class EN_US extends LocaleBase{
 		super();
 		this.SERVER_TITLE = "Aftermath";
 		
+		this.TH_VERTICES = "Vertices";
+		this.TH_MODE = "Mode";
 		this.TH_VERTEX_ID_1 = "VtxId(1)";
 		this.TH_VERTEX_ID_2 = "VtxId(2)";
 		this.TH_EDGE_ID = "EdgeId";
@@ -20,9 +22,10 @@ public class EN_US extends LocaleBase{
 		this.TH_ID_GENERIC = "ID";
 		this.TH_DESTINATION = "Destination";
 		this.TH_TICKS = "Ticks";
-		this.TH_AUTHORATIVE_HISTOGRAM = "Authorative Histogram";
+		this.TH_AUTHORATIVE_HISTOGRAM = "Authoritative Histogram";
 		this.TH_NORMAL_HISTOGRAM = "Normal Histogram";
 		this.TH_LOW_HISTOGRAM = "Low Res Histogram";
+		this.TH_HISTOGRAMTIMES = "Histogram Times";
 		
 		this.BTN_SEND_WEIGHTS = "Send Weights";
 		

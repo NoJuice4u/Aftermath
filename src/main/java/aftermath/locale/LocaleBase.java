@@ -1,6 +1,8 @@
 package main.java.aftermath.locale;
 
 public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
+	public String TH_VERTICES = "[*UNDEFINED*]";
+	public String TH_MODE = "[*UNDEFINED*]";
 	public String TH_VERTEX_ID_1 = "[*UNDEFINED*]";
 	public String TH_VERTEX_ID_2 = "[*UNDEFINED*]";
 	public String TH_EDGE_ID = "[*UNDEFINED*]";
@@ -18,6 +20,7 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	public String TH_AUTHORATIVE_HISTOGRAM = "[*UNDEFINED*]";
 	public String TH_NORMAL_HISTOGRAM = "[*UNDEFINED*]";
 	public String TH_LOW_HISTOGRAM = "[*UNDEFINED*]";
+	public String TH_HISTOGRAMTIMES = "[*UNDEFINED*]";
 	
 	public String BTN_SEND_WEIGHTS = "[*UNDEFINED*]";
 	

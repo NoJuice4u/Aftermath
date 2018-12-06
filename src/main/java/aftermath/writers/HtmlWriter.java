@@ -91,8 +91,6 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	{
 		stringBuilder.append("var cautionImg = document.getElementById(\"" + image + "\");");
 		stringBuilder.append("ctx.drawImage(cautionImg, " + positionX + ", " + positionY + ", " + width + ", " + height + ");");
-		
-		System.out.println("ctx.drawImage(cautionImg, " + positionX + ", " + positionY + ", " + width + ", " + height + ");");
 	}
 	
 	public void drawRect(String name, float width, String color, String color2, float alpha, int xA, int yA, int xB, int yB)
