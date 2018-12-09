@@ -19,7 +19,6 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	public void canvasIcons()
 	{
 		stringBuilder.append("<img id=\"lowConfidence\" style=\"position:absolute; visibility: hidden\" src=\"/resource/question.png\"/>");
-		// stringBuilder.append("<img id=\"lowConfidence\" src=\"https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif\"/>");
 	}
 	
 	public void drawCanvasLine(String name, float width, String color, int xA, int yA, int xB, int yB)
@@ -60,7 +59,6 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	
 	public void drawCanvasLineAsRect(String name, float width, String color, String color2, float alpha, int xA, int yA, int xB, int yB)
 	{
-		// Math.atan2(dy, dx)
 		int dx = xB - xA;
 		int dy = yB - yA;
 
@@ -133,7 +131,12 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	{
 		stringBuilder.append("<div id=\"" + name + "\" style=\"text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30\">" + System.lineSeparator()
 				+ "<div id=\"selectedRoadType\" style=\"\">&lt;PH&gt;</div>" + System.lineSeparator()
-				+ "<div>Clear, Drivable, Walkable, Destroyed</div>"
+				+ "<div><table class=\"inputSliderLabels\" align=\"center\"><tr><td><img src=\"/resource/road_clean.png\"/></td><td>&nbsp;</td>"
+				+ "<td><img src=\"/resource/noinput.png\"/></td><td>&nbsp;</td>"
+				+ "<td><img src=\"/resource/road_drivable.png\"/></td><td>&nbsp;</td>"
+				+ "<td><img src=\"/resource/road_walkable.png\"/></td><td>&nbsp;</td>"
+				+ "<td><img src=\"/resource/road_unusable.png\"/></td><td>&nbsp;</td>"
+				+ "<td><img src=\"/resource/road_destroyed.png\"/></td></tr></table></div>"
 				+ "<div><input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"" + name + "Input\" name=\"entry\" size=\"3\" style=\"border-width:2pt; border-style:solid; border-color:" + borderColor + "\"/></div>" + System.lineSeparator()
 				+ "<div><button onclick=\"" + submitFunction + "\"/>Send Data!</button></div>" + System.lineSeparator()
 				+ "</div>" + System.lineSeparator());

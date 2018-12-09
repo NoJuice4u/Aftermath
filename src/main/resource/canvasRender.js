@@ -177,7 +177,7 @@ function loadJSON(data_uri, zoom)
 			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
-			canvasInputBox.style.left = 200;
+			canvasInputBox.style.left = 150;
 			canvasInputBox.style.top = 70;
 							
 			tempLineCanvasContext.beginPath();
