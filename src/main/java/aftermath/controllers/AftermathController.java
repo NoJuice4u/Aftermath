@@ -50,8 +50,6 @@ public class AftermathController {
 		try {
 			engine = new AftermathEngine(this);
 			Future<?> future = executor.submit(engine); 
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			executor.shutdown();
 		}

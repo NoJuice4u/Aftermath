@@ -18,7 +18,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter {
 	
 	public void canvasIcons()
 	{
-		stringBuilder.append("<img id=\"lowConfidence\" style=\"position:absolute; visibility: hidden\" src=\"https://findicons.com/icon/download/94116/system_help/128/png\"/>");
+		stringBuilder.append("<img id=\"lowConfidence\" style=\"position:absolute; visibility: hidden\" src=\"/resource/question.png\"/>");
 		// stringBuilder.append("<img id=\"lowConfidence\" src=\"https://cdn2.iconfinder.com/data/icons/aspneticons_v1.0_Nov2006/help_16x16.gif\"/>");
 	}
 	

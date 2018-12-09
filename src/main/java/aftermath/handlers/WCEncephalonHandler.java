@@ -40,29 +40,4 @@ public class WCEncephalonHandler extends DefaultHandler{
 		writer.script_End();
 		response.getWriter().print(writer.getString(locale));
 	}
-	
-	@GET()
-	@HandlerInfo(schema="robots.txt", description = "The robots file to tell the Google Spider to leave me alone.")
-	public void getRobots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
-	{
-		response.setContentType("text/plain;charset=utf-8");
-		response.setStatus(HttpServletResponse.SC_OK);
-		baseRequest.setHandled(true);
-		
-		TextWriter writer = new TextWriter();
-		
-		writer.writeln("User-Agent: *", 0);
-		writer.writeln("Disallow: /", 0);
-		
-		response.getWriter().print(writer.getString());
-	}
-	
-	@GET()
-	@HandlerInfo(schema="favicon.ico", description = "Icon")
-	public void getFavIcon(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
-	{
-		response.setContentType("text/plain;charset=utf-8");
-		response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-		baseRequest.setHandled(true);
-	}
 }

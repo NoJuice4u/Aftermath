@@ -10,6 +10,7 @@ import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
 
 public class AftermathEngine implements Runnable {
+	private static final String FF = System.getProperty("aftermath.map.vehicles");
 	private static final int NUMBER_OF_VEHICLES = Integer.valueOf(System.getProperty("aftermath.map.vehicles"));
 	private AftermathController controller;
 	private List<Transport> transporters;

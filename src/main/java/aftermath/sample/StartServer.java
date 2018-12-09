@@ -1,6 +1,7 @@
 package main.java.aftermath.sample;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.jetty.server.Connector;
@@ -82,14 +83,31 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 		}
 		catch(Throwable t)
 		{
-			System.err.println(t.getMessage());
-			t.printStackTrace();
+			HashSet<Integer> exceptionHash = new HashSet<Integer>();
+			String tabSt = "  ";
+			
+			while(!exceptionHash.contains(t.hashCode()))
+			{
+				StringBuilder sb = new StringBuilder();
+				StackTraceElement[] elements = t.getStackTrace();
+				sb.append("  Message: " + t.getMessage() + "\r\n");
+				
+				for(StackTraceElement element : elements)
+				{
+					sb.append(tabSt + element.getClassName() + "." + element.getMethodName() + "(" + element.getFileName() + ":" + element.getLineNumber() + ")\r\n");
+				}
+				
+				tabSt += "  ";
+				exceptionHash.add(t.hashCode());
+				System.err.println(sb.toString());
+				t = t.getCause();
+			}
 		}
 	}
 	
 	public static void registerAftermathHandlers(EncephalonServer server) throws Exception
 	{
 		server.registerUri("/aftermath", "aftermath", new AftermathHandler((AftermathServer)server));
-		server.registerUri("/", "wcencephalon", new WCEncephalonHandler((AftermathServer)server));
+		// server.registerUri("/", "wcencephalon", new WCEncephalonHandler((AftermathServer)server));
 	}
 }

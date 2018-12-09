@@ -25,7 +25,7 @@ import main.java.encephalon.profiler.Task;
 import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class OSMReader {
-	private static final String RESOURCE = System.getProperty("aftermath.map.resource");
+	private static final String RESOURCE = System.getProperty("aftermath.map.mapResource");
 
 	private final AftermathServer es;
 	private final Profiler profiler;
@@ -77,8 +77,7 @@ public class OSMReader {
 	private void read() throws Exception
 	{
 		File file = new File(RESOURCE);
-		FileReader fr = new FileReader(file);
-		
+	
 		XmlParser xP = new XmlParser();
 		Task xmlParseTask = new Task(this.profiler, null, "Parse into XML", null);
 		Node data = xP.parse(file);
@@ -236,7 +235,6 @@ public class OSMReader {
 			}
 			tagTypeTask.end();
 		}
-		fr.close();
 		osmProcessingTask.end();
 		
 		for(long l = 0; l < edgeId; l++)
