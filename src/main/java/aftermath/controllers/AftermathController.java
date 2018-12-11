@@ -3,6 +3,7 @@ package main.java.aftermath.controllers;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +71,10 @@ public class AftermathController {
 
 	public SpatialIndex<?> getSpatialIndex(String s) {
 		return spatialIndexMap.get(s);
+	}
+	
+	public Set<String> getSpatialIndexKeys() {
+		return spatialIndexMap.keySet();
 	}
 	
 	@SuppressWarnings("unchecked")

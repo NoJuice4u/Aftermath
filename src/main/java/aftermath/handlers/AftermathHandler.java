@@ -665,7 +665,7 @@ public class AftermathHandler extends DefaultHandler {
 	}
 
 	@GET
-	@MenuItem(name = "Map/Json/Roots")
+	@MenuItem(name = "Debug/Map/Json/Roots")
 	@HandlerInfo(schema = "/map/roots", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -686,6 +686,18 @@ public class AftermathHandler extends DefaultHandler {
 
 		JsonWriter jw = new JsonWriter(rootSet);
 
+		response.setContentType("application/json");
+		response.getWriter().print(jw.toString());
+	}
+	
+	@GET
+	@MenuItem(name = "Debug/Map/SpatialIndexes")
+	@HandlerInfo(schema = "/map/spatialindexes", description = "Details not defined yet because the programmer was lazy.")
+	public void getSpatialIndexes(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		Set<String> spatialIndexKeys = es.getAftermathController().getSpatialIndexKeys();
+		
+		JsonWriter jw = new JsonWriter(spatialIndexKeys);
 		response.setContentType("application/json");
 		response.getWriter().print(jw.toString());
 	}

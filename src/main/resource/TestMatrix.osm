@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2017-11-12T01:11:02Z"/>
+
+  <bounds minlat="35.6705000" minlon="139.6462000" maxlat="35.7151000" maxlon="139.7410000"/>
+
+  <node id="1" lat="35.60" lon="139.00" version="1" timestamp="2013-06-01T15:59:01Z" changeset="16379490" uid="900076"/>
+  <node id="2" lat="35.61" lon="139.00" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="3" lat="35.62" lon="139.00" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="4" lat="35.63" lon="139.00" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="5" lat="35.64" lon="139.00" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="6" lat="35.65" lon="139.00" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="7" lat="35.60" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="8" lat="35.61" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="9" lat="35.62" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="10" lat="35.63" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="11" lat="35.64" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="12" lat="35.65" lon="139.01" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="13" lat="35.60" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="14" lat="35.61" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="15" lat="35.62" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="16" lat="35.63" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="17" lat="35.64" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="18" lat="35.65" lon="139.02" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="19" lat="35.60" lon="139.03" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <node id="20" lat="35.61" lon="139.03" version="1" timestamp="2017-02-17T08:41:27Z" changeset="46158206" uid="521863"/>
+  <way id="1000" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+    <nd ref="5"/>
+    <nd ref="6"/>
+    <nd ref="12"/>
+    <nd ref="11"/>
+    <nd ref="10"/>
+    <nd ref="9"/>
+	<nd ref="8"/>
+	<nd ref="7"/>
+	<nd ref="13"/>
+	<nd ref="14"/>
+	<nd ref="15"/>
+	<nd ref="16"/>
+	<nd ref="17"/>
+	<nd ref="18"/>
+    <tag k="highway" v="primary"/>
+  </way>
+  <way id="1001" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="1"/>
+    <nd ref="7"/>
+    <tag k="highway" v="secondary"/>
+  </way>
+  <way id="1002" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="12"/>
+    <nd ref="18"/>
+    <tag k="highway" v="secondary"/>
+  </way>
+  <way id="1003" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="2"/>
+    <nd ref="8"/>
+    <nd ref="14"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <way id="1004" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="3"/>
+    <nd ref="9"/>
+    <nd ref="15"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <way id="1005" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="4"/>
+    <nd ref="10"/>
+    <nd ref="16"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <way id="1006" version="12" timestamp="2017-02-17T08:41:03Z" changeset="46158206" uid="5218634">
+    <nd ref="5"/>
+    <nd ref="11"/>
+    <nd ref="17"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+</osm>
