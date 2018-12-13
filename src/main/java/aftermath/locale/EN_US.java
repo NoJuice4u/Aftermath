@@ -27,6 +27,10 @@ public class EN_US extends LocaleBase{
 		this.TH_LOW_HISTOGRAM = "Low Res Histogram";
 		this.TH_HISTOGRAMTIMES = "Histogram Times";
 		
+		this.H1_SUMMARYNODES = "Summary Nodes";
+		this.H1_NEIGHBORNODES = "Neighboring Nodes";
+		this.H1_VEHICLES = "Vehicles";
+		
 		this.BTN_SEND_WEIGHTS = "Send Weights";
 		
 		/*

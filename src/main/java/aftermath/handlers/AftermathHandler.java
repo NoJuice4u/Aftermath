@@ -1167,7 +1167,7 @@ public class AftermathHandler extends DefaultHandler {
 			throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
 
-		writer.h1("Summary Nodes");
+		writer.h1(localizer.H1_SUMMARYNODES);
 		writer.table_Start(null, null, "sortable");
 		writer.tHead_Start();
 		writer.tr_Start();
@@ -1205,7 +1205,7 @@ public class AftermathHandler extends DefaultHandler {
 			int depth) throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
 
-		writer.h1("Neighboring Nodes");
+		writer.h1(localizer.H1_NEIGHBORNODES);
 		writer.table_Start(null, null, "sortable");
 		writer.tHead_Start();
 		writer.tr_Start();
@@ -1281,7 +1281,7 @@ public class AftermathHandler extends DefaultHandler {
 			throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
 
-		writer.h1("Vehicles");
+		writer.h1(localizer.H1_VEHICLES);
 		writer.table_Start(null, null, "sortable");
 		writer.tr_Start();
 		writer.th(localizer.TH_ID_GENERIC);
