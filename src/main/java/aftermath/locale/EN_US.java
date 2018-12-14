@@ -4,7 +4,7 @@ public class EN_US extends LocaleBase{
 	public EN_US()
 	{
 		super();
-		this.SERVER_TITLE = "Aftermath";
+		this.SERVER_TITLE = "Project Aftermath";
 		
 		this.TH_VERTICES = "Vertices";
 		this.TH_MODE = "Mode";

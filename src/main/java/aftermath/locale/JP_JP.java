@@ -4,7 +4,7 @@ public class JP_JP extends LocaleBase {
 	public JP_JP()
 	{
 		super();
-		this.SERVER_TITLE = "アーフタマッス";
+		this.SERVER_TITLE = "アーフタマッス　プロジェクト";
 		
 		this.TH_VERTICES = "バーテックス";
 		this.TH_MODE = "モード";
@@ -26,6 +26,10 @@ public class JP_JP extends LocaleBase {
 		this.TH_NORMAL_HISTOGRAM = "普通度数分布図";
 		this.TH_LOW_HISTOGRAM = "低解像度度数分布図";
 		this.TH_HISTOGRAMTIMES = "像度度数分布図時間";
+		
+		this.H1_SUMMARYNODES = "ノードを詳しく";
+		this.H1_NEIGHBORNODES = "隣ノード";
+		this.H1_VEHICLES = "乗り物詳しく";
 		
 		this.BTN_SEND_WEIGHTS = "値を送信";
 		
