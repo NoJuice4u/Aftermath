@@ -10,27 +10,26 @@ import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
 
-public class Transport extends Bin{
+public class Transport extends Bin {
 	private transient AftermathController controller;
 	private transient final static Random randomizer = new Random();
-	
+
 	private static long nextId = 0;
 	private final long id;
-	private double VEHICLE_VELOCITY = 0.5/111.0;
+	private double VEHICLE_VELOCITY = 0.5 / 111.0;
 
 	private int ticks = 0;
 	private int WeightChange = 1;
 	private long lastTick, nextTick, tickAtLastNode;
 	private long previousEdge = 0L;
-	
+
 	private MapEdge edge;
 	private MapVertex node, previousNode;
 	private transient Map<MapVertex, Double> previousProbabilityList;
-	
+
 	private Coordinates destination = null;
 
-	public Transport(AftermathController controller, long e) throws Exception
-	{
+	public Transport(AftermathController controller, long e) throws Exception {
 		super(500, 0, 0);
 		this.controller = controller;
 		this.id = Transport.incrementAndGetId();
@@ -43,101 +42,86 @@ public class Transport extends Bin{
 		this.nextTick = System.currentTimeMillis();
 	}
 
-	public static long incrementAndGetId()
-	{
+	public static long incrementAndGetId() {
 		return ++nextId;
 	}
 
-	public boolean traverse() throws Exception
-	{
+	public boolean traverse() throws Exception {
 		List<Long> edges = node.getEdges();
 
 		int rnd = randomizer.nextInt(edges.size());
 		edge = controller.getEdgeData().get(edges.get(rnd));
-		
+
 		MapVertex newVertex = controller.getMapData().get(edge.getOtherVertex(node.getId()));
-		
+
 		previousEdge = edge.getId();
 		previousNode = node;
-		node = newVertex;		
+		node = newVertex;
 
 		lastTick = System.currentTimeMillis();
 		nextTick = System.currentTimeMillis() - 20;
-		
+
 		ticks++;
-		
+
 		return true;
 	}
-	
-	public void setWeightChange(int value)
-	{
+
+	public void setWeightChange(int value) {
 		WeightChange = value;
 	}
 
-	public List<MapEdge> getTraversible()
-	{
+	public List<MapEdge> getTraversible() {
 		List<Long> edges = controller.getMapData().get(node.getId()).getEdges();
 		List<MapEdge> edgeList = new ArrayList<MapEdge>();
 
-		for(Long l : edges)
-		{
+		for (Long l : edges) {
 			edgeList.add(controller.getEdgeData().get(l));
 		}
 		return edgeList;
 	}
 
-	public long getId()
-	{
+	public long getId() {
 		return id;
 	}
 
-	public MapVertex getNode()
-	{
+	public MapVertex getNode() {
 		return node;
 	}
 
-	public MapEdge getEdge()
-	{
+	public MapEdge getEdge() {
 		return edge;
 	}
 
-	public MapVertex getPreviousNode()
-	{
+	public MapVertex getPreviousNode() {
 		return previousNode;
 	}
 
-	public Map<MapVertex, Double> getProbabilityTree()
-	{
+	public Map<MapVertex, Double> getProbabilityTree() {
 		return previousProbabilityList;
 	}
 
-	public Coordinates getDestination()
-	{
+	public Coordinates getDestination() {
 		return destination;
 	}
 
-	public Coordinates getPosition()
-	{
-		// double diff = ((double)System.currentTimeMillis() - lastTick) / (double)(nextTick - lastTick);
+	public Coordinates getPosition() {
+		// double diff = ((double)System.currentTimeMillis() - lastTick) /
+		// (double)(nextTick - lastTick);
 		double diff = 1.0;
 		return Coordinates.GetPositionBetween(previousNode, node, diff);
 	}
 
-	public boolean shouldTick()
-	{
+	public boolean shouldTick() {
 		return true;
 		// return nextTick < System.currentTimeMillis();
 	}
 
-	public int getTicks()
-	{
+	public int getTicks() {
 		return ticks;
 	}
 
-	private float preferenceSwitchCase(MapEdge mapEdge)
-	{
-		switch(String.valueOf(mapEdge.getMode()))
-		{
+	private float preferenceSwitchCase(MapEdge mapEdge) {
+		switch (String.valueOf(mapEdge.getMode())) {
 		case "primary":
 		case "primary_link":
 			return 0.9f;

@@ -29,7 +29,7 @@ public class AftermathController {
 
 	EncephalonThreadPoolExecutor executor = new EncephalonThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue<Runnable>(100));
-	
+
 	private CountMeter spatialIndexMeter = new CountMeter();
 	private CountMeter spatialIndexDepotMeter = new CountMeter();
 
@@ -40,9 +40,10 @@ public class AftermathController {
 		this.edgeData = new HashMap<Long, MapEdge>();
 		this.depotData = new HashMap<Long, Depot>();
 		this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-		this.spatialIndexMap.put("nodesMap", new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
+		this.spatialIndexMap.put("nodesMap", new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN,
+				SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
 		this.spatialIndexMap.put("depotMap", new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
-		
+
 		es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);
 		es.getCountMeters().put("SpatialIndex.Depot.Depth", spatialIndexDepotMeter);
 	}
@@ -50,7 +51,7 @@ public class AftermathController {
 	public void run() {
 		try {
 			engine = new AftermathEngine(this);
-			Future<?> future = executor.submit(engine); 
+			Future<?> future = executor.submit(engine);
 		} finally {
 			executor.shutdown();
 		}
@@ -63,20 +64,19 @@ public class AftermathController {
 	public HashMap<Long, MapEdge> getEdgeData() {
 		return edgeData;
 	}
-	
-	public HashMap<Long, Depot> getDepotData()
-	{
+
+	public HashMap<Long, Depot> getDepotData() {
 		return depotData;
 	}
 
 	public SpatialIndex<?> getSpatialIndex(String s) {
 		return spatialIndexMap.get(s);
 	}
-	
+
 	public Set<String> getSpatialIndexKeys() {
 		return spatialIndexMap.keySet();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public SpatialIndex<MapVertex> getSpatialIndex() {
 		return (SpatialIndex<MapVertex>) spatialIndexMap.get("nodesMap");

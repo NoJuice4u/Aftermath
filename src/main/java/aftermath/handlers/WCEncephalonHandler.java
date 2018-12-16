@@ -14,7 +14,7 @@ import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.writers.HtmlWriter;
 import main.java.encephalon.writers.TextWriter;
 
-public class WCEncephalonHandler extends DefaultHandler{
+public class WCEncephalonHandler extends DefaultHandler {
 	private AftermathServer es;
 
 	public WCEncephalonHandler(AftermathServer instance) {
@@ -24,11 +24,12 @@ public class WCEncephalonHandler extends DefaultHandler{
 	}
 
 	@GET
-	@HandlerInfo(schema="/", description = "Details not defined yet because the programmer was lazy.")
-	public void getWCServer(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws Exception
-	{	
-		String destination = baseRequest.getRootURL() + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
-		
+	@HandlerInfo(schema = "/", description = "Details not defined yet because the programmer was lazy.")
+	public void getWCServer(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		String destination = baseRequest.getRootURL()
+				+ "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
+
 		HtmlWriter writer = new HtmlWriter(2, es);
 		writer.script_Start();
 		writer.text("if(navigator && navigator.geolocation) {");
@@ -36,7 +37,8 @@ public class WCEncephalonHandler extends DefaultHandler{
 		writer.text("} else {");
 		writer.text("document.write(\"Beef\")");
 		writer.text("}");
-		writer.text("function showPosition(position) { document.write(\"Relocating!\"); window.location = \"" + destination + "; }");
+		writer.text("function showPosition(position) { document.write(\"Relocating!\"); window.location = \""
+				+ destination + "; }");
 		writer.script_End();
 		response.getWriter().print(writer.getString(locale));
 	}

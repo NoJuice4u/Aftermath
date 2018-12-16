@@ -21,15 +21,14 @@ public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
 	public String TH_NORMAL_HISTOGRAM = "[*UNDEFINED*]";
 	public String TH_LOW_HISTOGRAM = "[*UNDEFINED*]";
 	public String TH_HISTOGRAMTIMES = "[*UNDEFINED*]";
-	
+
 	public String H1_SUMMARYNODES = "[*UNDEFINED*]";
 	public String H1_NEIGHBORNODES = "[*UNDEFINED*]";
 	public String H1_VEHICLES = "[*UNDEFINED*]";
-	
+
 	public String BTN_SEND_WEIGHTS = "[*UNDEFINED*]";
-	
-	public LocaleBase()
-	{
+
+	public LocaleBase() {
 		super();
 		this.SERVER_TITLE = "[*AFTERMATH*]";
 	}

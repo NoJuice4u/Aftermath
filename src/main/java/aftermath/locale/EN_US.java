@@ -1,11 +1,10 @@
 package main.java.aftermath.locale;
 
-public class EN_US extends LocaleBase{	
-	public EN_US()
-	{
+public class EN_US extends LocaleBase {
+	public EN_US() {
 		super();
 		this.SERVER_TITLE = "Project Aftermath";
-		
+
 		this.TH_VERTICES = "Vertices";
 		this.TH_MODE = "Mode";
 		this.TH_VERTEX_ID_1 = "VtxId(1)";
@@ -26,19 +25,19 @@ public class EN_US extends LocaleBase{
 		this.TH_NORMAL_HISTOGRAM = "Normal Histogram";
 		this.TH_LOW_HISTOGRAM = "Low Res Histogram";
 		this.TH_HISTOGRAMTIMES = "Histogram Times";
-		
+
 		this.H1_SUMMARYNODES = "Summary Nodes";
 		this.H1_NEIGHBORNODES = "Neighboring Nodes";
 		this.H1_VEHICLES = "Vehicles";
-		
+
 		this.BTN_SEND_WEIGHTS = "Send Weights";
-		
+
 		/*
 		 * FROM ENCEPHALON
 		 */
 		this.KV_KEY = "Key";
 		this.KV_VALUE = "Value";
-		
+
 		this.REQUEST_PROTOCOL = "Protocol";
 		this.REQUEST_CONTEXTPATH = "Context Path";
 		this.REQUEST_SCHEME = "Scheme";
