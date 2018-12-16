@@ -280,7 +280,7 @@ public class AftermathHandler extends DefaultHandler {
 
 		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, locale, zoom, depth);
 		writer.table_End();
 
 		response.getWriter().print(writer.getString(locale));
@@ -391,7 +391,7 @@ public class AftermathHandler extends DefaultHandler {
 
 		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, locale, zoom, depth);
 		writer.table_End();
 
 		response.getWriter().print(writer.getString(locale));
@@ -453,7 +453,7 @@ public class AftermathHandler extends DefaultHandler {
 		writer.td_Start();
 		writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
 		writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
-		writeSummaryVehicles(writer, locale, initialNode, zoom, depth);
+		writeSummaryVehicles(writer, locale, zoom, depth);
 		writer.td_End();
 		writer.tr_End();
 		writer.table_End();
@@ -524,6 +524,20 @@ public class AftermathHandler extends DefaultHandler {
 		response.getWriter().print(s);
 	}
 
+	@GET
+	@HandlerInfo(schema = "/map/vehicles", description = "Details not defined yet because the programmer was lazy.")
+	public void getMapVehicles(String target, String locale, Task parent, Request baseRequest,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		HtmlWriter writer = new HtmlWriter(2, es);
+		writeSummaryVehicles(writer, locale, 16, 5);
+		
+		String s = writer.getString(locale);
+		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+		response.getWriter().print(s);
+	}
+	
 	@GET
 	@HandlerInfo(schema = "/map/node/(uid)/clear", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapNodeClearWeights(String target, String locale, Task parent, Request baseRequest,
@@ -696,6 +710,8 @@ public class AftermathHandler extends DefaultHandler {
 	public void getSpatialIndexes(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		Set<String> spatialIndexKeys = es.getAftermathController().getSpatialIndexKeys();
+
+		// SpatialIndex<?> spatialIndex = es.getAftermathController().getSpatialIndex(index);
 		
 		JsonWriter jw = new JsonWriter(spatialIndexKeys);
 		response.setContentType("application/json");
@@ -760,7 +776,7 @@ public class AftermathHandler extends DefaultHandler {
 			writer.table_End();
 		}
 
-		response.getWriter().print(writer.getString());
+		response.getWriter().print(writer.getString(locale));
 	}
 
 	@POST
@@ -935,12 +951,6 @@ public class AftermathHandler extends DefaultHandler {
 		}
 
 		Coordinates[] bounds = Coordinates.getBounds(focalPoint, zoom, MapVertex.WIDTH, MapVertex.HEIGHT);
-		/*
-		 * DistinctOrderedSet masterEdgeList = new DistinctOrderedSet(200);
-		 * masterEdgeList.add(es.getAftermathController().getSpatialIndex().
-		 * getEdgesWithinBounds(bounds));
-		 */
-
 		HashMap<Long, Integer> masterDepthList = new HashMap<Long, Integer>(200);
 
 		List<Long> edges = focalPoint.getEdges();
@@ -1070,7 +1080,7 @@ public class AftermathHandler extends DefaultHandler {
 				writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX, drawPointY);
 				if(mapEdge.getConfidence() < 0.5)
 				{
-					writer.drawImage("mapCanvas", 16, 16, "lowConfidence", startPointX, startPointY);
+					writer.drawImage("mapCanvas", 16, 16, "lowConfidence", ((startPointX + drawPointX)/2)-8, ((startPointY + drawPointY)/2)-8);
 				}
 			}
 		}
@@ -1168,7 +1178,7 @@ public class AftermathHandler extends DefaultHandler {
 		LocaleBase localizer = es.getLocale(locale);
 
 		writer.h1(localizer.H1_SUMMARYNODES);
-		writer.table_Start(null, null, "sortable");
+		writer.table_Start(null, null, "sortable", "100%", "1");
 		writer.tHead_Start();
 		writer.tr_Start();
 		writer.th(localizer.TH_EDGE_ID);
@@ -1206,7 +1216,7 @@ public class AftermathHandler extends DefaultHandler {
 		LocaleBase localizer = es.getLocale(locale);
 
 		writer.h1(localizer.H1_NEIGHBORNODES);
-		writer.table_Start(null, null, "sortable");
+		writer.table_Start(null, null, "sortable", "100%", "1");
 		writer.tHead_Start();
 		writer.tr_Start();
 		writer.th(localizer.TH_VERTEX_ID_1);
@@ -1270,19 +1280,19 @@ public class AftermathHandler extends DefaultHandler {
 		writer.tFoot_Start();
 		writer.tr_Start();
 		writer.td("<input type=\"submit\" value=\"" + localizer.BTN_SEND_WEIGHTS + "\"/>", "", "", "text-align:center",
-				9);
+				13);
 		writer.tr_End();
 		writer.tFoot_End();
 		writer.form_End();
 		writer.table_End();
 	}
 
-	public void writeSummaryVehicles(HtmlWriter writer, String locale, Coordinates focalPoint, int zoom, int depth)
+	public void writeSummaryVehicles(HtmlWriter writer, String locale, int zoom, int depth)
 			throws Exception {
 		LocaleBase localizer = es.getLocale(locale);
 
 		writer.h1(localizer.H1_VEHICLES);
-		writer.table_Start(null, null, "sortable");
+		writer.table_Start(null, null, "sortable", "100%", "1");
 		writer.tr_Start();
 		writer.th(localizer.TH_ID_GENERIC);
 		writer.th(localizer.TH_COORDINATES);

@@ -178,7 +178,7 @@ function loadJSON(data_uri, zoom)
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
 			canvasInputBox.style.left = 150;
-			canvasInputBox.style.top = 70;
+			canvasInputBox.style.top = 80;
 							
 			tempLineCanvasContext.beginPath();
 			tempLineCanvasContext.globalAlpha = 1;
@@ -369,8 +369,8 @@ function submitDataForm(data_uri)
 	request.send(rawData);
 	inputData = { };
 	canvasInput.value = "0";
-	canvasInputBox.style.left = "-100pt";
-	canvasInputBox.style.top = "-100pt";
+	canvasInputBox.style.left = "-200pt";
+	canvasInputBox.style.top = "-200pt";
 	tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
 	refresh();
 }

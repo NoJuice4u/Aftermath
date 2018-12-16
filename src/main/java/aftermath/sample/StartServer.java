@@ -86,7 +86,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 			HashSet<Integer> exceptionHash = new HashSet<Integer>();
 			String tabSt = "  ";
 			
-			while(!exceptionHash.contains(t.hashCode()))
+			while(t != null && !exceptionHash.contains(t.hashCode()))
 			{
 				StringBuilder sb = new StringBuilder();
 				StackTraceElement[] elements = t.getStackTrace();
