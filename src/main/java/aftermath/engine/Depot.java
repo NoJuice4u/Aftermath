@@ -7,7 +7,7 @@ public class Depot extends Bin {
 	private static long idIncrement;
 	private final long id;
 	private final long edgeLocation;
-	private final String name;
+	private String name;
 
 	public Depot(String name, double capacity, MapEdge edge) throws Exception {
 		super(capacity, (float) edge.getLongitude(), (float) edge.getLatitude());
@@ -31,5 +31,9 @@ public class Depot extends Bin {
 
 	public String getName() {
 		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 }

@@ -327,6 +327,24 @@ public class AftermathHandler extends DefaultHandler {
 		}
 		response.getWriter().print(writer.getString(locale));
 	}
+	
+	@GET
+	@HandlerInfo(schema = "/map/rename/depot/(depotId)/name/(name)", description = "Details not defined yet because the programmer was lazy.")
+	public void getMapRenameDepotEdge(String target, String locale, Task parent, Request baseRequest,
+			HttpServletRequest request, HttpServletResponse response, 
+			@QueryParam(value = "depotId") Long depotId,
+			@QueryParam(value = "name") String name)
+			throws Exception {
+		HtmlWriter writer = new HtmlWriter(2, es);
+
+		Depot d = es.getAftermathController().getDepotData().get(depotId);
+		d.setName(name);
+
+		if (d != null) {
+			writer.text(String.valueOf(d.getId()) + " -&gt; " + name);
+		}
+		response.getWriter().print(writer.getString(locale));
+	}
 
 	@GET
 	@HandlerInfo(schema = "/map/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
