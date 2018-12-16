@@ -85,24 +85,25 @@ function loadJSON(data_uri, zoom)
 				lineAY = bY - aY;
 				
 				slopeA = lineAX / lineAY;
-				offsetA = aY - (aX * slopeA);
 				slopeB = -(lineAY / lineAX);
+				slopeA = (isFinite(slopeA))?slopeA:1;
+				slopeB = (isFinite(slopeB))?slopeB:1;
+				
+				offsetA = aY - (aX * slopeA);
 				offsetB = bY - (bX * slopeB);
 				
-				// y = slopeA(x)+offsetA
 				ySect = ((slopeA * aX) - offsetA) + mousePos['y'];
-				
 				yOffset = coordinatesA['y'] - (coordinatesA['x'] * slopeA); // coordinatesA['x'] + ((offsetB - offsetA) / (slopeA - slopeB));
-				xSect = coordinatesA['x'] + ((offsetB - offsetA) / (slopeA - slopeB));
+				xSect = coordinatesA['x']; // + ((offsetB - offsetA) / (slopeA - slopeB));
 
-				mDistance = 99;
+				mDistance = Math.sqrt(Math.pow(xSect - mousePos['x'], 2) + Math.pow(ySect - mousePos['y'], 2));
 				
-				tempLineCanvas.getContext("2d").beginPath();
-				tempLineCanvas.getContext("2d").arc(xSect, ySect, 4, 0, 2*Math.PI);
-				tempLineCanvas.getContext("2d").strokeStyle="#FF0033";
-				tempLineCanvas.getContext("2d").closePath();
-				tempLineCanvas.getContext("2d").stroke();
-				tempLineCanvas.getContext("2d").strokeStyle="#000033";
+				// tempLineCanvas.getContext("2d").beginPath();
+				// tempLineCanvas.getContext("2d").arc(mousePos['x'], mousePos['y'], 4, 0, 2*Math.PI);
+				// tempLineCanvas.getContext("2d").strokeStyle="#FF0033";
+				// tempLineCanvas.getContext("2d").closePath();
+				// tempLineCanvas.getContext("2d").stroke();
+				// tempLineCanvas.getContext("2d").strokeStyle="#000033";
 				
 				if(distance > mDistance)
 				{
@@ -130,14 +131,17 @@ function loadJSON(data_uri, zoom)
 						}
 					}
 				}
-				
-				tempLineCanvasContext.beginPath();
-				tempLineCanvasContext.globalAlpha = 1;
-				tempLineCanvasContext.moveTo(offsetMousePosX, offsetMousePosY);
-		  		tempLineCanvasContext.lineTo(finalX, finalY);
-				tempLineCanvasContext.strokeStyle = "#00FFFF";
-				tempLineCanvasContext.stroke();
-				tempLineCanvasContext.closePath();
+
+				finalX = xSect;
+				finalY = ySect;
+										
+				// tempLineCanvasContext.beginPath();
+				// tempLineCanvasContext.globalAlpha = 1;
+				// tempLineCanvasContext.moveTo(offsetMousePosX, offsetMousePosY);
+		  		// tempLineCanvasContext.lineTo(finalX, finalY);
+				// tempLineCanvasContext.strokeStyle = "#00FFFF";
+				// tempLineCanvasContext.stroke();
+				// tempLineCanvasContext.closePath();
 				
 				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
 				if(confidenceRange < 0.5)
