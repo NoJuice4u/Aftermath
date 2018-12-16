@@ -318,7 +318,7 @@ public class AftermathHandler extends DefaultHandler {
 	@GET
 	@HandlerInfo(schema = "/map/remove/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
 	public void getMapRemoveDepotEdge(String target, String locale, Task parent, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depot") long depotId)
+			HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId)
 			throws Exception {
 		HtmlWriter writer = new HtmlWriter(2, es);
 
@@ -329,7 +329,33 @@ public class AftermathHandler extends DefaultHandler {
 		}
 		response.getWriter().print(writer.getString(locale));
 	}
+	
+	@GET
+	@HandlerInfo(schema = "/map/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
+	public void getMapDepot(String target, String locale, Task parent, Request baseRequest,
+			HttpServletRequest request, HttpServletResponse response,
+			@QueryParam(value = "depotId") Long depotId,
+			@QueryString(value = "zoom", _default = "18") Integer zoom,
+			@QueryString(value = "depth", _default = "6") Integer depth,
+			@QueryString(value = "roadType", _default = "") String filter,
+			@QueryString(value = "transports", _default = "false") Boolean drawTransports,
+			@QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
+			@QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
+			@QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
+			@QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
+			@QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception {
+		HtmlWriter writer = new HtmlWriter(2, es);
 
+		Depot depot = es.getAftermathController().getDepotData().get(depotId);
+		Long nodeId = findNearestMajorRoad(depot.getLongitude(), depot.getLatitude(), diveOutDepth);
+		
+		getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter,
+				drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
+		
+		
+		response.getWriter().print(writer.getString(locale));
+	}
+	
 	@GET
 	@MenuItem(name = "Map/Depot List")
 	@HandlerInfo(schema = "/map/depots", description = "Details not defined yet because the programmer was lazy.")
@@ -348,7 +374,9 @@ public class AftermathHandler extends DefaultHandler {
 		while (iter.hasNext()) {
 			Entry<Long, Depot> entry = iter.next();
 			writer.tr_Start();
-			writer.td(entry.getKey().toString());
+			writer.td("<A href=\"/aftermath/map/depot/" + entry.getKey().toString() + "\">"
+					+ entry.getKey().toString()
+					+ "</A>");
 			writer.td("<A href=\"/aftermath/map/coord/" + String.valueOf(entry.getValue().getLongitude()) + "/"
 					+ String.valueOf(entry.getValue().getLatitude()) + "/canvas\">" + entry.getValue().getName()
 					+ "</A>");
