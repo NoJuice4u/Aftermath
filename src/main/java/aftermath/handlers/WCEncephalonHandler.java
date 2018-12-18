@@ -3,7 +3,6 @@ package main.java.aftermath.handlers;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 
 import main.java.aftermath.server.AftermathServer;
@@ -12,7 +11,6 @@ import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.writers.HtmlWriter;
-import main.java.encephalon.writers.TextWriter;
 
 public class WCEncephalonHandler extends DefaultHandler {
 	private AftermathServer es;

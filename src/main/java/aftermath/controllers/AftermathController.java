@@ -20,7 +20,7 @@ import main.java.encephalon.server.EncephalonThreadPoolExecutor;
 import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class AftermathController {
-	private AftermathServer es;
+	private static AftermathServer es = AftermathServer.getInstance();
 	private Runnable engine;
 	private HashMap<Long, MapVertex> mapData;
 	private HashMap<Long, MapEdge> edgeData;
@@ -30,22 +30,24 @@ public class AftermathController {
 	EncephalonThreadPoolExecutor executor = new EncephalonThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue<Runnable>(100));
 
-	private CountMeter spatialIndexMeter = new CountMeter();
-	private CountMeter spatialIndexDepotMeter = new CountMeter();
+	public final static String SPATIALINDEX_MAPDATA_DEPTH = "SpatialIndex.MapData.Depth";
+	public final static String SPATIALINDEX_DEPOT_DEPTH = "SpatialIndex.Depot.Depth";
+	
+	static
+	{
+	    es.getCountMeters().put(SPATIALINDEX_MAPDATA_DEPTH, new CountMeter());
+        es.getCountMeters().put(SPATIALINDEX_DEPOT_DEPTH, new CountMeter());
+	}
 
 	public AftermathController() {
-		this.es = AftermathServer.getInstance();
-
 		this.mapData = new HashMap<Long, MapVertex>();
 		this.edgeData = new HashMap<Long, MapEdge>();
 		this.depotData = new HashMap<Long, Depot>();
 		this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-		this.spatialIndexMap.put("nodesMap", new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN,
+		this.spatialIndexMap.put("nodesMap", new SpatialIndex<MapVertex>(es.getCountMeters().get(SPATIALINDEX_MAPDATA_DEPTH), SpatialIndex.LON_MIN,
 				SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
-		this.spatialIndexMap.put("depotMap", new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
-
-		es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);
-		es.getCountMeters().put("SpatialIndex.Depot.Depth", spatialIndexDepotMeter);
+		this.spatialIndexMap.put("depotMap", new SpatialIndex<Depot>(es.getCountMeters().get(SPATIALINDEX_DEPOT_DEPTH),  SpatialIndex.LON_MIN,
+                SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
 	}
 
 	public void run() {

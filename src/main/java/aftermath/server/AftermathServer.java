@@ -10,7 +10,6 @@ import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
 import main.java.encephalon.locale.Localizer;
-import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.*;
 import main.java.encephalon.utils.ResourceUtils;
 

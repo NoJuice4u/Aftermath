@@ -1,7 +1,6 @@
 package test;
 
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,14 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-
-import main.java.encephalon.dto.MapEdge;
 
 class Simulator {
 	public final int DATAENTRIES = 30000;
@@ -55,7 +50,7 @@ class Simulator {
 			Thread.sleep(DELAY);
 			int rnd = (int) (Math.random() * keys.length);
 			String s = (String) keys[rnd];
-			Map edgeList = (Map) vertices.get(s);
+			Map<String, ?> edgeList = (Map<String, ?>) vertices.get(s);
 			ArrayList<Double> edges = (ArrayList<Double>) edgeList.get("edges");
 			StringBuilder edgePost = new StringBuilder();
 			for (Double d : edges) {

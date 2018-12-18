@@ -1,7 +1,6 @@
 package main.java.aftermath.dataCrawlers;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import org.eclipse.jetty.xml.XmlParser.Node;
 
 import main.java.aftermath.engine.Depot;
 import main.java.aftermath.server.AftermathServer;
-import main.java.aftermath.writers.HtmlWriter;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.dto.MapVertex;
@@ -27,16 +25,17 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 public class OSMReader {
 	private static final String RESOURCE = System.getProperty("aftermath.map.mapResource");
 
-	private final AftermathServer es;
+	private final AftermathServer as;
 	private final Profiler profiler;
 	private HashMap<Long, MapVertex> mapData;
 	private HashMap<Long, MapEdge> edgeData;
 	private SpatialIndex<MapVertex> spatialIndex;
 	private SpatialIndex<Depot> spatialIndexDepot;
 	private float progress = 0.0f;
-
-	private CountMeter OSMDataVertexCountMeter = new CountMeter();
-	private CountMeter OSMDataEdgeCountMeter = new CountMeter();
+	
+	public final static String OSMDATA_VERTICES = "OSMData.Vertices";
+	public final static String OSMDATA_EDGES = "OSMData.Edges";
+	
 	private CountMeter spatialIndexMeter = new CountMeter();
 	private CountMeter spatialIndexDepotMeter = new CountMeter();
 
@@ -47,21 +46,21 @@ public class OSMReader {
 
 	public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
 			SpatialIndex<MapVertex> spatialIndex, SpatialIndex<Depot> spatialIndexDepot) throws Exception {
-		this.es = AftermathServer.getInstance();
+		this.as = AftermathServer.getInstance();
 		this.mapData = mapData;
 		this.edgeData = edgeData;
 		this.spatialIndex = spatialIndex;
 		this.spatialIndexDepot = spatialIndexDepot;
-		this.profiler = es.getProfiler();
+		this.profiler = as.getProfiler();
 
-		es.getCountMeters().put("OSMData.Vertices", OSMDataVertexCountMeter);
-		es.getCountMeters().put("OSMData.Edges", OSMDataEdgeCountMeter);
+		as.getCountMeters().put(OSMDATA_VERTICES, new CountMeter());
+		as.getCountMeters().put(OSMDATA_EDGES, new CountMeter());
 
 		read();
 	}
 
 	public OSMReader() throws Exception {
-		this.es = null;
+		this.as = null;
 		this.mapData = new HashMap<Long, MapVertex>(300000);
 		this.edgeData = new HashMap<Long, MapEdge>(300000);
 		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
@@ -107,7 +106,7 @@ public class OSMReader {
 				float lon = Float.valueOf(nD.getAttribute("lon"));
 				long id = Long.valueOf(nD.getAttribute("id"));
 				mapData.put(id, new MapVertex(lon, lat, id));
-				OSMDataVertexCountMeter.increment();
+				as.getCountMeters().get(OSMDATA_VERTICES).increment();
 				Iterator<Object> ndIterator = nD.iterator();
 				String preName = null;
 				while (ndIterator.hasNext()) {
@@ -138,8 +137,8 @@ public class OSMReader {
 							}
 							Depot d = new Depot(preName, 100, lon, lat);
 
-							es.getAftermathController().getDepotData().put(d.getId(), d);
-							es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
+							as.getAftermathController().getDepotData().put(d.getId(), d);
+							as.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
 						}
 						break;
 					default:
@@ -207,7 +206,7 @@ public class OSMReader {
 								mode);
 						edgeListForReduction.add(edgeId);
 						edgeData.put(edgeId, mapEdge);
-						OSMDataEdgeCountMeter.increment();
+						as.getCountMeters().get(OSMDATA_EDGES).increment();
 						mapData.get(previousNode).addEdge(edgeId);
 						mapData.get(currentNode).addEdge(edgeId);
 						edgeId++;
