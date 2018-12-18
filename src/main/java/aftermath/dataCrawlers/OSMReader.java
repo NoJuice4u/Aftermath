@@ -22,299 +22,335 @@ import main.java.encephalon.profiler.Profiler;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.spatialIndex.SpatialIndex;
 
-public class OSMReader {
-	private static final String RESOURCE = System.getProperty("aftermath.map.mapResource");
+public class OSMReader
+{
+    private static final String RESOURCE = System.getProperty("aftermath.map.mapResource");
 
-	private final AftermathServer as;
-	private final Profiler profiler;
-	private HashMap<Long, MapVertex> mapData;
-	private HashMap<Long, MapEdge> edgeData;
-	private SpatialIndex<MapVertex> spatialIndex;
-	private SpatialIndex<Depot> spatialIndexDepot;
-	private float progress = 0.0f;
-	
-	public final static String OSMDATA_VERTICES = "OSMData.Vertices";
-	public final static String OSMDATA_EDGES = "OSMData.Edges";
-	
-	private CountMeter spatialIndexMeter = new CountMeter();
-	private CountMeter spatialIndexDepotMeter = new CountMeter();
+    private final AftermathServer as;
+    private final Profiler profiler;
+    private HashMap<Long, MapVertex> mapData;
+    private HashMap<Long, MapEdge> edgeData;
+    private SpatialIndex<MapVertex> spatialIndex;
+    private SpatialIndex<Depot> spatialIndexDepot;
+    private float progress = 0.0f;
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("You launched the wrong instance, idiot.");
-		OSMReader osmReader = new OSMReader();
-	}
+    public final static String OSMDATA_VERTICES = "OSMData.Vertices";
+    public final static String OSMDATA_EDGES = "OSMData.Edges";
 
-	public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
-			SpatialIndex<MapVertex> spatialIndex, SpatialIndex<Depot> spatialIndexDepot) throws Exception {
-		this.as = AftermathServer.getInstance();
-		this.mapData = mapData;
-		this.edgeData = edgeData;
-		this.spatialIndex = spatialIndex;
-		this.spatialIndexDepot = spatialIndexDepot;
-		this.profiler = as.getProfiler();
+    private CountMeter spatialIndexMeter = new CountMeter();
+    private CountMeter spatialIndexDepotMeter = new CountMeter();
 
-		as.getCountMeters().put(OSMDATA_VERTICES, new CountMeter());
-		as.getCountMeters().put(OSMDATA_EDGES, new CountMeter());
+    public static void main(String[] args) throws Exception
+    {
+        System.out.println("You launched the wrong instance, idiot.");
+        OSMReader osmReader = new OSMReader();
+    }
 
-		read();
-	}
+    public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
+            SpatialIndex<MapVertex> spatialIndex, SpatialIndex<Depot> spatialIndexDepot) throws Exception
+    {
+        this.as = AftermathServer.getInstance();
+        this.mapData = mapData;
+        this.edgeData = edgeData;
+        this.spatialIndex = spatialIndex;
+        this.spatialIndexDepot = spatialIndexDepot;
+        this.profiler = as.getProfiler();
 
-	public OSMReader() throws Exception {
-		this.as = null;
-		this.mapData = new HashMap<Long, MapVertex>(300000);
-		this.edgeData = new HashMap<Long, MapEdge>(300000);
-		this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
-		this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
-		this.profiler = null;
+        as.getCountMeters().put(OSMDATA_VERTICES, new CountMeter());
+        as.getCountMeters().put(OSMDATA_EDGES, new CountMeter());
 
-		read();
-	}
+        read();
+    }
 
-	private void read() throws Exception {
-		File file = new File(RESOURCE);
+    public OSMReader() throws Exception
+    {
+        this.as = null;
+        this.mapData = new HashMap<Long, MapVertex>(300000);
+        this.edgeData = new HashMap<Long, MapEdge>(300000);
+        this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
+        this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
+        this.profiler = null;
 
-		XmlParser xP = new XmlParser();
-		Task xmlParseTask = new Task(this.profiler, null, "Parse into XML", null);
-		Node data = xP.parse(file);
-		xmlParseTask.end();
+        read();
+    }
 
-		long edgeId = 0L;
+    private void read() throws Exception
+    {
+        File file = new File(RESOURCE);
 
-		Task osmProcessingTask = new Task(this.profiler, null, "Parse OSM File", null);
-		Iterator<Object> nodeIterator = data.iterator();
+        XmlParser xP = new XmlParser();
+        Task xmlParseTask = new Task(this.profiler, null, "Parse into XML", null);
+        Node data = xP.parse(file);
+        xmlParseTask.end();
 
-		// Go through all nodes, and find the vertices and edges to build into the
-		// Spatial Index
-		HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
-		while (nodeIterator.hasNext()) {
-			Node nD = null;
-			Object obj = nodeIterator.next();
-			try {
-				nD = (Node) obj;
-			} catch (Exception e) {
-				new Task(this.profiler, "", osmProcessingTask,
-						((String) obj).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null).end();
-				continue;
-			}
+        long edgeId = 0L;
 
-			String attributes = processAttributes(nD, osmProcessingTask);
-			Task tagTypeTask = new Task(this.profiler, osmProcessingTask,
-					"Encountered Node [" + nD.getTag() + "] with attributes [" + attributes + "]", null);
-			switch (nD.getTag()) {
-			case "node":
-				float lat = Float.valueOf(nD.getAttribute("lat"));
-				float lon = Float.valueOf(nD.getAttribute("lon"));
-				long id = Long.valueOf(nD.getAttribute("id"));
-				mapData.put(id, new MapVertex(lon, lat, id));
-				as.getCountMeters().get(OSMDATA_VERTICES).increment();
-				Iterator<Object> ndIterator = nD.iterator();
-				String preName = null;
-				while (ndIterator.hasNext()) {
-					Node ndNode = null;
-					Object ndIteratorNext = ndIterator.next();
+        Task osmProcessingTask = new Task(this.profiler, null, "Parse OSM File", null);
+        Iterator<Object> nodeIterator = data.iterator();
 
-					try {
-						ndNode = (Node) ndIteratorNext;
-					} catch (Exception e) {
-						new Task(this.profiler, "", osmProcessingTask,
-								((String) ndIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null)
-										.end();
-						continue;
-					}
+        // Go through all nodes, and find the vertices and edges to build into the
+        // Spatial Index
+        HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
+        while (nodeIterator.hasNext())
+        {
+            Node nD = null;
+            Object obj = nodeIterator.next();
+            try
+            {
+                nD = (Node) obj;
+            } catch (Exception e)
+            {
+                new Task(this.profiler, "", osmProcessingTask,
+                        ((String) obj).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null).end();
+                continue;
+            }
 
-					String ndAttributes = processAttributes(ndNode, osmProcessingTask);
-					Task.entry(this.profiler, tagTypeTask,
-							"Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
-					switch (ndNode.getTag()) {
-					case "tag":
-						if (ndNode.getAttribute("k").toLowerCase().indexOf("name") >= 0) {
-							preName = ndNode.getAttribute("v");
-						}
-						if (ndNode.getAttribute("v").toLowerCase().indexOf("shelter") >= 0
-								|| ndNode.getAttribute("k").toLowerCase().indexOf("shelter") >= 0) {
-							if (preName == null) {
-								preName = ndNode.getAttribute("v");
-							}
-							Depot d = new Depot(preName, 100, lon, lat);
+            String attributes = processAttributes(nD, osmProcessingTask);
+            Task tagTypeTask = new Task(this.profiler, osmProcessingTask,
+                    "Encountered Node [" + nD.getTag() + "] with attributes [" + attributes + "]", null);
+            switch (nD.getTag())
+            {
+            case "node":
+                float lat = Float.valueOf(nD.getAttribute("lat"));
+                float lon = Float.valueOf(nD.getAttribute("lon"));
+                long id = Long.valueOf(nD.getAttribute("id"));
+                mapData.put(id, new MapVertex(lon, lat, id));
+                as.getCountMeters().get(OSMDATA_VERTICES).increment();
+                Iterator<Object> ndIterator = nD.iterator();
+                String preName = null;
+                while (ndIterator.hasNext())
+                {
+                    Node ndNode = null;
+                    Object ndIteratorNext = ndIterator.next();
 
-							as.getAftermathController().getDepotData().put(d.getId(), d);
-							as.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
-						}
-						break;
-					default:
-						Task.entry(this.profiler, tagTypeTask, "MISSED CHILDNODETAG: [" + nD.getTag() + "]", null);
-					}
-				}
-				break;
-			case "way":
-				List<Long> edgeRefNodes = new ArrayList<Long>();
-				RoadTypes mode = RoadTypes.unknown;
-				Iterator<Object> wayIterator = nD.iterator();
-				while (wayIterator.hasNext()) {
-					Node wayNode = null;
+                    try
+                    {
+                        ndNode = (Node) ndIteratorNext;
+                    } catch (Exception e)
+                    {
+                        new Task(this.profiler, "", osmProcessingTask,
+                                ((String) ndIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null)
+                                        .end();
+                        continue;
+                    }
 
-					Object wayIteratorNext = wayIterator.next();
+                    String ndAttributes = processAttributes(ndNode, osmProcessingTask);
+                    Task.entry(this.profiler, tagTypeTask,
+                            "Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
+                    switch (ndNode.getTag())
+                    {
+                    case "tag":
+                        if (ndNode.getAttribute("k").toLowerCase().indexOf("name") >= 0)
+                        {
+                            preName = ndNode.getAttribute("v");
+                        }
+                        if (ndNode.getAttribute("v").toLowerCase().indexOf("shelter") >= 0
+                                || ndNode.getAttribute("k").toLowerCase().indexOf("shelter") >= 0)
+                        {
+                            if (preName == null)
+                            {
+                                preName = ndNode.getAttribute("v");
+                            }
+                            Depot d = new Depot(preName, 100, lon, lat);
 
-					// Cast to Node to parse. If we can't cast, it's probably not an XML node.
-					try {
-						wayNode = (Node) wayIteratorNext;
-					} catch (Exception e) {
-						new Task(this.profiler, "", osmProcessingTask,
-								((String) wayIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null)
-										.end();
-						continue;
-					}
+                            as.getAftermathController().getDepotData().put(d.getId(), d);
+                            as.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
+                        }
+                        break;
+                    default:
+                        Task.entry(this.profiler, tagTypeTask, "MISSED CHILDNODETAG: [" + nD.getTag() + "]", null);
+                    }
+                }
+                break;
+            case "way":
+                List<Long> edgeRefNodes = new ArrayList<Long>();
+                RoadTypes mode = RoadTypes.unknown;
+                Iterator<Object> wayIterator = nD.iterator();
+                while (wayIterator.hasNext())
+                {
+                    Node wayNode = null;
 
-					String ndAttributes = processAttributes(wayNode, osmProcessingTask);
-					Task.entry(this.profiler, tagTypeTask,
-							"Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
-					switch (wayNode.getTag()) {
-					case "nd":
-						edgeRefNodes.add(Long.valueOf(wayNode.getAttribute("ref")));
-						break;
-					case "tag":
-						// Task.entry(EncephalonServer.getInstance().getProfiler(), null,
-						// "WayNodeAttribute: " + wayNode.getAttribute("k") + ":" +
-						// wayNode.getAttribute("v"), null);
-						if (wayNode.getAttribute("k").equals("highway") || wayNode.getAttribute("k").equals("railway")
-								|| wayNode.getAttribute("k").equals("way")) {
-							try {
-								mode = MapEdge.RoadTypes.valueOf(wayNode.getAttribute("v"));
-							} catch (IllegalArgumentException e) {
-								Task.entry(this.profiler, tagTypeTask,
-										"##WARNING## NO ENUM FOR WAYTAG: " + wayNode.getAttribute("v"), null);
-								continue;
-							}
-						} else {
-							Task.entry(this.profiler, tagTypeTask, "\"k\" Unknown: [" + wayNode.getAttribute("k") + "]",
-									null);
-						}
-						break;
-					default:
-						Task.entry(this.profiler, tagTypeTask, "MISSED WAYTAG: [" + nD.getTag() + "]", null);
-						break;
-					}
-				}
+                    Object wayIteratorNext = wayIterator.next();
 
-				long previousNode = 0L;
-				long currentNode = 0L;
-				for (long l : edgeRefNodes) {
-					previousNode = currentNode;
-					currentNode = l;
-					if (previousNode != 0L) {
-						MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode),
-								mode);
-						edgeListForReduction.add(edgeId);
-						edgeData.put(edgeId, mapEdge);
-						as.getCountMeters().get(OSMDATA_EDGES).increment();
-						mapData.get(previousNode).addEdge(edgeId);
-						mapData.get(currentNode).addEdge(edgeId);
-						edgeId++;
-					}
-				}
+                    // Cast to Node to parse. If we can't cast, it's probably not an XML node.
+                    try
+                    {
+                        wayNode = (Node) wayIteratorNext;
+                    } catch (Exception e)
+                    {
+                        new Task(this.profiler, "", osmProcessingTask,
+                                ((String) wayIteratorNext).replace("\n", "%nl").trim() + ":" + e.getMessage(), e, null)
+                                        .end();
+                        continue;
+                    }
 
-				break;
-			default:
-				Task.entry(this.profiler, tagTypeTask, "MISSED TAG: " + nD.getTag(), null);
-				break;
-			}
-			tagTypeTask.end();
-		}
-		osmProcessingTask.end();
+                    String ndAttributes = processAttributes(wayNode, osmProcessingTask);
+                    Task.entry(this.profiler, tagTypeTask,
+                            "Encountered Node [" + nD.getTag() + "] with attributes [" + ndAttributes + "]", null);
+                    switch (wayNode.getTag())
+                    {
+                    case "nd":
+                        edgeRefNodes.add(Long.valueOf(wayNode.getAttribute("ref")));
+                        break;
+                    case "tag":
+                        // Task.entry(EncephalonServer.getInstance().getProfiler(), null,
+                        // "WayNodeAttribute: " + wayNode.getAttribute("k") + ":" +
+                        // wayNode.getAttribute("v"), null);
+                        if (wayNode.getAttribute("k").equals("highway") || wayNode.getAttribute("k").equals("railway")
+                                || wayNode.getAttribute("k").equals("way"))
+                        {
+                            try
+                            {
+                                mode = MapEdge.RoadTypes.valueOf(wayNode.getAttribute("v"));
+                            } catch (IllegalArgumentException e)
+                            {
+                                Task.entry(this.profiler, tagTypeTask,
+                                        "##WARNING## NO ENUM FOR WAYTAG: " + wayNode.getAttribute("v"), null);
+                                continue;
+                            }
+                        } else
+                        {
+                            Task.entry(this.profiler, tagTypeTask, "\"k\" Unknown: [" + wayNode.getAttribute("k") + "]",
+                                    null);
+                        }
+                        break;
+                    default:
+                        Task.entry(this.profiler, tagTypeTask, "MISSED WAYTAG: [" + nD.getTag() + "]", null);
+                        break;
+                    }
+                }
 
-		for (long l = 0; l < edgeId; l++) {
-			MapEdge initialEdge = edgeData.get(l);
-			List<Long> edgeList = new ArrayList<Long>();
+                long previousNode = 0L;
+                long currentNode = 0L;
+                for (long l : edgeRefNodes)
+                {
+                    previousNode = currentNode;
+                    currentNode = l;
+                    if (previousNode != 0L)
+                    {
+                        MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode),
+                                mode);
+                        edgeListForReduction.add(edgeId);
+                        edgeData.put(edgeId, mapEdge);
+                        as.getCountMeters().get(OSMDATA_EDGES).increment();
+                        mapData.get(previousNode).addEdge(edgeId);
+                        mapData.get(currentNode).addEdge(edgeId);
+                        edgeId++;
+                    }
+                }
 
-			if (initialEdge == null)
-				continue;
+                break;
+            default:
+                Task.entry(this.profiler, tagTypeTask, "MISSED TAG: " + nD.getTag(), null);
+                break;
+            }
+            tagTypeTask.end();
+        }
+        osmProcessingTask.end();
 
-			edgeList.add(initialEdge.getId());
-			RoadTypes type = initialEdge.getMode();
-			long[] vertices = initialEdge.getVertices();
+        for (long l = 0; l < edgeId; l++)
+        {
+            MapEdge initialEdge = edgeData.get(l);
+            List<Long> edgeList = new ArrayList<Long>();
 
-			// System.out.println("S [" + type.toString() + "]" + initialEdge.getId() + " ::
-			// ########### -- {" + vertices[0] + ", " + vertices[1] + "}");
-			long[] endPoints = new long[] { -1, -1 };
+            if (initialEdge == null)
+                continue;
 
-			for (int i = 0; i < endPoints.length; i++) {
-				MapEdge e = initialEdge;
-				for (MapVertex vertex = mapData.get(vertices[i]); true;) {
-					if (vertex.getEdges().size() != 2 || (vertex.getEdges().size() == 2 && e.getMode() != type)) // This
-																													// breaks
-																													// things
-																													// for
-																													// some
-																													// reason...
-					{
-						endPoints[i] = vertex.getId();
-						break;
-					}
-					e = edgeData.get(vertex.getOtherEdge(e.getId()));
-					edgeList.add(e.getId());
-					vertex = mapData.get(e.getOtherVertex(vertex.getId()));
-					if (initialEdge.getId() == e.getId()) {
-						break;
-					}
-					// System.out.println("E" + i + " [" + e.getMode().toString() + "]" + e.getId()
-					// + " :: " + vertex.getId() + " -- " + Arrays.toString(e.getVertices()));
-				}
-			}
+            edgeList.add(initialEdge.getId());
+            RoadTypes type = initialEdge.getMode();
+            long[] vertices = initialEdge.getVertices();
 
-			// System.out.println("[ NEXT: " + endPoints[0] + ", " + endPoints[1] + " ]");
-		}
+            // System.out.println("S [" + type.toString() + "]" + initialEdge.getId() + " ::
+            // ########### -- {" + vertices[0] + ", " + vertices[1] + "}");
+            long[] endPoints = new long[]
+            { -1, -1 };
 
-		/*
-		 * List<Long> multiPathVertex = new ArrayList<Long>(); HashSet<Long>
-		 * edgesToMultiPathVertex = new HashSet<Long>(); Task processOrphansTask = new
-		 * Task(this.profiler, osmProcessingTask, "Process Orphaned Nodes", null); {
-		 * Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
-		 * List<Long> intersectList = new ArrayList<Long>(); List<Long> removeList = new
-		 * ArrayList<Long>(); while(iter.hasNext()) { // Organize ophaned nodes
-		 * Entry<Long, MapVertex> vEntry = iter.next();
-		 * if(vEntry.getValue().getEdges().size() == 0) {
-		 * removeList.add(vEntry.getKey()); } else
-		 * if(vEntry.getValue().getEdges().size() != 2) {
-		 * multiPathVertex.add(vEntry.getKey()); for(Long l :
-		 * vEntry.getValue().getEdges()) { MapEdge mE = edgeData.get(l);
-		 * if(edgesToMultiPathVertex.contains(l)) { new Task(es.getProfiler(),
-		 * processOrphansTask, "Remove Edge with Shared Vertices: " +
-		 * mE.getMode().toString(), null).end(); edgesToMultiPathVertex.remove(l); }
-		 * else { new Task(es.getProfiler(), processOrphansTask,
-		 * "Add Edge from MultiPathVertex: " + mE.getMode().toString(), null).end();
-		 * edgesToMultiPathVertex.add(l); } } } else {
-		 * intersectList.add(vEntry.getKey()); } }
-		 * 
-		 * for(Long l : removeList) { mapData.remove(l);
-		 * OSMDataVertexCountMeter.decrement(); new Task(this.profiler,
-		 * processOrphansTask, "Remove unlinked node", null).end(); } }
-		 * processOrphansTask.end();
-		 */
+            for (int i = 0; i < endPoints.length; i++)
+            {
+                MapEdge e = initialEdge;
+                for (MapVertex vertex = mapData.get(vertices[i]); true;)
+                {
+                    if (vertex.getEdges().size() != 2 || (vertex.getEdges().size() == 2 && e.getMode() != type)) // This
+                                                                                                                 // breaks
+                                                                                                                 // things
+                                                                                                                 // for
+                                                                                                                 // some
+                                                                                                                 // reason...
+                    {
+                        endPoints[i] = vertex.getId();
+                        break;
+                    }
+                    e = edgeData.get(vertex.getOtherEdge(e.getId()));
+                    edgeList.add(e.getId());
+                    vertex = mapData.get(e.getOtherVertex(vertex.getId()));
+                    if (initialEdge.getId() == e.getId())
+                    {
+                        break;
+                    }
+                    // System.out.println("E" + i + " [" + e.getMode().toString() + "]" + e.getId()
+                    // + " :: " + vertex.getId() + " -- " + Arrays.toString(e.getVertices()));
+                }
+            }
 
-		{
-			Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
-			Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
+            // System.out.println("[ NEXT: " + endPoints[0] + ", " + endPoints[1] + " ]");
+        }
 
-			while (iter.hasNext()) {
-				Entry<Long, MapVertex> vEntry = iter.next();
-				try {
-					spatialIndex.add(vEntry.getKey(), vEntry.getValue());
-				} catch (StackOverflowError e) {
-					new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + vEntry.getKey(), null).end();
-					System.err.println("Stack Oveflow on Edge: " + vEntry.getKey());
-				}
-			}
-			buildSpatialIndexTask.end();
-		}
-	}
+        /*
+         * List<Long> multiPathVertex = new ArrayList<Long>(); HashSet<Long>
+         * edgesToMultiPathVertex = new HashSet<Long>(); Task processOrphansTask = new
+         * Task(this.profiler, osmProcessingTask, "Process Orphaned Nodes", null); {
+         * Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
+         * List<Long> intersectList = new ArrayList<Long>(); List<Long> removeList = new
+         * ArrayList<Long>(); while(iter.hasNext()) { // Organize ophaned nodes
+         * Entry<Long, MapVertex> vEntry = iter.next();
+         * if(vEntry.getValue().getEdges().size() == 0) {
+         * removeList.add(vEntry.getKey()); } else
+         * if(vEntry.getValue().getEdges().size() != 2) {
+         * multiPathVertex.add(vEntry.getKey()); for(Long l :
+         * vEntry.getValue().getEdges()) { MapEdge mE = edgeData.get(l);
+         * if(edgesToMultiPathVertex.contains(l)) { new Task(es.getProfiler(),
+         * processOrphansTask, "Remove Edge with Shared Vertices: " +
+         * mE.getMode().toString(), null).end(); edgesToMultiPathVertex.remove(l); }
+         * else { new Task(es.getProfiler(), processOrphansTask,
+         * "Add Edge from MultiPathVertex: " + mE.getMode().toString(), null).end();
+         * edgesToMultiPathVertex.add(l); } } } else {
+         * intersectList.add(vEntry.getKey()); } }
+         * 
+         * for(Long l : removeList) { mapData.remove(l);
+         * OSMDataVertexCountMeter.decrement(); new Task(this.profiler,
+         * processOrphansTask, "Remove unlinked node", null).end(); } }
+         * processOrphansTask.end();
+         */
 
-	private String processAttributes(Node nD, Task parent) {
-		StringBuilder attributeList = new StringBuilder();
-		for (Attribute a : nD.getAttributes()) {
-			attributeList.append(", " + a.getName());
-		}
+        {
+            Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
+            Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
 
-		int pos = (attributeList.length() > 2) ? 2 : 0; // Trim the string if we have attributes
-		return attributeList.substring(pos);
-	}
+            while (iter.hasNext())
+            {
+                Entry<Long, MapVertex> vEntry = iter.next();
+                try
+                {
+                    spatialIndex.add(vEntry.getKey(), vEntry.getValue());
+                } catch (StackOverflowError e)
+                {
+                    new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + vEntry.getKey(), null).end();
+                    System.err.println("Stack Oveflow on Edge: " + vEntry.getKey());
+                }
+            }
+            buildSpatialIndexTask.end();
+        }
+    }
+
+    private String processAttributes(Node nD, Task parent)
+    {
+        StringBuilder attributeList = new StringBuilder();
+        for (Attribute a : nD.getAttributes())
+        {
+            attributeList.append(", " + a.getName());
+        }
+
+        int pos = (attributeList.length() > 2) ? 2 : 0; // Trim the string if we have attributes
+        return attributeList.substring(pos);
+    }
 }
