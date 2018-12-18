@@ -4,6 +4,10 @@ public class EN_US extends LocaleBase {
 	public EN_US() {
 		super();
 		this.SERVER_TITLE = "Project Aftermath";
+		
+		this.INTRODUCTION_TITLE = "Find a shelter, help map the disaster.";
+		this.INTRODUCTION_MESSAGE = "This map will show you nearby shelters, and also the conditions of the roads so you can plan a path to the shelter.  This data is provided by users like yourself, "
+				+ "so giving us feedback on the conditions of the roads as you head towards the shelter will allow us to help everyone.";
 
 		this.TH_VERTICES = "Vertices";
 		this.TH_MODE = "Mode";

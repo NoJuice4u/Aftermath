@@ -1,6 +1,9 @@
 package main.java.aftermath.locale;
 
 public class LocaleBase extends main.java.encephalon.locale.LocaleBase {
+	public String INTRODUCTION_TITLE = "[*UNDEFINED*]";
+	public String INTRODUCTION_MESSAGE = "[*UNDEFINED*]";
+	
 	public String TH_VERTICES = "[*UNDEFINED*]";
 	public String TH_MODE = "[*UNDEFINED*]";
 	public String TH_VERTEX_ID_1 = "[*UNDEFINED*]";
