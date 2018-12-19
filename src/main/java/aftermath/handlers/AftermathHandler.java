@@ -52,11 +52,11 @@ public class AftermathHandler extends DefaultHandler
     private AftermathServer es;
     private long maxScore = 1;
 
-    public AftermathHandler(AftermathServer instance)
+    public AftermathHandler()
     {
         super();
 
-        this.es = instance;
+        this.es = AftermathServer.getInstance();
     }
 
     @GET
@@ -507,7 +507,7 @@ public class AftermathHandler extends DefaultHandler
         }
 
         HtmlWriter writer = new HtmlWriter(2, es);
-        writer.importScript(AftermathServer.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\""
+        writer.importScript(es.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\""
                 + baseRequest.getRootURL() + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom
                 + "\"," + zoom + ");}refresh();");
 

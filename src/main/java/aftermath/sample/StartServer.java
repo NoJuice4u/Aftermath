@@ -104,9 +104,9 @@ public class StartServer extends main.java.encephalon.sample.StartServer
         }
     }
 
-    public static void registerAftermathHandlers(EncephalonServer server) throws Exception
+    public static void registerAftermathHandlers(AftermathServer server) throws Exception
     {
-        server.registerUri("/aftermath", "aftermath", new AftermathHandler((AftermathServer) server));
+        server.registerUri("/aftermath", "aftermath", new AftermathHandler());
         // server.registerUri("/", "wcencephalon", new
         // WCEncephalonHandler((AftermathServer)server));
     }
