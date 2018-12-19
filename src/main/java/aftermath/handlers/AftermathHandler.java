@@ -92,6 +92,12 @@ public class AftermathHandler extends DefaultHandler {
 		HtmlWriter writer = new HtmlWriter(2, es);
 
 		writer.table_Start(null, null, "sortable");
+        writer.tr_Start();
+        writer.td_Start();
+        writer.h1(localizer.INTRODUCTION_TITLE);
+        writer.text(localizer.INTRODUCTION_MESSAGE);
+        writer.td_End();
+        writer.tr_End();
 		writer.tr_Start();
 		writer.th(localizer.TH_NODE);
 		writer.tr_End();
