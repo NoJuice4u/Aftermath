@@ -5,7 +5,6 @@ import java.util.List;
 
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.vehicles.Transport;
-import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
 

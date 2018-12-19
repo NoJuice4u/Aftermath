@@ -1,7 +1,6 @@
 package main.java.aftermath.dataCrawlers;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import org.eclipse.jetty.xml.XmlParser.Node;
 
 import main.java.aftermath.engine.Depot;
 import main.java.aftermath.server.AftermathServer;
-import main.java.aftermath.writers.HtmlWriter;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.dto.MapVertex;

@@ -2,7 +2,6 @@ package main.java.aftermath.server;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
