@@ -1,9 +1,5 @@
 package main.java.aftermath.server;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.gson.Gson;
 
 import main.java.aftermath.controllers.AftermathController;
@@ -24,30 +20,6 @@ public class AftermathServer extends EncephalonServer
     private static AftermathController aftermathController = new AftermathController();
 
     public final Gson gsonRequest = new Gson();
-
-    /*
-    public Map<String, Localizer<LocaleBase>> localeList = new HashMap<String, Localizer<LocaleBase>>();
-    {
-        Map<String, Localizer<LocaleBase>> lMap = new HashMap<String, Localizer<LocaleBase>>();
-        lMap.put("ja", new Localizer<LocaleBase>(new JP_JP()));
-        lMap.put("jp-jp", new Localizer<LocaleBase>(new JP_JP()));
-        try
-        {
-            lMap.put("debug", new Localizer<LocaleBase>(new DEBUG()));
-        } catch (IllegalArgumentException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        lMap.put("en-us", new Localizer<LocaleBase>(new EN_US()));
-        lMap.put("undefined", new Localizer<LocaleBase>(new LocaleBase()));
-        localeList = Collections.unmodifiableMap(lMap);
-    }
-    */
 
     public AftermathServer() throws Exception
     {
