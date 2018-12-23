@@ -38,13 +38,13 @@ public class DefaultHandler extends AbstractHandler
         try
         {
             as.invokeMethod(target, task, baseRequest, request, response);
-        } catch (Exception e)
+        } catch (Throwable e)
         {
             task.insertException(e.getCause());
             try
             {
                 returnNotFound(target, task, baseRequest, request, response, e);
-            } catch (Exception e2)
+            } catch (Throwable e2)
             {
                 Timestamp time = new Timestamp(System.currentTimeMillis());
                 System.err.println(time.toString().replace(" ", "T") + " [EXCEPTION] -- Second Exception!");
@@ -59,7 +59,7 @@ public class DefaultHandler extends AbstractHandler
     }
 
     public void returnNotFound(String target, Task parent, Request baseRequest, HttpServletRequest request,
-            HttpServletResponse response, Exception e) throws Exception
+            HttpServletResponse response, Throwable e) throws Exception
     {
         Task task = new Task(as.getProfiler(), null, "404 NOT FOUND", baseRequest);
         response.setContentType("text/html;charset=utf-8");
