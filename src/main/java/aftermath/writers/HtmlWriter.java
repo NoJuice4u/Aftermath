@@ -5,6 +5,8 @@ import main.java.encephalon.dto.MapVertex;
 
 public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
 {
+    private StringBuilder dataArray = new StringBuilder();
+    
     public HtmlWriter(int indentationDepth, AftermathServer as)
     {
         super(indentationDepth, as);
@@ -12,15 +14,17 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
 
     public void importScript(String script)
     {
-        loadedScript.append("<script type='application/javascript'>" + System.lineSeparator());
-        loadedScript.append(script + System.lineSeparator());
-        loadedScript.append("</script>" + System.lineSeparator());
+        loadedPostScript.append("<script type='application/javascript'>" + System.lineSeparator());
+        loadedPostScript.append(script + System.lineSeparator());
+        loadedPostScript.append("</script>" + System.lineSeparator());
     }
 
     public void canvasIcons()
     {
         stringBuilder.append(
                 "<img id=\"lowConfidence\" style=\"position:absolute; visibility: hidden\" src=\"/resource/question.png\"/>");
+        stringBuilder.append(
+                "<img id=\"depot\" style=\"position:absolute; visibility: hidden\" src=\"/resource/depot.png\"/>");
     }
 
     public void drawCanvasLine(String name, float width, String color, int xA, int yA, int xB, int yB)
@@ -33,6 +37,38 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         stringBuilder.append(
                 "var ctx = document.getElementById(\"" + name + "\").getContext(\"2d\");\r" + System.lineSeparator());
         drawArc(MapVertex.WIDTH / 2, MapVertex.HEIGHT / 2, 3, 2, "#00C0C0");
+    }
+    
+    public void addCanvasLineRect(float alpha, int xA, int yA, double rotation, double lineWidth, double lineLength, String color, String color2)
+    {
+        dataArray.append(", [" + alpha + ", " + xA + ", " + yA + ", " + rotation + ", " + lineWidth + ", " + lineLength + ", \"" + color + "\", \"" + color2 + "\"]");
+    }
+    
+    public void addRoadLineData()
+    {
+        stringBuilder.append(System.lineSeparator() + "var roadLines = [" + dataArray.substring(2) + "];" + System.lineSeparator());
+        
+        stringBuilder.append("for(i = 0; i < roadLines.length; i++) {" + System.lineSeparator());
+        stringBuilder.append("ctx.save();" + System.lineSeparator());
+        stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
+        stringBuilder.append("ctx.globalAlpha = roadLines[i][0];" + System.lineSeparator());
+        stringBuilder.append("ctx.translate(roadLines[i][1],roadLines[i][2]);" + System.lineSeparator());
+        stringBuilder.append("ctx.rotate(roadLines[i][3]);" + System.lineSeparator());
+        stringBuilder.append("ctx.rect(0, -roadLines[i][4]/2, roadLines[i][5], roadLines[i][4]);" + System.lineSeparator());
+        stringBuilder.append("ctx.translate(-roadLines[i][1],-roadLines[i][2]);" + System.lineSeparator());
+        stringBuilder.append("ctx.rotate(-roadLines[i][3]);" + System.lineSeparator());
+
+        stringBuilder.append("ctx.fillStyle=\"roadLines[i][6]\";" + System.lineSeparator());
+        stringBuilder.append("ctx.fill();" + System.lineSeparator());
+
+        stringBuilder.append("ctx.lineWidth=\"1\";" + System.lineSeparator());
+        stringBuilder.append("ctx.strokeStyle=\"roadLines[i][7]\";" + System.lineSeparator());
+        stringBuilder.append("ctx.stroke();" + System.lineSeparator());
+        
+        stringBuilder.append("ctx.restore();" + System.lineSeparator());
+        stringBuilder.append("console.log(roadLines[i][1]);" + System.lineSeparator());
+        
+        stringBuilder.append("};" + System.lineSeparator());
     }
 
     public void drawCanvasLine(String name, float width, String color, float alpha, int xA, int yA, int xB, int yB)
@@ -70,7 +106,10 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         double rotation = Math.atan2(dy, dx);
         double lineLength = Math.sqrt(dx * dx + dy * dy);
         double lineWidth = width;
+        
+        addCanvasLineRect(alpha, xA, yA, rotation, lineWidth, lineLength, color, color2);
 
+        /*
         stringBuilder.append("ctx.save();" + System.lineSeparator());
         stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
         stringBuilder.append("ctx.globalAlpha = " + alpha + ";" + System.lineSeparator());
@@ -89,6 +128,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         stringBuilder.append("ctx.stroke();" + System.lineSeparator());
 
         stringBuilder.append("ctx.restore();" + System.lineSeparator());
+        */
     }
 
     public void drawImage(String name, int width, int height, String image, int positionX, int positionY)

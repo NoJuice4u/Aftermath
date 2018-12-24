@@ -1215,6 +1215,7 @@ public class AftermathHandler extends DefaultHandler
                 }
             }
         }
+        writer.addRoadLineData();
     }
 
     private void drawTransports(HtmlWriter writer, Coordinates focalPoint, int zoom, int depth) throws Exception
@@ -1280,8 +1281,8 @@ public class AftermathHandler extends DefaultHandler
             int edgeBearingX = (int) point[0] + MapVertex.WIDTH / 2;
             int edgeBearingY = (int) point[1] + MapVertex.HEIGHT / 2;
 
-            writer.drawArc(edgeBearingX, edgeBearingY, 5, 5, "#00FFFF");
             writer.drawVertex("mapCanvas", 16, edgeBearingX + 5, edgeBearingY + 5, depot.getName(), "#0080FF");
+            writer.drawImage("mapCanvas", 32, 32, "depot", edgeBearingX - 16, edgeBearingY - 16);
         }
     }
 

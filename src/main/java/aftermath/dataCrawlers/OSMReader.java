@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.eclipse.jetty.xml.XmlParser;
 import org.eclipse.jetty.xml.XmlParser.Attribute;
@@ -29,6 +30,7 @@ public class OSMReader
     private final AftermathServer es;
     private final Profiler profiler;
     private HashMap<Long, MapVertex> mapData;
+    private HashMap<Long, CountMeter> mapDataCounters;
     private HashMap<Long, MapEdge> edgeData;
     private SpatialIndex<MapVertex> spatialIndex;
     private SpatialIndex<Depot> spatialIndexDepot;
@@ -50,6 +52,7 @@ public class OSMReader
     {
         this.es = AftermathServer.getInstance();
         this.mapData = mapData;
+        this.mapDataCounters = new HashMap<Long, CountMeter>();
         this.edgeData = edgeData;
         this.spatialIndex = spatialIndex;
         this.spatialIndexDepot = spatialIndexDepot;
@@ -65,6 +68,7 @@ public class OSMReader
     {
         this.es = null;
         this.mapData = new HashMap<Long, MapVertex>(300000);
+        this.mapDataCounters = new HashMap<Long, CountMeter>();
         this.edgeData = new HashMap<Long, MapEdge>(300000);
         this.spatialIndex = new SpatialIndex<MapVertex>(spatialIndexMeter, -180, 180, -90, 90, null);
         this.spatialIndexDepot = new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null);
@@ -114,6 +118,7 @@ public class OSMReader
                 float lon = Float.valueOf(nD.getAttribute("lon"));
                 long id = Long.valueOf(nD.getAttribute("id"));
                 mapData.put(id, new MapVertex(lon, lat, id));
+                mapDataCounters.put(id, new CountMeter());
                 OSMDataVertexCountMeter.increment();
                 Iterator<Object> ndIterator = nD.iterator();
                 String preName = null;
@@ -159,6 +164,14 @@ public class OSMReader
                     default:
                         Task.entry(this.profiler, tagTypeTask, "MISSED CHILDNODETAG: [" + nD.getTag() + "]", null);
                     }
+                    
+                    if(Math.random() < 0.02)
+                    {
+                        Depot d = new Depot("Random Depot", 100, lon, lat);
+                        
+                        es.getAftermathController().getDepotData().put(d.getId(), d);
+                        es.getAftermathController().getSpatialIndexDepot().add(d.getId(), d);
+                    }
                 }
                 break;
             case "way":
@@ -192,9 +205,6 @@ public class OSMReader
                         edgeRefNodes.add(Long.valueOf(wayNode.getAttribute("ref")));
                         break;
                     case "tag":
-                        // Task.entry(EncephalonServer.getInstance().getProfiler(), null,
-                        // "WayNodeAttribute: " + wayNode.getAttribute("k") + ":" +
-                        // wayNode.getAttribute("v"), null);
                         if (wayNode.getAttribute("k").equals("highway") || wayNode.getAttribute("k").equals("railway")
                                 || wayNode.getAttribute("k").equals("way"))
                         {
@@ -234,6 +244,10 @@ public class OSMReader
                         OSMDataEdgeCountMeter.increment();
                         mapData.get(previousNode).addEdge(edgeId);
                         mapData.get(currentNode).addEdge(edgeId);
+                        
+                        mapDataCounters.get(previousNode).increment();
+                        mapDataCounters.get(currentNode).increment();
+                        
                         edgeId++;
                     }
                 }
@@ -259,8 +273,6 @@ public class OSMReader
             RoadTypes type = initialEdge.getMode();
             long[] vertices = initialEdge.getVertices();
 
-            // System.out.println("S [" + type.toString() + "]" + initialEdge.getId() + " ::
-            // ########### -- {" + vertices[0] + ", " + vertices[1] + "}");
             long[] endPoints = new long[]
             { -1, -1 };
 
@@ -286,40 +298,10 @@ public class OSMReader
                     {
                         break;
                     }
-                    // System.out.println("E" + i + " [" + e.getMode().toString() + "]" + e.getId()
-                    // + " :: " + vertex.getId() + " -- " + Arrays.toString(e.getVertices()));
                 }
             }
 
-            // System.out.println("[ NEXT: " + endPoints[0] + ", " + endPoints[1] + " ]");
         }
-
-        /*
-         * List<Long> multiPathVertex = new ArrayList<Long>(); HashSet<Long>
-         * edgesToMultiPathVertex = new HashSet<Long>(); Task processOrphansTask = new
-         * Task(this.profiler, osmProcessingTask, "Process Orphaned Nodes", null); {
-         * Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
-         * List<Long> intersectList = new ArrayList<Long>(); List<Long> removeList = new
-         * ArrayList<Long>(); while(iter.hasNext()) { // Organize ophaned nodes
-         * Entry<Long, MapVertex> vEntry = iter.next();
-         * if(vEntry.getValue().getEdges().size() == 0) {
-         * removeList.add(vEntry.getKey()); } else
-         * if(vEntry.getValue().getEdges().size() != 2) {
-         * multiPathVertex.add(vEntry.getKey()); for(Long l :
-         * vEntry.getValue().getEdges()) { MapEdge mE = edgeData.get(l);
-         * if(edgesToMultiPathVertex.contains(l)) { new Task(es.getProfiler(),
-         * processOrphansTask, "Remove Edge with Shared Vertices: " +
-         * mE.getMode().toString(), null).end(); edgesToMultiPathVertex.remove(l); }
-         * else { new Task(es.getProfiler(), processOrphansTask,
-         * "Add Edge from MultiPathVertex: " + mE.getMode().toString(), null).end();
-         * edgesToMultiPathVertex.add(l); } } } else {
-         * intersectList.add(vEntry.getKey()); } }
-         * 
-         * for(Long l : removeList) { mapData.remove(l);
-         * OSMDataVertexCountMeter.decrement(); new Task(this.profiler,
-         * processOrphansTask, "Remove unlinked node", null).end(); } }
-         * processOrphansTask.end();
-         */
 
         {
             Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
@@ -338,6 +320,53 @@ public class OSMReader
                 }
             }
             buildSpatialIndexTask.end();
+        }
+        
+        {
+            // Prune and reconnect roads
+            Task t = new Task(this.profiler, osmProcessingTask, "Parse through road iterations", null);
+            try
+            {
+                while(true)
+                {
+                    Iterator<Entry<Long, CountMeter>> meter = mapDataCounters.entrySet().iterator();
+                    if(meter.hasNext())
+                    {
+                        Entry<Long, CountMeter> entry = meter.next();
+                        long[] list = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                        
+                        list[0] = meter.next().getKey();
+                        list[1] = meter.next().getKey();
+                        list[2] = meter.next().getKey();
+                        list[3] = meter.next().getKey();
+                        list[4] = meter.next().getKey();
+                        list[5] = meter.next().getKey();
+                        list[6] = meter.next().getKey();
+                        list[7] = meter.next().getKey();
+                        list[8] = meter.next().getKey();
+                        list[9] = meter.next().getKey();
+                        
+                        mapDataCounters.remove(list[0]);
+                        mapDataCounters.remove(list[1]);
+                        mapDataCounters.remove(list[2]);
+                        mapDataCounters.remove(list[3]);
+                        mapDataCounters.remove(list[4]);
+                        mapDataCounters.remove(list[5]);
+                        mapDataCounters.remove(list[6]);
+                        mapDataCounters.remove(list[7]);
+                        mapDataCounters.remove(list[8]);
+                        mapDataCounters.remove(list[9]);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            } catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+            t.end();
         }
     }
 
