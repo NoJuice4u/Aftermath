@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import main.java.aftermath.controllers.AftermathController;
 import main.java.aftermath.dataCrawlers.OSMReader;
 import main.java.aftermath.locale.*;
+import main.java.aftermath.writers.HtmlWriter;
 import main.java.encephalon.locale.Localizer;
 import main.java.encephalon.server.*;
 import main.java.encephalon.utils.ResourceUtils;
@@ -43,7 +44,8 @@ public class AftermathServer extends EncephalonServer
         localeList.put("undefined", new Localizer<main.java.encephalon.locale.LocaleBase>(new LocaleBase()));
         
         CANVAS_RENDER_JS = ResourceUtils.resourceToString(this, "main/resource/canvasRender.js");
-
+        
+        this.writer = new HtmlWriter(2, this);
         as = this;
     }
 
@@ -98,4 +100,11 @@ public class AftermathServer extends EncephalonServer
         return (LocaleBase) localeList.get("undefined").getLocale();
     }
 
+    public HtmlWriter getWriter()
+    {
+        // writer.flush();
+        // return (HtmlWriter)writer;
+        
+        return new HtmlWriter(2, this); // HACKY
+    }
 }

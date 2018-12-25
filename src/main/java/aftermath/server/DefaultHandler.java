@@ -66,7 +66,7 @@ public class DefaultHandler extends AbstractHandler
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         baseRequest.setHandled(true);
 
-        HtmlWriter writer = new HtmlWriter(2, as);
+        HtmlWriter writer = as.getWriter();
 
         writer.writeln("404 NOT FOUND", 0);
         writer.writeln("The requested URI: " + baseRequest.getRequestURI() + " was not found.", 0);

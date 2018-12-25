@@ -68,7 +68,7 @@ public class AftermathHandler extends DefaultHandler
         String destination = baseRequest.getRootURL()
                 + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
         writer.script_Start();
         writer.text("if(navigator && navigator.geolocation) {");
         writer.text("navigator.geolocation.getCurrentPosition(showPosition);");
@@ -93,7 +93,7 @@ public class AftermathHandler extends DefaultHandler
         HashMap<Long, MapEdge> mapEdges = es.getAftermathController().getEdgeData();
         Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         writer.table_Start(null, null, "sortable");
         writer.tr_Start();
@@ -168,12 +168,12 @@ public class AftermathHandler extends DefaultHandler
         Thread.sleep(5000);
         response.getWriter().print("Delayed");
     }
-
+    
     @GET
     @HandlerInfo(schema = "/map/node/(uid)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
             HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter,
             @QueryString(value = "transports", _default = "false") Boolean drawTransports,
@@ -182,7 +182,6 @@ public class AftermathHandler extends DefaultHandler
             @QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
     {
-        // @QueryString(value="zoom", _default="18")
         getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter,
                 drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
     }
@@ -236,7 +235,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/coord/(longitude)/(latitude)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
-            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter,
             @QueryString(value = "transports", _default = "false") Boolean drawTransports,
@@ -255,7 +254,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/coord/(longitude)/(latitude)/canvas", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
-            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
@@ -269,7 +268,7 @@ public class AftermathHandler extends DefaultHandler
     public void getMapNodeByVehicle(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             @QueryParam(value = "vehicleId") Integer vehicleId,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter,
             @QueryString(value = "drawMap", _default = "true") Boolean drawMap,
@@ -281,7 +280,7 @@ public class AftermathHandler extends DefaultHandler
         Transport transport = transporters.get(vehicleId);
 
         MapVertex initialNode = transport.getNode();
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         if (drawMap == true)
             renderMap(writer, initialNode, zoom);
@@ -315,7 +314,7 @@ public class AftermathHandler extends DefaultHandler
     public void getMapCanvasNodeByVehicle(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             @QueryParam(value = "vehicleId") Integer vehicleId,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
     {
@@ -332,7 +331,7 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "name") String name,
             @QueryParam(value = "edgeId") Long edgeId) throws Exception
     {
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
         MapEdge mapEdge = es.getAftermathController().getEdgeData().get(edgeId);
         Depot d = new Depot(name, 100, mapEdge);
 
@@ -348,7 +347,7 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId)
             throws Exception
     {
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         Depot d = es.getAftermathController().getDepotData().remove(depotId);
 
@@ -365,7 +364,7 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId,
             @QueryParam(value = "name") String name) throws Exception
     {
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         Depot d = es.getAftermathController().getDepotData().get(depotId);
         d.setName(name);
@@ -381,7 +380,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapDepot(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
             HttpServletResponse response, @QueryParam(value = "depotId") Long depotId,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter,
             @QueryString(value = "transports", _default = "false") Boolean drawTransports,
@@ -391,7 +390,7 @@ public class AftermathHandler extends DefaultHandler
             @QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
     {
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         Depot depot = es.getAftermathController().getDepotData().get(depotId);
         Long nodeId = findNearestMajorRoad(depot.getLongitude(), depot.getLatitude(), diveOutDepth);
@@ -408,7 +407,7 @@ public class AftermathHandler extends DefaultHandler
     public void getMapDepotList(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response) throws Exception
     {
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         Iterator<Entry<Long, Depot>> iter = es.getAftermathController().getDepotData().entrySet().iterator();
         writer.table_Start();
@@ -443,7 +442,7 @@ public class AftermathHandler extends DefaultHandler
         {
             throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
         }
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         renderMap(writer, initialNode, zoom);
 
@@ -476,27 +475,10 @@ public class AftermathHandler extends DefaultHandler
     }
 
     @GET
-    @HandlerInfo(schema = "/map/node/(uid)", description = "Details not defined yet because the programmer was lazy.")
-    public void getMapNodeWith(String target, String locale, Task parent, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
-            @QueryString(value = "depth", _default = "6") Integer depth,
-            @QueryString(value = "roadType", _default = "") String filter,
-            @QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
-            @QueryString(value = "transports", _default = "false") Boolean drawTransports,
-            @QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
-            @QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
-            @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
-    {
-        getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, uid, depth, zoom, filter,
-                drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
-    }
-
-    @GET
     @HandlerInfo(schema = "/map/node/(uid)/canvas", description = "Details not defined yet because the programmer was lazy.")
     public void getTestCanvas(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
     {
@@ -506,7 +488,7 @@ public class AftermathHandler extends DefaultHandler
             throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
         }
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
         writer.importScript(es.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\""
                 + baseRequest.getRootURL() + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom
                 + "\"," + zoom + ");}refresh();");
@@ -584,7 +566,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/node/(uid)/vehicles/json", description = "Details not defined yet because the programmer was lazy.")
     public void getMapVehiclesJson(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth) throws Exception
     {
         MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
@@ -617,7 +599,7 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response) throws Exception
     {
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
         writeSummaryVehicles(writer, locale, 16, 5);
 
         String s = writer.getString(locale);
@@ -630,7 +612,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/node/(uid)/clear", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeClearWeights(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter) throws Exception
     {
@@ -665,7 +647,7 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/node/(uid)/json", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeJson(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
-            @QueryString(value = "zoom", _default = "18") Integer zoom,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter) throws Exception
     {
@@ -831,7 +813,7 @@ public class AftermathHandler extends DefaultHandler
     {
         SpatialIndex<?> spatialIndex = es.getAftermathController().getSpatialIndex(index);
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         String[] divisors = diveparams.split("(?!^)");
 
@@ -897,7 +879,7 @@ public class AftermathHandler extends DefaultHandler
         String[] s = inputString.split("&");
 
         String referer = baseRequest.getHeader("Referer");
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
 
         long timeStamp = System.currentTimeMillis();
 
@@ -1216,6 +1198,7 @@ public class AftermathHandler extends DefaultHandler
             }
         }
         writer.addRoadLineData();
+        writer.addRoadConfidenceData();
     }
 
     private void drawTransports(HtmlWriter writer, Coordinates focalPoint, int zoom, int depth) throws Exception

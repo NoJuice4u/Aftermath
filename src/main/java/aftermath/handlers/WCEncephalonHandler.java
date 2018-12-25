@@ -32,7 +32,7 @@ public class WCEncephalonHandler extends DefaultHandler
         String destination = baseRequest.getRootURL()
                 + "/aftermath/map/coord/\" + position.coords.longitude + \"/\" + position.coords.latitude + \"/canvas\"";
 
-        HtmlWriter writer = new HtmlWriter(2, es);
+        HtmlWriter writer = es.getWriter();
         writer.script_Start();
         writer.text("if(navigator && navigator.geolocation) {");
         writer.text("navigator.geolocation.getCurrentPosition(showPosition);");
