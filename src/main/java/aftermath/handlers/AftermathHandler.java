@@ -298,6 +298,7 @@ public class AftermathHandler extends DefaultHandler
         if (drawGroups)
             drawGroups(writer, initialNode, zm);
 
+        writer.addImageData();
         writer.script_End();
         writer.table_Start();
 
@@ -462,9 +463,11 @@ public class AftermathHandler extends DefaultHandler
             drawTransports(writer, initialNode, zm, depth);
         if (drawGroups)
             drawGroups(writer, initialNode, zm);
-
+        
+        writer.addImageData();
         writer.script_End();
         writer.table_Start();
+        
 
         writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
         writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
@@ -1198,7 +1201,6 @@ public class AftermathHandler extends DefaultHandler
             }
         }
         writer.addRoadLineData();
-        writer.addRoadConfidenceData();
     }
 
     private void drawTransports(HtmlWriter writer, Coordinates focalPoint, int zoom, int depth) throws Exception

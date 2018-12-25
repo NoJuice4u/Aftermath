@@ -74,7 +74,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         }
     }
     
-    public void addRoadConfidenceData()
+    public void addImageData()
     {
         if(imagesArray.length() > 2)
         {
