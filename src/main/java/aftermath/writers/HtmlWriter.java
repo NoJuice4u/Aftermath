@@ -167,12 +167,13 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
 
     public void drawVertex(String name, int size, float alpha, double x, double y, String str, String color)
     {
+        int xPos = (int)x + 14;
         stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
         stringBuilder.append("ctx.globalAlpha = " + alpha + ";" + System.lineSeparator());
         stringBuilder.append("ctx.lineWidth = 1;" + System.lineSeparator());
         stringBuilder.append("ctx.font='" + size + "pt Tahoma';" + System.lineSeparator());
         stringBuilder.append("ctx.fillStyle=\"" + color + "\";" + System.lineSeparator());
-        stringBuilder.append("ctx.fillText(\"" + str + "\", " + x + ", " + y + ");" + System.lineSeparator());
+        stringBuilder.append("ctx.fillText(\"" + str + "\", " + xPos + ", " + y + ");" + System.lineSeparator());
     }
 
     public void canvasInputDiv(String name, String borderColor, String submitFunction)
