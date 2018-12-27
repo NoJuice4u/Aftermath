@@ -21,6 +21,9 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class AftermathController
 {
+    public final String SPATIALINDEX_DEPOTMAP_NAME = "depotMap";
+    public final String SPATIALINDEX_MAPDATA_NAME = "nodesMap";
+    
     private AftermathServer es;
     private Runnable engine;
     private HashMap<Long, MapVertex> mapData;
@@ -42,9 +45,9 @@ public class AftermathController
         this.edgeData = new HashMap<Long, MapEdge>();
         this.depotData = new HashMap<Long, Depot>();
         this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-        this.spatialIndexMap.put("nodesMap", new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN,
+        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN,
                 SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
-        this.spatialIndexMap.put("depotMap", new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
+        this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME, new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
 
         es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);
         es.getCountMeters().put("SpatialIndex.Depot.Depth", spatialIndexDepotMeter);
@@ -90,13 +93,13 @@ public class AftermathController
     @SuppressWarnings("unchecked")
     public SpatialIndex<MapVertex> getSpatialIndex()
     {
-        return (SpatialIndex<MapVertex>) spatialIndexMap.get("nodesMap");
+        return (SpatialIndex<MapVertex>) spatialIndexMap.get(SPATIALINDEX_MAPDATA_NAME);
     }
 
     @SuppressWarnings("unchecked")
     public SpatialIndex<Depot> getSpatialIndexDepot()
     {
-        return (SpatialIndex<Depot>) spatialIndexMap.get("depotMap");
+        return (SpatialIndex<Depot>) spatialIndexMap.get(SPATIALINDEX_DEPOTMAP_NAME);
     }
 
     public Profiler getProfiler()

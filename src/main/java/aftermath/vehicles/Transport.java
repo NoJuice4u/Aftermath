@@ -51,10 +51,26 @@ public class Transport extends Bin
 
     public boolean traverse() throws Exception
     {
-        List<Long> edges = node.getEdges();
+        List<Long> newList = new ArrayList<Long>(node.getEdges());
+        if(newList.size() > 1)
+        {
+            newList.remove(previousEdge);
+        }
 
-        int rnd = randomizer.nextInt(edges.size());
-        edge = controller.getEdgeData().get(edges.get(rnd));
+        edge = controller.getEdgeData().get(newList.get(0));
+        
+        for(Long l : newList)
+        {
+            MapEdge mE = controller.getEdgeData().get(l);
+            if(randomizer.nextFloat() > 0.20 && mE.getWeight() < 5)
+            {
+                edge = mE;
+            }
+        }
+        if(edge.getConfidence() > 0.1)
+        {
+            edge.addWeightInput(true, 0L, System.currentTimeMillis(), edge.getWeight());
+        }
 
         MapVertex newVertex = controller.getMapData().get(edge.getOtherVertex(node.getId()));
 
@@ -145,16 +161,16 @@ public class Transport extends Bin
             return 0.9f;
         case "secondary":
         case "secondary_link":
-            return 0.8f;
+            return 0.9f;
         case "tertiary":
         case "tertiary_link":
-            return 0.75f;
+            return 0.9f;
         case "residential":
         case "living_street":
             return 0.1f;
         case "motorway":
         case "motorway_link":
-            return 0.95f;
+            return 0.9f;
         case "service":
         default:
             return 0.1f;

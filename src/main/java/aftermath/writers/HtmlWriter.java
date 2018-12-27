@@ -40,9 +40,9 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         drawArc(MapVertex.WIDTH / 2, MapVertex.HEIGHT / 2, 3, 2, "#00C0C0");
     }
     
-    public void addCanvasLineRect(float alpha, int xA, int yA, double rotation, double lineWidth, double lineLength, String color, String color2)
+    public void addCanvasLineRect(float alpha, int xA, int yA, double rotation, double lineWidth, double lineLength, String color, String color2, int strokeWidth)
     {
-        dataArray.append(", [" + alpha + ", " + xA + ", " + yA + ", " + rotation + ", " + lineWidth + ", " + lineLength + ", \"" + color + "\", \"" + color2 + "\"]");
+        dataArray.append(", [" + alpha + ", " + xA + ", " + yA + ", " + rotation + ", " + lineWidth + ", " + lineLength + ", \"" + color + "\", \"" + color2 + "\", \"" + strokeWidth + "\"]");
     }
     
     public void addRoadLineData()
@@ -64,7 +64,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
             stringBuilder.append("ctx.fillStyle=roadLines[i][6];" + System.lineSeparator());
             stringBuilder.append("ctx.fill();" + System.lineSeparator());
     
-            stringBuilder.append("ctx.lineWidth=\"1\";" + System.lineSeparator());
+            stringBuilder.append("ctx.lineWidth=\"roadLines[i][8]\";" + System.lineSeparator());
             stringBuilder.append("ctx.strokeStyle=roadLines[i][7];" + System.lineSeparator());
             stringBuilder.append("ctx.stroke();" + System.lineSeparator());
             
@@ -110,13 +110,13 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
     }
 
     public void drawCanvasLineAsRect(String name, float width, String color, String color2, int xA, int yA, int xB,
-            int yB)
+            int yB, int strokeWidth)
     {
-        drawCanvasLineAsRect(name, width, color, color2, 1.0f, xA, yA, xB, yB);
+        drawCanvasLineAsRect(name, width, color, color2, 1.0f, xA, yA, xB, yB, strokeWidth);
     }
 
     public void drawCanvasLineAsRect(String name, float width, String color, String color2, float alpha, int xA, int yA,
-            int xB, int yB)
+            int xB, int yB, int strokeWidth)
     {
         int dx = xB - xA;
         int dy = yB - yA;
@@ -125,7 +125,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         double lineLength = Math.sqrt(dx * dx + dy * dy);
         double lineWidth = width;
         
-        addCanvasLineRect(alpha, xA, yA, rotation, lineWidth, lineLength, color, color2);
+        addCanvasLineRect(alpha, xA, yA, rotation, lineWidth, lineLength, color, color2, strokeWidth);
     }
 
     public void drawImage(String name, int width, int height, String image, int positionX, int positionY)

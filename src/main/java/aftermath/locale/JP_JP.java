@@ -4,8 +4,12 @@ public class JP_JP extends LocaleBase
 {
     public JP_JP()
     {
-        super();
+        super(main.java.encephalon.locale.JP_JP.class);
         this.SERVER_TITLE = "アーフタマッス　プロジェクト";
+        this.SAMPLETEXT = "見本";
+        
+        this.LOCALE_NAME = "言語文字名前";
+        this.SAMPLE_TEXT = "見本文字";
 
         this.INTRODUCTION_TITLE = "避難所を見つけてながら自然災害を説明して下さい";
         this.INTRODUCTION_MESSAGE = "This map will show you nearby shelters, and also the conditions of the roads so you can plan a path to the shelter.  This data is provided by users like yourself, "
@@ -43,21 +47,5 @@ public class JP_JP extends LocaleBase
          */
         this.KV_KEY = "名";
         this.KV_VALUE = "バリュー";
-
-        this.REQUEST_PROTOCOL = "規約";
-        this.REQUEST_CONTEXTPATH = "JContext Path";
-        this.REQUEST_SCHEME = "JScheme";
-        this.REQUEST_QUERYSTRING = "JQueryString";
-        this.REQUEST_REQUEST_URL = "JRequest URL";
-        this.REQUEST_METHOD = "JMethod";
-        this.REQUEST_LOCAL_NAME = "JLocal Name";
-        this.REQUEST_PATH_TRANSLATED = "JPath Translated";
-        this.REQUEST_REMOTE_HOST = "JRemote Host";
-        this.REQUEST_REMOTE_ADDR = "JRemote Address";
-        this.REQUEST_LOCAL_PORT = "JLocal Port";
-        this.REQUEST_SERVER_NAME = "JServer Name";
-        this.REQUEST_CONTENT_LENGTH = "JContent Length";
-        this.REQUEST_PATH_INFO = "JPath Info";
-        this.REQUEST_HEADER = "JHeader";
     }
 }

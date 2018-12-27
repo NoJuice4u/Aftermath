@@ -22,7 +22,7 @@ public class AftermathServer extends EncephalonServer
 
     public final Gson gsonRequest = new Gson();
 
-    public AftermathServer() throws Exception
+    protected AftermathServer() throws Exception
     {
         super();
         

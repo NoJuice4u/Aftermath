@@ -4,8 +4,12 @@ public class EN_US extends LocaleBase
 {
     public EN_US()
     {
-        super();
+        super(main.java.encephalon.locale.EN_US.class);
         this.SERVER_TITLE = "Project Aftermath";
+        this.SAMPLETEXT = "Sample Text";
+        
+        this.LOCALE_NAME = "Locale Name";
+        this.SAMPLE_TEXT = "Sample Text";
 
         this.INTRODUCTION_TITLE = "Find a shelter, help map the disaster.";
         this.INTRODUCTION_MESSAGE = "This map will show you nearby shelters, and also the conditions of the roads so you can plan a path to the shelter.  This data is provided by users like yourself, "

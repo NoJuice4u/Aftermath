@@ -341,6 +341,42 @@ public class AftermathHandler extends DefaultHandler
         writer.text(String.valueOf(d.getId()));
         response.getWriter().print(writer.getString(locale));
     }
+    
+    @GET
+    @HandlerInfo(schema = "/map/depot/(depotId)/activate", description = "Details not defined yet because the programmer was lazy.")
+    public void getDepotActivate(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
+    {
+        HtmlWriter writer = es.getWriter();
+        Depot d = es.getAftermathController().getDepotData().get(depotId);
+        d.activate();
+
+        JsonWriter jw = new JsonWriter(d);
+        
+        String s = jw.toString();
+        response.setContentType("application/json");
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+        response.getWriter().print(s);
+    }
+
+    @GET
+    @HandlerInfo(schema = "/map/depot/(depotId)/deactivate", description = "Details not defined yet because the programmer was lazy.")
+    public void getDepotDeactivate(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
+    {
+        HtmlWriter writer = es.getWriter();
+        Depot d = es.getAftermathController().getDepotData().get(depotId);
+        d.deactivate();
+
+        JsonWriter jw = new JsonWriter(d);
+        
+        String s = jw.toString();
+        response.setContentType("application/json");
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+        response.getWriter().print(s);
+    }
 
     @GET
     @HandlerInfo(schema = "/map/remove/depot/(depotId)", description = "Details not defined yet because the programmer was lazy.")
@@ -416,6 +452,7 @@ public class AftermathHandler extends DefaultHandler
         writer.tr_Start();
         writer.th("ID");
         writer.th("Link");
+        writer.th("Active?");
         writer.tr_End();
         writer.tHead_End();
         while (iter.hasNext())
@@ -427,10 +464,28 @@ public class AftermathHandler extends DefaultHandler
             writer.td("<A href=\"/aftermath/map/coord/" + String.valueOf(entry.getValue().getLongitude()) + "/"
                     + String.valueOf(entry.getValue().getLatitude()) + "/canvas\">" + entry.getValue().getName()
                     + "</A>");
+            writer.td(String.valueOf(entry.getValue().isActive()));
             writer.tr_End();
         }
         writer.table_End();
         response.getWriter().print(writer.getString(locale));
+    }
+    
+    @GET
+    @MenuItem(name = "Map/Depot List/Json")
+    @HandlerInfo(schema = "/map/depots/json", description = "Details not defined yet because the programmer was lazy.")
+    public void getMapDepotListJson(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response) throws Exception
+    {
+        HashMap<Long, Depot> depotData = es.getAftermathController().getDepotData();
+        
+        JsonWriter jw = new JsonWriter(depotData);
+
+        String s = jw.toString();
+        response.setContentType("application/json");
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+        response.getWriter().print(s);
     }
 
     public void getMapNodeWithDepthAndZoom(String target, String locale, Task parent, Request baseRequest,
@@ -1190,9 +1245,11 @@ public class AftermathHandler extends DefaultHandler
 
                 String color = "#" + rrHex + ggHex + "00";
                 String color2 = "#" + hx3 + hx3 + "00" + lineAlpha;
+                
+                int strokeWidth = (mapEdge.getMarked())?2:1;
 
                 writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX,
-                        drawPointY);
+                        drawPointY, strokeWidth);
                 if (mapEdge.getConfidence() < 0.5)
                 {
                     writer.drawImage("mapCanvas", 16, 16, "lowConfidence", ((startPointX + drawPointX) / 2) - 8,
@@ -1266,7 +1323,8 @@ public class AftermathHandler extends DefaultHandler
             int edgeBearingX = (int) point[0] + MapVertex.WIDTH / 2;
             int edgeBearingY = (int) point[1] + MapVertex.HEIGHT / 2;
 
-            writer.drawVertex("mapCanvas", 16, edgeBearingX + 5, edgeBearingY + 5, depot.getName(), "#0080FF");
+            String color = (depot.isActive())?"#0080FF":"#808080";
+            writer.drawVertex("mapCanvas", 16, edgeBearingX + 5, edgeBearingY + 5, depot.getName(), color);
             writer.drawImage("mapCanvas", 32, 32, "depot", edgeBearingX - 16, edgeBearingY - 16);
         }
     }
