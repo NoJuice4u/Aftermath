@@ -820,14 +820,60 @@ public class AftermathHandler extends DefaultHandler
     }
 
     @GET
-    @MenuItem(name = "Debug/Map/Json/Roots")
-    @HandlerInfo(schema = "/map/roots", description = "Details not defined yet because the programmer was lazy.")
-    public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+    @MenuItem(name = "Debug/Map/Roots/Json")
+    @HandlerInfo(schema = "/map/roots/json", description = "Details not defined yet because the programmer was lazy.")
+    public void getMapRootsJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception
     {
         HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
 
         JsonWriter jw = new JsonWriter(rootSet);
+
+        response.setContentType("application/json");
+        response.getWriter().print(jw.toString());
+    }
+
+    @GET
+    @MenuItem(name = "Debug/Map/Roots")
+    @HandlerInfo(schema = "/map/roots", description = "Details not defined yet because the programmer was lazy.")
+    public void getMapRoots(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response) throws Exception
+    {
+        HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
+        Iterator<Entry<Long, CoordinateRange>> iter = rootSet.entrySet().iterator();
+
+        HtmlWriter writer = es.getWriter();
+        writer.table_Start();
+        while(iter.hasNext())
+        {
+            Entry<Long, CoordinateRange> entry = iter.next();
+            writer.tr_Start();
+            writer.td(entry.getKey().toString());
+            writer.td(entry.getValue().getLabel());
+            writer.tr_End();
+        }
+        writer.table_End();
+
+        response.getWriter().print(writer.getString(locale));
+    }
+
+    @GET
+    @HandlerInfo(schema = "/map/root/(rootId)/label/(label)", description = "Details not defined yet because the programmer was lazy.")
+    public void getMapRootSetLabel(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response,
+            @QueryParam(value = "rootId") Long rootId,
+            @QueryParam(value = "label") String label) throws Exception
+    {
+        HashMap<Long, CoordinateRange> roots = ClusteringManager.getRoots();
+        JsonWriter jw;
+        
+        synchronized(roots)
+        {
+            Long root = ClusteringManager.getRoot(rootId);
+            roots.get(root).setLabel(label);
+            
+            jw = new JsonWriter(roots.get(root));
+        }
 
         response.setContentType("application/json");
         response.getWriter().print(jw.toString());

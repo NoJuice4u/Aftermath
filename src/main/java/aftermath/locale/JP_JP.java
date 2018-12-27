@@ -12,8 +12,7 @@ public class JP_JP extends LocaleBase
         this.SAMPLE_TEXT = "見本文字";
 
         this.INTRODUCTION_TITLE = "避難所を見つけてながら自然災害を説明して下さい";
-        this.INTRODUCTION_MESSAGE = "This map will show you nearby shelters, and also the conditions of the roads so you can plan a path to the shelter.  This data is provided by users like yourself, "
-                + "so giving us feedback on the conditions of the roads as you head towards the shelter will allow us to help everyone.";
+        this.INTRODUCTION_MESSAGE = "この地図を近い避難所を知らせて、皆さまに手伝ってためには道を説明して下さい";
 
         this.TH_VERTICES = "バーテックス";
         this.TH_MODE = "モード";

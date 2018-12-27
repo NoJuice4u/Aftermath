@@ -228,8 +228,11 @@ function loadJSON(data_uri, zoom)
 					ggHex = ("00" + gg.toString(16)).substr(-2);
 					
 					confidenceHex = ("00" + confidenceScore.toString(16)).substr(-2);
+					
+					strokeWidth = 1;
 					if(jsonObj["mapEdges"][edge]["marked"] == true)
 					{
+						strokeWidth = 2;
 						hxResultStroke = "FF";
 					}
 					else
@@ -246,6 +249,7 @@ function loadJSON(data_uri, zoom)
 					}
 
 					canvasA.translate(coordinatesA['x'], coordinatesA['y']);
+					canvasA.lineWidth = strokeWidth;
 					canvasA.rotate(rotation);
 					canvasA.rect(0, -lineWidth / 2, lineLength, lineWidth);
 					canvasA.translate(-coordinatesA['x'], -coordinatesA['y']);
@@ -270,11 +274,6 @@ function loadJSON(data_uri, zoom)
 				}
 			} 
 			
-			canvasA.beginPath();
-			canvasA.fillText("Drawn: " + drawn, 20, 20);
-			canvasA.fillText("Not Drawn: " + notdrawn, 20, 40);
-			canvasA.closePath();
-			
 			for(group in jsonObj["groups"])
 			{
 				grpItem = jsonObj["groups"][group];
@@ -298,6 +297,16 @@ function loadJSON(data_uri, zoom)
 				canvasB.restore();
 				canvasB.closePath();
 			}
+
+			canvasB.font = "bold 12pt Tahoma";
+			canvasB.beginPath();
+			canvasB.fillStyle = "#000000A0";
+			canvasB.fillText("Drawn: " + drawn, 21, 21);
+			canvasB.fillText("Not Drawn: " + notdrawn, 21, 41);
+			canvasB.fillStyle = "#FFFF80FF";
+			canvasB.fillText("Drawn: " + drawn, 20, 20);
+			canvasB.fillText("Not Drawn: " + notdrawn, 20, 40);
+			canvasB.closePath();
 		}
 	}
 
