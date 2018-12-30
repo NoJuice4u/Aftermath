@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
+import main.java.aftermath.engine.Depot;
 import main.java.encephalon.dto.MapEdge;
 
 class Simulator
@@ -130,4 +131,32 @@ class Simulator
         }
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void toggleDepots() throws IOException, InterruptedException
+    {
+        URL url = new URL("http://localhost:8080/aftermath/map/depots/json");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+
+        int err = con.getResponseCode();
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        StringBuffer content = new StringBuffer();
+
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+        {
+            content.append(inputLine);
+        }
+
+        // Long, Depot
+        Map<String, Depot> result = new Gson().fromJson(content.toString(), Map.class);
+
+        Set<String> keySet = result.keySet();
+        
+        for (String depot : keySet)
+        {
+            System.out.println("[" + con.getResponseCode() + "]\t" + depot);
+        }
+    }
 }

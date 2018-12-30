@@ -49,7 +49,9 @@ function loadJSON(data_uri, zoom)
 			finalY = 0;
 			
 			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
+			edgeCollection = {};
 			
+			hxVal = 0;
 			for(edge in jsonObj["mapEdges"])
 			{
 				var vertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
@@ -77,42 +79,107 @@ function loadJSON(data_uri, zoom)
 				intersectCoords = getBearing(ref_lon, ref_lat, lonSect, latSect, zm, 300, 500);
 				
 				aX = -(coordinatesA['x'] - offsetMousePosX);
-				bX = -(coordinatesB['x'] - offsetMousePosX);
 				aY = -(coordinatesA['y'] - offsetMousePosY);
+
+				bX = -(coordinatesB['x'] - offsetMousePosX);
 				bY = -(coordinatesB['y'] - offsetMousePosY);
+				
+				cX = coordinatesB['x'] - coordinatesA['x'];
+				cY = coordinatesB['y'] - coordinatesA['y'];
+				
+				dX = coordinatesB['x'] - offsetMousePosX;
+				dY = coordinatesB['y'] - offsetMousePosY;
+				// bX, bY
 				
 				lineAX = bX - aX;
 				lineAY = bY - aY;
 				
 				slopeA = lineAX / lineAY;
 				slopeB = -(lineAY / lineAX);
-				slopeA = (isFinite(slopeA))?slopeA:1;
-				slopeB = (isFinite(slopeB))?slopeB:1;
+				slopeA = (isFinite(slopeA))?slopeA:1.2;
+				slopeB = (isFinite(slopeB))?slopeB:1.2;
 				
-				offsetA = aY - (aX * slopeA);
-				offsetB = bY - (bX * slopeB);
+				directionRad = Math.atan(lineAX / lineAY);
+				crossPoint = (Math.PI/2) + directionRad;
+
+				targetOffset = -((coordinatesA['x'] * slopeA) - coordinatesA['y']) // Needs more
+				myOffset = -((aX * slopeA) - aY)
+
+				ySect = 50 * Math.cos(crossPoint);
+				xSect = 50 * Math.sin(crossPoint);
+
+				xSect = xSect + coordinatesA['x'];
+				ySect = ySect + coordinatesA['y'];
 				
-				ySect = ((slopeA * aX) - offsetA) + mousePos['y'];
-				yOffset = coordinatesA['y'] - (coordinatesA['x'] * slopeA); // coordinatesA['x'] + ((offsetB - offsetA) / (slopeA - slopeB));
-				xSect = coordinatesA['x']; // + ((offsetB - offsetA) / (slopeA - slopeB));
+				lineANormalized = normalize(cX, cY, 1);
+				lineBNormalized = normalize(dX, dY, 1);
+				dotProduct = 1 - vDotProduct(lineANormalized['x'], lineANormalized['y'], lineBNormalized['x'], lineBNormalized['y']);
+				vLenA = vLength(cX, cY);
+				vLenB = vLength(dX, dY) * dotProduct;
+				
+				ratio = vLenB / vLenA;
+				xSect = coordinatesB['x'] - (cX * ratio);
+				ySect = coordinatesB['y'] - (cY * ratio);
 
 				mDistance = Math.sqrt(Math.pow(xSect - mousePos['x'], 2) + Math.pow(ySect - mousePos['y'], 2));
-				
-				// tempLineCanvas.getContext("2d").beginPath();
-				// tempLineCanvas.getContext("2d").arc(mousePos['x'], mousePos['y'], 4, 0, 2*Math.PI);
-				// tempLineCanvas.getContext("2d").strokeStyle="#FF0033";
-				// tempLineCanvas.getContext("2d").closePath();
-				// tempLineCanvas.getContext("2d").stroke();
-				// tempLineCanvas.getContext("2d").strokeStyle="#000033";
+
+				if(mDistance < 10)
+				{
+					edgeCollection[edge] = true;
+				}
 				
 				if(distance > mDistance)
 				{
+					hxVal = hxVal + 30;
+					hxC = ("00" + hxVal.toString(16)).substr(-2);
+					
+					xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
+					yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
+					
+					if(edge == 5 || edge == 0)
+					{
+						tempLineCanvasContext.beginPath();
+						tempLineCanvasContext.moveTo(coordinatesA['x'], coordinatesA['y']);
+						tempLineCanvasContext.lineTo(coordinatesB['x'], coordinatesB['y']);
+						tempLineCanvasContext.strokeStyle = "#00" + hxC + hxC;
+						tempLineCanvasContext.lineWidth = 5;
+						tempLineCanvasContext.stroke();
+						tempLineCanvasContext.closePath();
+						
+						tempLineCanvasContext.beginPath();
+						tempLineCanvasContext.moveTo(mousePos['x'], mousePos['y']);
+						tempLineCanvasContext.lineTo(xSect, ySect);
+						tempLineCanvasContext.strokeStyle = "#" + hxC + "0000";
+						tempLineCanvasContext.lineWidth = 2;
+						
+						console.log("CX: " + JSON.stringify(lineANormalized));
+						console.log("DX: " + JSON.stringify(lineBNormalized));
+						console.log("DP: " + dotProduct);
+						
+						tempLineCanvasContext.fillStyle = "#FF0000";
+						tempLineCanvasContext.fillText(Math.round(dotProduct*100)/100, xSect, ySect);
+						
+						tempLineCanvasContext.stroke();
+						tempLineCanvasContext.closePath();
+					}
+					
+					tempLineCanvasContext.beginPath();
+					tempLineCanvasContext.font = "bold 16px Tahoma"
+					tempLineCanvasContext.fillStyle = "#000000";
+					tempLineCanvasContext.fillText(edge, xPos+1, yPos+1);
+					tempLineCanvasContext.stroke();
+					tempLineCanvasContext.closePath();
+					tempLineCanvasContext.beginPath();
+					tempLineCanvasContext.fillStyle = "#8000FF";
+					tempLineCanvasContext.fillText(edge, xPos, yPos);
+					tempLineCanvasContext.stroke();
+					tempLineCanvasContext.closePath();
+					
 					// Need to pad in mDistance??  Or, use else statements for out of bounds values
 					if((aX >= 0 && 0 >= bX) || (bX >= 0 && 0 >= aX)) 
 					{
 						chosenEdge = edge;
 						distance = mDistance;
-						// console.log("  [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + offsetMousePosX + ", " + offsetMousePosY);
 						finalX = xSect;
 						finalY = ySect;
 					}
@@ -125,7 +192,6 @@ function loadJSON(data_uri, zoom)
 						{
 							chosenEdge = edge;
 							distance = mDst;
-							// console.log("# [" + edge + "] " + coordinatesA['x'] + " :: " + coordinatesB['x'] + " - " + coordinatesA['y'] + " : " + coordinatesB['y'] + " : " + offsetMousePosX + ", " + offsetMousePosY);
 							finalX = xSect;
 							finalY = ySect;
 						}
@@ -134,15 +200,7 @@ function loadJSON(data_uri, zoom)
 
 				finalX = xSect;
 				finalY = ySect;
-										
-				// tempLineCanvasContext.beginPath();
-				// tempLineCanvasContext.globalAlpha = 1;
-				// tempLineCanvasContext.moveTo(offsetMousePosX, offsetMousePosY);
-		  		// tempLineCanvasContext.lineTo(finalX, finalY);
-				// tempLineCanvasContext.strokeStyle = "#00FFFF";
-				// tempLineCanvasContext.stroke();
-				// tempLineCanvasContext.closePath();
-				
+
 				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
 				if(confidenceRange < 0.5)
 				{
@@ -151,10 +209,19 @@ function loadJSON(data_uri, zoom)
 					var cautionImg = document.getElementById("lowConfidence");
 					tempLineCanvasContext.drawImage(cautionImg, mPosX, mPosY, 16, 16);
 				}
+				if(chosenEdge > 0) edgeCollection[chosenEdge] = true;
 			}
 
 			const selectedRoad = document.getElementById("selectedRoadType");
-			selectedRoad.innerHTML = "[" + chosenEdge + "] " + jsonObj["mapEdges"][chosenEdge]["mode"] + " w:" + jsonObj["mapEdges"][chosenEdge]["weight"] + " c:" + jsonObj["mapEdges"][chosenEdge]["confidence"] + "</br>" + JSON.stringify(inputData);		
+			
+			strTable = "<table>";
+			for(edge in edgeCollection)
+			{
+				strTable += "<tr><td>" + edge + "</td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td></tr>";
+				console.log("ECOL: " + edgeCollection[edge]);
+			}
+			strTable += "</table>";
+			selectedRoad.innerHTML = "[" + chosenEdge + "] " + strTable;		
 			if(typeof inputData[chosenEdge] != 'undefined')
 			{
 				canvasInput.value = inputData[chosenEdge];
@@ -182,7 +249,7 @@ function loadJSON(data_uri, zoom)
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
 			canvasInputBox.style.left = 150;
-			canvasInputBox.style.top = 80;
+			canvasInputBox.style.top = 50;
 							
 			tempLineCanvasContext.beginPath();
 			tempLineCanvasContext.globalAlpha = 1;
@@ -263,9 +330,6 @@ function loadJSON(data_uri, zoom)
 					var lineLength = Math.sqrt(dx * dx + dy * dy);
 
 					drawn += 1;
-					// canvasA.moveTo(coordinatesA['x'], coordinatesA['y']);
-					// canvasA.lineTo(coordinatesB['x'], coordinatesB['y']);
-					// canvasA.lineWidth = 5;
 					
 					canvasA.save();
 					canvasA.beginPath();
@@ -399,4 +463,21 @@ function getBearingInverse(rlon, rlat, x, y, zoom, xOffset, yOffset)
 		coords['lat'] = -(((((y - 25)/1)-yOffset)/zoom)-rlat);
 
 	return coords;
+}
+
+function normalize(x, y, scale)
+{
+	var norm = Math.sqrt((x * x) + (y * y));
+	return {"x": (x / norm) * scale, "y": (y / norm) * scale};
+}
+
+function vLength(x, y)
+{
+	var norm = Math.sqrt((x * x) + (y * y));
+	return norm;
+}
+
+function vDotProduct(aX, aY, bX, bY)
+{
+	return Math.acos((aX * bX) + (aY * bY));
 }
