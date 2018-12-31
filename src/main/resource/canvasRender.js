@@ -125,21 +125,21 @@ function loadJSON(data_uri, zoom)
 
 				if(ratio <= 1 && ratio >= 0)
 				{
-					if(mDistance < 2)
+					if(mDistance < 10)
 					{
 						edgeCollection[edge] = true;
 					}
 					
 					if(distance > mDistance)
 					{
-						hxVal = hxVal + 30;
-						hxC = ("00" + hxVal.toString(16)).substr(-2);
-						
-						xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
-						yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
-						
 						if(true)
 						{
+							hxVal = hxVal + 50;
+							hxC = ("00" + hxVal.toString(16)).substr(-2);
+							
+							xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
+							yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
+							
 							tempLineCanvasContext.beginPath();
 							tempLineCanvasContext.moveTo(coordinatesA['x'], coordinatesA['y']);
 							tempLineCanvasContext.lineTo(coordinatesB['x'], coordinatesB['y']);
@@ -159,19 +159,19 @@ function loadJSON(data_uri, zoom)
 							
 							tempLineCanvasContext.stroke();
 							tempLineCanvasContext.closePath();
+							
+							tempLineCanvasContext.beginPath();
+							tempLineCanvasContext.font = "bold 16px Tahoma"
+							tempLineCanvasContext.fillStyle = "#000000";
+							tempLineCanvasContext.fillText(edge, xPos+1, yPos+1);
+							tempLineCanvasContext.stroke();
+							tempLineCanvasContext.closePath();
+							tempLineCanvasContext.beginPath();
+							tempLineCanvasContext.fillStyle = "#8000FF";
+							tempLineCanvasContext.fillText(edge, xPos, yPos);
+							tempLineCanvasContext.stroke();
+							tempLineCanvasContext.closePath();
 						}
-						
-						tempLineCanvasContext.beginPath();
-						tempLineCanvasContext.font = "bold 16px Tahoma"
-						tempLineCanvasContext.fillStyle = "#000000";
-						tempLineCanvasContext.fillText(edge, xPos+1, yPos+1);
-						tempLineCanvasContext.stroke();
-						tempLineCanvasContext.closePath();
-						tempLineCanvasContext.beginPath();
-						tempLineCanvasContext.fillStyle = "#8000FF";
-						tempLineCanvasContext.fillText(edge, xPos, yPos);
-						tempLineCanvasContext.stroke();
-						tempLineCanvasContext.closePath();
 						
 						chosenEdge = edge;
 						distance = mDistance;
@@ -196,7 +196,7 @@ function loadJSON(data_uri, zoom)
 			strTable = "<table>";
 			for(edge in edgeCollection)
 			{
-				strTable += "<tr><td>" + edge + "</td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td></tr>";
+				strTable += "<tr><td>" + edge + "</td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td><td>" + jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]]["longitude"] + ", " + jsonObj["mapVertices"][jsonObj["mapEdges"][chosenEdge]["vertices"][0]]["latitude"] + "</td></tr>";
 				console.log("ECOL: " + edgeCollection[edge]);
 			}
 			strTable += "</table>";

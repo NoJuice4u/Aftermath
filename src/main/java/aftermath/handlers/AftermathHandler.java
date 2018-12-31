@@ -257,10 +257,11 @@ public class AftermathHandler extends DefaultHandler
             @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
-            @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
+            @QueryString(value = "authorative", _default = "false") Boolean authorative,
+            @QueryString(value = "roadType", _default = "") String roadType) throws Exception
     {
         Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
-        getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative);
+        getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative, roadType);
     }
 
     @GET
@@ -317,13 +318,14 @@ public class AftermathHandler extends DefaultHandler
             @QueryParam(value = "vehicleId") Integer vehicleId,
             @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
-            @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
+            @QueryString(value = "authorative", _default = "false") Boolean authorative,
+            @QueryString(value = "roadType", _default = "all") String roadType) throws Exception
     {
         Transport t = es.getAftermathController().getTransporters().get(vehicleId);
         MapVertex initialNode = t.getNode();
 
         getTestCanvas(target, locale, parent, baseRequest, request, response, initialNode.getId(), zoom, depth,
-                authorative);
+                authorative, roadType);
     }
 
     @GET
@@ -538,7 +540,8 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "uid") Long uid,
             @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
-            @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
+            @QueryString(value = "authorative", _default = "false") Boolean authorative,
+            @QueryString(value = "roadType", _default = "") String roadType) throws Exception
     {
         MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
         if (initialNode == null)
@@ -548,7 +551,7 @@ public class AftermathHandler extends DefaultHandler
 
         HtmlWriter writer = es.getWriter();
         writer.importScript(es.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\""
-                + baseRequest.getRootURL() + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom
+                + baseRequest.getRootURL() + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom + "&roadType=" + roadType
                 + "\"," + zoom + ");}refresh();");
 
         renderMap(writer, initialNode, zoom);
