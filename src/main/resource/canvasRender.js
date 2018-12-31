@@ -123,62 +123,62 @@ function loadJSON(data_uri, zoom)
 
 				mDistance = Math.sqrt(Math.pow(xSect - mousePos['x'], 2) + Math.pow(ySect - mousePos['y'], 2));
 
-				if(mDistance < 10)
+				if(ratio <= 1 && ratio >= 0)
 				{
-					edgeCollection[edge] = true;
-				}
-				
-				if(distance > mDistance && ratio <= 1 && ratio >= 0)
-				{
-					hxVal = hxVal + 30;
-					hxC = ("00" + hxVal.toString(16)).substr(-2);
-					
-					xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
-					yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
-					
-					if(true)
+					if(mDistance < 2)
 					{
-						tempLineCanvasContext.beginPath();
-						tempLineCanvasContext.moveTo(coordinatesA['x'], coordinatesA['y']);
-						tempLineCanvasContext.lineTo(coordinatesB['x'], coordinatesB['y']);
-						tempLineCanvasContext.strokeStyle = "#00" + hxC + hxC;
-						tempLineCanvasContext.lineWidth = 5;
-						tempLineCanvasContext.stroke();
-						tempLineCanvasContext.closePath();
-						
-						tempLineCanvasContext.beginPath();
-						tempLineCanvasContext.moveTo(mousePos['x'], mousePos['y']);
-						tempLineCanvasContext.lineTo(xSect, ySect);
-						tempLineCanvasContext.strokeStyle = "#" + hxC + "0000";
-						tempLineCanvasContext.lineWidth = 2;
-						
-						tempLineCanvasContext.fillStyle = "#FF0000";
-						tempLineCanvasContext.fillText(Math.round(dotProduct*100)/100, xSect, ySect);
-						
-						tempLineCanvasContext.stroke();
-						tempLineCanvasContext.closePath();
+						edgeCollection[edge] = true;
 					}
 					
-					tempLineCanvasContext.beginPath();
-					tempLineCanvasContext.font = "bold 16px Tahoma"
-					tempLineCanvasContext.fillStyle = "#000000";
-					tempLineCanvasContext.fillText(edge, xPos+1, yPos+1);
-					tempLineCanvasContext.stroke();
-					tempLineCanvasContext.closePath();
-					tempLineCanvasContext.beginPath();
-					tempLineCanvasContext.fillStyle = "#8000FF";
-					tempLineCanvasContext.fillText(edge, xPos, yPos);
-					tempLineCanvasContext.stroke();
-					tempLineCanvasContext.closePath();
-					
-					chosenEdge = edge;
-					distance = mDistance;
-					finalX = xSect;
-					finalY = ySect;
+					if(distance > mDistance)
+					{
+						hxVal = hxVal + 30;
+						hxC = ("00" + hxVal.toString(16)).substr(-2);
+						
+						xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
+						yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
+						
+						if(true)
+						{
+							tempLineCanvasContext.beginPath();
+							tempLineCanvasContext.moveTo(coordinatesA['x'], coordinatesA['y']);
+							tempLineCanvasContext.lineTo(coordinatesB['x'], coordinatesB['y']);
+							tempLineCanvasContext.strokeStyle = "#00" + hxC + hxC;
+							tempLineCanvasContext.lineWidth = 5;
+							tempLineCanvasContext.stroke();
+							tempLineCanvasContext.closePath();
+							
+							tempLineCanvasContext.beginPath();
+							tempLineCanvasContext.moveTo(mousePos['x'], mousePos['y']);
+							tempLineCanvasContext.lineTo(xSect, ySect);
+							tempLineCanvasContext.strokeStyle = "#" + hxC + "0000";
+							tempLineCanvasContext.lineWidth = 2;
+							
+							tempLineCanvasContext.fillStyle = "#FF0000";
+							tempLineCanvasContext.fillText(Math.round(mDistance*100)/100, xSect, ySect);
+							
+							tempLineCanvasContext.stroke();
+							tempLineCanvasContext.closePath();
+						}
+						
+						tempLineCanvasContext.beginPath();
+						tempLineCanvasContext.font = "bold 16px Tahoma"
+						tempLineCanvasContext.fillStyle = "#000000";
+						tempLineCanvasContext.fillText(edge, xPos+1, yPos+1);
+						tempLineCanvasContext.stroke();
+						tempLineCanvasContext.closePath();
+						tempLineCanvasContext.beginPath();
+						tempLineCanvasContext.fillStyle = "#8000FF";
+						tempLineCanvasContext.fillText(edge, xPos, yPos);
+						tempLineCanvasContext.stroke();
+						tempLineCanvasContext.closePath();
+						
+						chosenEdge = edge;
+						distance = mDistance;
+						finalX = xSect;
+						finalY = ySect;
+					}
 				}
-
-				finalX = xSect;
-				finalY = ySect;
 
 				var confidenceRange = jsonObj["mapEdges"][edge].confidence;
 				if(confidenceRange < 0.5)
