@@ -113,7 +113,7 @@ function loadJSON(data_uri, zoom)
 				
 				lineANormalized = normalize(cX, cY, 1);
 				lineBNormalized = normalize(dX, dY, 1);
-				dotProduct = 1 - vDotProduct(lineANormalized['x'], lineANormalized['y'], lineBNormalized['x'], lineBNormalized['y']);
+				dotProduct = vDotProduct(lineANormalized['x'], lineANormalized['y'], lineBNormalized['x'], lineBNormalized['y']);
 				vLenA = vLength(cX, cY);
 				vLenB = vLength(dX, dY) * dotProduct;
 				
@@ -128,7 +128,7 @@ function loadJSON(data_uri, zoom)
 					edgeCollection[edge] = true;
 				}
 				
-				if(distance > mDistance)
+				if(distance > mDistance && ratio <= 1 && ratio >= 0)
 				{
 					hxVal = hxVal + 30;
 					hxC = ("00" + hxVal.toString(16)).substr(-2);
@@ -136,7 +136,7 @@ function loadJSON(data_uri, zoom)
 					xPos = ((coordinatesA['x']+coordinatesB['x'])/2)+10;
 					yPos = ((coordinatesA['y']+coordinatesB['y'])/2);
 					
-					if(edge == 5 || edge == 0)
+					if(true)
 					{
 						tempLineCanvasContext.beginPath();
 						tempLineCanvasContext.moveTo(coordinatesA['x'], coordinatesA['y']);
@@ -151,10 +151,6 @@ function loadJSON(data_uri, zoom)
 						tempLineCanvasContext.lineTo(xSect, ySect);
 						tempLineCanvasContext.strokeStyle = "#" + hxC + "0000";
 						tempLineCanvasContext.lineWidth = 2;
-						
-						console.log("CX: " + JSON.stringify(lineANormalized));
-						console.log("DX: " + JSON.stringify(lineBNormalized));
-						console.log("DP: " + dotProduct);
 						
 						tempLineCanvasContext.fillStyle = "#FF0000";
 						tempLineCanvasContext.fillText(Math.round(dotProduct*100)/100, xSect, ySect);
@@ -175,27 +171,10 @@ function loadJSON(data_uri, zoom)
 					tempLineCanvasContext.stroke();
 					tempLineCanvasContext.closePath();
 					
-					// Need to pad in mDistance??  Or, use else statements for out of bounds values
-					if((aX >= 0 && 0 >= bX) || (bX >= 0 && 0 >= aX)) 
-					{
-						chosenEdge = edge;
-						distance = mDistance;
-						finalX = xSect;
-						finalY = ySect;
-					}
-					else
-					{
-						dstA = Math.sqrt(Math.pow(aX, 2) + Math.pow(aY, 2));
-						dstB = Math.sqrt(Math.pow(bX, 2) + Math.pow(bY, 2));
-						mDst = (dstA<dstB)?dstA:dstB;
-						if(distance < mDst)
-						{
-							chosenEdge = edge;
-							distance = mDst;
-							finalX = xSect;
-							finalY = ySect;
-						}
-					}
+					chosenEdge = edge;
+					distance = mDistance;
+					finalX = xSect;
+					finalY = ySect;
 				}
 
 				finalX = xSect;
@@ -479,5 +458,5 @@ function vLength(x, y)
 
 function vDotProduct(aX, aY, bX, bY)
 {
-	return Math.acos((aX * bX) + (aY * bY));
+	return (aX * bX) + (aY * bY);
 }
