@@ -179,13 +179,11 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
     public void canvasInputDiv(String name, String borderColor, String submitFunction)
     {
         stringBuilder.append("<div id=\"" + name
-                + "\" style=\"text-align:center; position:absolute; background-color:#FF6060; top:-500pt; left:-500pt; z-index:30\">"
+                + "\" style=\"text-align:center; position:absolute; background-color:#9090FF; top:-500pt; left:-500pt; z-index:30\">"
                 + System.lineSeparator() + "<div id=\"selectedRoadType\" style=\"\">&lt;PH&gt;</div>"
                 + System.lineSeparator() + "<div><table class=\"inputSliderLabels\" align=\"center\"><tr>"
                 + "<td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr></table></div>"
-                + "<div><input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"" + name
-                + "Input\" name=\"entry\" size=\"3\" style=\"border-width:2pt; border-style:solid; border-color:"
-                + borderColor + "\"/></div>" + System.lineSeparator() + "<div><button onclick=\"" + submitFunction
+                + System.lineSeparator() + "<div><button onclick=\"" + submitFunction
                 + "\"/>Send Data!</button></div>" + System.lineSeparator() + "</div>" + System.lineSeparator());
     }
     
