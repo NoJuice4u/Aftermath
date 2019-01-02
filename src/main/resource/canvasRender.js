@@ -6,7 +6,7 @@ const tempLineCanvasContext = tempLineCanvas.getContext("2d");
 const canvasA = mapCanvas.getContext("2d");
 const miniMapSize = 32;
 const miniMapSegment = 8;
-const debug = true;
+const debug = false;
 const debugAlpha = "80";
 
 var chosenEdge = -1;
@@ -175,7 +175,7 @@ function loadJSON(data_uri, zoom)
 
 			const selectedRoad = document.getElementById("selectedRoadType");
 			
-			strTable = "<table>";
+			strTable = "<table><tr><td colspan=\"2\"></td><td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr>";
 			for(edge in edgeCollection)
 			{
 				var lon1 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"];
@@ -204,7 +204,7 @@ function loadJSON(data_uri, zoom)
 				sideLines = "";
 				for(edgeItem in edgesA)
 				{
-					if(edge == edgesA[edgeItem]) continue;
+					if(edge == edgesA[edgeItem] || typeof jsonObj["mapEdges"][edgesA[edgeItem]] == 'undefined') continue;
 					currentSelectedEdge = jsonObj["mapEdges"][edgesA[edgeItem]];
 					
 					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
@@ -216,7 +216,7 @@ function loadJSON(data_uri, zoom)
 				}
 				for(edgeItem in edgesB)
 				{
-					if(edge == edgesB[edgeItem]) continue;
+					if(edge == edgesB[edgeItem] || typeof jsonObj["mapEdges"][edgesB[edgeItem]] == 'undefined') continue;
 					currentSelectedEdge = jsonObj["mapEdges"][edgesB[edgeItem]];
 					
 					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
@@ -235,8 +235,8 @@ function loadJSON(data_uri, zoom)
 				
 				strTable += "<tr><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
 				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/>"
-				+ sideLines + "</svg></td><td>" + jsonObj['mapEdges'][edge]['vertices'][0] + "<br/>" + jsonObj['mapEdges'][edge]['vertices'][1] + "</td><td>"
-				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"border-width:2pt; border-style:solid; border-color:#" + borderColor + "0000\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
+				+ sideLines + "</svg></td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td><td>"
+				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; border-width:2pt; border-style:solid; background-color: #80FFFF; border-color:#" + borderColor + "0000\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
 			}
 			strTable += "</table>";
 			selectedRoad.innerHTML = strTable;		
@@ -258,7 +258,7 @@ function loadJSON(data_uri, zoom)
 			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
-			canvasInputBox.style.left = 150;
+			canvasInputBox.style.left = 100;
 			canvasInputBox.style.top = 50;
 							
 			tempLineCanvasContext.beginPath();
@@ -267,6 +267,7 @@ function loadJSON(data_uri, zoom)
 			tempLineCanvasContext.rotate(rotation);
 			tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
 			tempLineCanvasContext.fillStyle = "#00FFFFAA";
+			tempLineCanvasContext.lineWidth = 3;
 			tempLineCanvasContext.strokeStyle = "#FF0000";
 			tempLineCanvasContext.fill();
 			tempLineCanvasContext.stroke();
