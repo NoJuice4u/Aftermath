@@ -4,9 +4,9 @@ const canvasInput = document.getElementById("canvasInputBoxInput");
 const tempLineCanvas = document.getElementById("tempLineCanvas");
 const tempLineCanvasContext = tempLineCanvas.getContext("2d");
 const canvasA = mapCanvas.getContext("2d");
-const miniMapSize = 32;
-const miniMapSegment = 8;
-const debug = true;
+const miniMapSize = 48;
+const miniMapSegment = miniMapSize/3;
+const debug = false;
 const debugAlpha = "80";
 
 var chosenEdge = -1;
@@ -70,29 +70,18 @@ function loadJSON(data_uri, zoom)
 				
 				aX = -(coordinatesA['x'] - offsetMousePosX);
 				aY = -(coordinatesA['y'] - offsetMousePosY);
-
 				bX = -(coordinatesB['x'] - offsetMousePosX);
 				bY = -(coordinatesB['y'] - offsetMousePosY);
-				
 				cX = coordinatesB['x'] - coordinatesA['x'];
 				cY = coordinatesB['y'] - coordinatesA['y'];
-				
 				dX = coordinatesB['x'] - offsetMousePosX;
 				dY = coordinatesB['y'] - offsetMousePosY;
 				
 				lineAX = bX - aX;
 				lineAY = bY - aY;
 				
-				slopeA = lineAX / lineAY;
-				slopeB = -(lineAY / lineAX);
-				slopeA = (isFinite(slopeA))?slopeA:1.2;
-				slopeB = (isFinite(slopeB))?slopeB:1.2;
-				
 				directionRad = Math.atan(lineAX / lineAY);
 				crossPoint = (Math.PI/2) + directionRad;
-
-				targetOffset = -((coordinatesA['x'] * slopeA) - coordinatesA['y']) // Needs more
-				myOffset = -((aX * slopeA) - aY)
 
 				ySect = 50 * Math.cos(crossPoint);
 				xSect = 50 * Math.sin(crossPoint);
@@ -172,10 +161,16 @@ function loadJSON(data_uri, zoom)
 				}
 			}
 			if(chosenEdge > 0) edgeCollection[chosenEdge] = true;
+			
+			var maxEdgeLength = 0;
+			for(edge in edgeCollection)
+			{
+				maxEdgeLength = (jsonObj["mapEdges"][edge]["distance"]>maxEdgeLength)? jsonObj["mapEdges"][edge]["distance"]:maxEdgeLength;
+			}
 
 			const selectedRoad = document.getElementById("selectedRoadType");
 			
-			strTable = "<table>";
+			strTable = "<table><tr><td colspan=\"2\"></td><td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr>";
 			for(edge in edgeCollection)
 			{
 				var lon1 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"];
@@ -193,8 +188,8 @@ function loadJSON(data_uri, zoom)
 				var xMag = -(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"]);
 				var yMag = centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["latitude"];
 				
-				var centerMag = normalize(xMag, yMag, 1);
-				var scale = vLength(xMag, yMag);
+				var centerMag = normalize(xMag, yMag, (jsonObj["mapEdges"][edge]["distance"]/maxEdgeLength));
+				var scale = maxEdgeLength / 2;  // vLength(xMag, yMag);
 				
 				var cx1 = (miniMapSize/2) + (centerMag["x"] * miniMapSegment);
 				var cy1 = (miniMapSize/2) + (centerMag["y"] * miniMapSegment);
@@ -204,7 +199,7 @@ function loadJSON(data_uri, zoom)
 				sideLines = "";
 				for(edgeItem in edgesA)
 				{
-					if(edge == edgesA[edgeItem]) continue;
+					if(edge == edgesA[edgeItem] || typeof jsonObj["mapEdges"][edgesA[edgeItem]] == 'undefined') continue;
 					currentSelectedEdge = jsonObj["mapEdges"][edgesA[edgeItem]];
 					
 					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
@@ -216,7 +211,7 @@ function loadJSON(data_uri, zoom)
 				}
 				for(edgeItem in edgesB)
 				{
-					if(edge == edgesB[edgeItem]) continue;
+					if(edge == edgesB[edgeItem] || typeof jsonObj["mapEdges"][edgesB[edgeItem]] == 'undefined') continue;
 					currentSelectedEdge = jsonObj["mapEdges"][edgesB[edgeItem]];
 					
 					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
@@ -228,15 +223,17 @@ function loadJSON(data_uri, zoom)
 				}
 				
 				var defaultvalue = (inputData[edge]==null)?0:inputData[edge];
-				var borderColor = (edge == chosenEdge)?"FF":"00";
+				var highlightHex = (edge == chosenEdge)?"FF":"00";
 				
 				svgLines = "";
 				svgLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
 				
-				strTable += "<tr><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
+				strTable += "<tr style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
+				+ sideLines
+				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:6\"/>"
 				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/>"
-				+ sideLines + "</svg></td><td>" + jsonObj['mapEdges'][edge]['vertices'][0] + "<br/>" + jsonObj['mapEdges'][edge]['vertices'][1] + "</td><td>"
-				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"border-width:2pt; border-style:solid; border-color:#" + borderColor + "0000\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
+				+ "</svg></td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td><td>"
+				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; background-color: #AAAAAA; onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
 			}
 			strTable += "</table>";
 			selectedRoad.innerHTML = strTable;		
@@ -258,7 +255,7 @@ function loadJSON(data_uri, zoom)
 			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
-			canvasInputBox.style.left = 150;
+			canvasInputBox.style.left = 100;
 			canvasInputBox.style.top = 50;
 							
 			tempLineCanvasContext.beginPath();
@@ -267,6 +264,7 @@ function loadJSON(data_uri, zoom)
 			tempLineCanvasContext.rotate(rotation);
 			tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
 			tempLineCanvasContext.fillStyle = "#00FFFFAA";
+			tempLineCanvasContext.lineWidth = 3;
 			tempLineCanvasContext.strokeStyle = "#FF0000";
 			tempLineCanvasContext.fill();
 			tempLineCanvasContext.stroke();
