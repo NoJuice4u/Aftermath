@@ -6,8 +6,9 @@ const tempLineCanvasContext = tempLineCanvas.getContext("2d");
 const canvasA = mapCanvas.getContext("2d");
 const miniMapSize = 48;
 const miniMapSegment = miniMapSize/3;
-const debug = false;
-const debugAlpha = "80";
+const debug = true;
+const debugAlpha = "CC";
+const canvasInputPosition = {"x": 100, "y": 40};
 
 var chosenEdge = -1;
 var listenerLoaded = false;
@@ -24,19 +25,19 @@ function loadJSON(data_uri, zoom)
 	{
 		mapCanvas.addEventListener('click', (e) => {
 			const mousePos = {
-				x: e.clientX - mapCanvas.offsetLeft,
-				y: e.clientY - mapCanvas.offsetTop
+				x: e.clientX - mapCanvas.offsetLeft + window.scrollX,
+				y: e.clientY - mapCanvas.offsetTop + window.scrollY
 			};
 			offsetMousePosX = mousePos.x;
 			offsetMousePosY = mousePos.y;
-			
+						
 			var zm = Math.pow(2, zoom);
 
 			var coordFinal = getBearingInverse(ref_lon, ref_lat, offsetMousePosX, offsetMousePosY, zm, 300, 500);
 			
 			var distance = 9999;
-			finalX = 0;
-			finalY = 0;
+			var finalX = 0;
+			var finalY = 0;
 			
 			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
 			edgeCollection = {};
@@ -173,11 +174,6 @@ function loadJSON(data_uri, zoom)
 			strTable = "<table><tr><td colspan=\"2\"></td><td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr>";
 			for(edge in edgeCollection)
 			{
-				var lon1 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"];
-				var lat1 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["latitude"];
-				var lon2 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]]["longitude"];
-				var lat2 = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]]["latitude"];
-				
 				var centerX = jsonObj["mapEdges"][edge]["longitude"];
 				var centerY = jsonObj["mapEdges"][edge]["latitude"];
 				
@@ -247,16 +243,16 @@ function loadJSON(data_uri, zoom)
 			var coordinatesB = getBearing(ref_lon, ref_lat, chosenEdgeVertexB["longitude"], chosenEdgeVertexB["latitude"], zm, 300, 500);
 			
 			var lineWidth = 12;
-			var dx = coordinatesB['x'] - coordinatesA['x'];
-			var dy = coordinatesB['y'] - coordinatesA['y'];
-			var rotation = Math.atan2(dy, dx);
-			var lineLength = Math.sqrt(dx * dx + dy * dy);
+			var eX = coordinatesB['x'] - coordinatesA['x'];
+			var eY = coordinatesB['y'] - coordinatesA['y'];
+			var rotation = Math.atan2(eY, eX);
+			var lineLength = vLength(eX, eY);
 			
 			var xPos = (coordinatesA['x']+coordinatesB['x'])/2;
 			var yPos = (coordinatesA['y']+coordinatesB['y'])/2;
 			
-			canvasInputBox.style.left = 100;
-			canvasInputBox.style.top = 50;
+			canvasInputBox.style.left = canvasInputPosition['x'];
+			canvasInputBox.style.top = canvasInputPosition['y'];
 							
 			tempLineCanvasContext.beginPath();
 			tempLineCanvasContext.globalAlpha = 1;
