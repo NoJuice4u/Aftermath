@@ -229,7 +229,7 @@ function loadJSON(data_uri, zoom)
 				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:6\"/>"
 				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/>"
 				+ "</svg></td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td><td>"
-				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; background-color: #AAAAAA; onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
+				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; background-color: #AAAAAA;\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
 			}
 			strTable += "</table>";
 			selectedRoad.innerHTML = strTable;		
