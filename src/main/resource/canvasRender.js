@@ -6,9 +6,9 @@ const tempLineCanvasContext = tempLineCanvas.getContext("2d");
 const canvasA = mapCanvas.getContext("2d");
 const miniMapSize = 48;
 const miniMapSegment = miniMapSize/3;
-const debug = true;
 const debugAlpha = "CC";
 const canvasInputPosition = {"x": 100, "y": 40};
+var debug = false;
 
 var chosenEdge = -1;
 var listenerLoaded = false;
@@ -30,7 +30,8 @@ function loadJSON(data_uri, zoom)
 			};
 			offsetMousePosX = mousePos.x;
 			offsetMousePosY = mousePos.y;
-						
+			var maxEdgeLength = 0;
+
 			var zm = Math.pow(2, zoom);
 
 			var coordFinal = getBearingInverse(ref_lon, ref_lat, offsetMousePosX, offsetMousePosY, zm, 300, 500);
@@ -40,7 +41,7 @@ function loadJSON(data_uri, zoom)
 			var finalY = 0;
 			
 			tempLineCanvas.getContext("2d").clearRect(0, 0, tempLineCanvas.width, tempLineCanvas.height);
-			edgeCollection = {};
+			edgeCollection = { "primary": {}, "secondary": {}, "tertiary": {}, "residential": {}};
 			
 			hxVal = 0;
 			for(edge in jsonObj["mapEdges"])
@@ -106,7 +107,12 @@ function loadJSON(data_uri, zoom)
 				{
 					if(mDistance < 20)
 					{
-						edgeCollection[edge] = true;
+						if(edgeCollection[jsonObj["mapEdges"][edge]["mode"]] == null)
+						{
+							edgeCollection[jsonObj["mapEdges"][edge]["mode"]] = {}; 
+						}
+						edgeCollection[jsonObj["mapEdges"][edge]["mode"]][edge] = true;
+						maxEdgeLength = (jsonObj["mapEdges"][edge]["distance"]>maxEdgeLength)? jsonObj["mapEdges"][edge]["distance"]:maxEdgeLength;
 					}
 
 					if(debug == true)
@@ -129,7 +135,7 @@ function loadJSON(data_uri, zoom)
 						tempLineCanvasContext.moveTo(mousePos['x'], mousePos['y']);
 						tempLineCanvasContext.lineTo(xSect, ySect);
 						tempLineCanvasContext.strokeStyle = "#" + hxC + "0000" + debugAlpha;
-						tempLineCanvasContext.lineWidth = 2;
+						tempLineCanvasContext.lineWidth = 1;
 						
 						tempLineCanvasContext.fillStyle = "#FF0000" + debugAlpha;
 						tempLineCanvasContext.fillText(Math.round(mDistance*100)/100, xSect, ySect);
@@ -161,75 +167,82 @@ function loadJSON(data_uri, zoom)
 					tempLineCanvasContext.drawImage(cautionImg, mPosX, mPosY, 16, 16);
 				}
 			}
-			if(chosenEdge > 0) edgeCollection[chosenEdge] = true;
 			
-			var maxEdgeLength = 0;
-			for(edge in edgeCollection)
+			if(chosenEdge > 0) 
 			{
-				maxEdgeLength = (jsonObj["mapEdges"][edge]["distance"]>maxEdgeLength)? jsonObj["mapEdges"][edge]["distance"]:maxEdgeLength;
+				if(edgeCollection[jsonObj["mapEdges"][chosenEdge]["mode"]] == null)
+				{
+					edgeCollection[jsonObj["mapEdges"][chosenEdge]["mode"]] = {}; 
+				}
+				edgeCollection[jsonObj["mapEdges"][chosenEdge]["mode"]][chosenEdge] = true;
+				maxEdgeLength = (jsonObj["mapEdges"][chosenEdge]["distance"]>maxEdgeLength)? jsonObj["mapEdges"][chosenEdge]["distance"]:maxEdgeLength;
 			}
 
 			const selectedRoad = document.getElementById("selectedRoadType");
 			
-			strTable = "<table><tr><td colspan=\"2\"></td><td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr>";
-			for(edge in edgeCollection)
+			strTable = "<table><tr><td colspan=\"1\"></td><td><img width=\"320\" src=\"/resource/RoadPictogram.png\"/></td></tr>";
+			for(mode in edgeCollection)
 			{
-				var centerX = jsonObj["mapEdges"][edge]["longitude"];
-				var centerY = jsonObj["mapEdges"][edge]["latitude"];
-				
-				var edgeObject = jsonObj["mapEdges"][edge];
-				var edgesA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["edges"];
-				var edgesB = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]]["edges"];
-				
-				var xMag = -(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"]);
-				var yMag = centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["latitude"];
-				
-				var centerMag = normalize(xMag, yMag, (jsonObj["mapEdges"][edge]["distance"]/maxEdgeLength));
-				var scale = maxEdgeLength / 2;  // vLength(xMag, yMag);
-				
-				var cx1 = (miniMapSize/2) + (centerMag["x"] * miniMapSegment);
-				var cy1 = (miniMapSize/2) + (centerMag["y"] * miniMapSegment);
-				var cx2 = (miniMapSize/2) - (centerMag["x"] * miniMapSegment);
-				var cy2 = (miniMapSize/2) - (centerMag["y"] * miniMapSegment);
-				
-				sideLines = "";
-				for(edgeItem in edgesA)
+				if(Object.keys(edgeCollection[mode]).length == 0) continue;
+				strTable += "<tr><td colspan=\"2\" style=\"background-color: #AAAAAA; text-align: center; font-weight: bold\">" + mode.charAt(0).toUpperCase() + mode.slice(1) + " road type</td></tr>";
+				for(edge in edgeCollection[mode])
 				{
-					if(edge == edgesA[edgeItem] || typeof jsonObj["mapEdges"][edgesA[edgeItem]] == 'undefined') continue;
-					currentSelectedEdge = jsonObj["mapEdges"][edgesA[edgeItem]];
+					var centerX = jsonObj["mapEdges"][edge]["longitude"];
+					var centerY = jsonObj["mapEdges"][edge]["latitude"];
 					
-					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
-					var y1 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["latitude"]) / scale * miniMapSegment);
-					var x2 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][1]]["longitude"]) / scale * miniMapSegment);
-					var y2 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][1]]["latitude"]) / scale * miniMapSegment);
+					var edgeObject = jsonObj["mapEdges"][edge];
+					var edgesA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["edges"];
+					var edgesB = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]]["edges"];
 					
-					sideLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(255,0,0);stroke-width:2\"/>";
+					var xMag = -(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["longitude"]);
+					var yMag = centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]]["latitude"];
+					
+					var centerMag = normalize(xMag, yMag, (jsonObj["mapEdges"][edge]["distance"]/maxEdgeLength));
+					var scale = maxEdgeLength / 2;  // vLength(xMag, yMag);
+					
+					var cx1 = (miniMapSize/2) + (centerMag["x"] * miniMapSegment);
+					var cy1 = (miniMapSize/2) + (centerMag["y"] * miniMapSegment);
+					var cx2 = (miniMapSize/2) - (centerMag["x"] * miniMapSegment);
+					var cy2 = (miniMapSize/2) - (centerMag["y"] * miniMapSegment);
+					
+					sideLines = "";
+					for(edgeItem in edgesA)
+					{
+						if(edge == edgesA[edgeItem] || typeof jsonObj["mapEdges"][edgesA[edgeItem]] == 'undefined') continue;
+						currentSelectedEdge = jsonObj["mapEdges"][edgesA[edgeItem]];
+						
+						var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
+						var y1 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][0]]["latitude"]) / scale * miniMapSegment);
+						var x2 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][1]]["longitude"]) / scale * miniMapSegment);
+						var y2 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesA[edgeItem]]["vertices"][1]]["latitude"]) / scale * miniMapSegment);
+						
+						sideLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
+					}
+					for(edgeItem in edgesB)
+					{
+						if(edge == edgesB[edgeItem] || typeof jsonObj["mapEdges"][edgesB[edgeItem]] == 'undefined') continue;
+						currentSelectedEdge = jsonObj["mapEdges"][edgesB[edgeItem]];
+						
+						var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
+						var y1 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["latitude"]) / scale * miniMapSegment);
+						var x2 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][1]]["longitude"]) / scale * miniMapSegment);
+						var y2 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][1]]["latitude"]) / scale * miniMapSegment);
+						
+						sideLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
+					}
+					
+					var defaultvalue = (inputData[edge]==null)?0:inputData[edge];
+					var highlightHex = (edge == chosenEdge)?"FF":"00";
+					
+					svgLines = "";
+					svgLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
+					
+					strTable += "<tr style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
+					+ sideLines
+					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(255,0,0);stroke-width:6\"/>"
+					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/></svg></td>"
+					+ "<td><input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; background-color: #AAAAAA;\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
 				}
-				for(edgeItem in edgesB)
-				{
-					if(edge == edgesB[edgeItem] || typeof jsonObj["mapEdges"][edgesB[edgeItem]] == 'undefined') continue;
-					currentSelectedEdge = jsonObj["mapEdges"][edgesB[edgeItem]];
-					
-					var x1 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["longitude"]) / scale * miniMapSegment);
-					var y1 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][0]]["latitude"]) / scale * miniMapSegment);
-					var x2 = (miniMapSize/2) + (-(centerX - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][1]]["longitude"]) / scale * miniMapSegment);
-					var y2 = (miniMapSize/2) + ((centerY - jsonObj["mapVertices"][jsonObj["mapEdges"][edgesB[edgeItem]]["vertices"][1]]["latitude"]) / scale * miniMapSegment);
-					
-					sideLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(255,0,0);stroke-width:2\"/>";
-				}
-				
-				var defaultvalue = (inputData[edge]==null)?0:inputData[edge];
-				var highlightHex = (edge == chosenEdge)?"FF":"00";
-				
-				svgLines = "";
-				svgLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
-				
-				strTable += "<tr style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
-				+ sideLines
-				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:6\"/>"
-				+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/>"
-				+ "</svg></td><td>" + jsonObj['mapEdges'][edge]['mode'] + "</td><td>"
-				+ "<input type=\"range\" min=\"0\" max=\"10\" value=\"" + defaultvalue + "\" class=\"slider\" id=\"roadInput_" + edge + "\" name=\"entry\" size=\"3\" style=\"width: 290px; background-color: #AAAAAA;\" onchange=\"updateEntry(" + edge + ", this.value)\" /></td></tr>";
 			}
 			strTable += "</table>";
 			selectedRoad.innerHTML = strTable;		

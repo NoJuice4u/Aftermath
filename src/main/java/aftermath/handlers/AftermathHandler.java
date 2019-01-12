@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
 
+import main.java.aftermath.dto.MapResponseDto;
 import main.java.aftermath.engine.Depot;
 import main.java.aftermath.locale.LocaleBase;
 import main.java.aftermath.server.AftermathServer;
@@ -36,7 +37,6 @@ import main.java.encephalon.dto.DistinctOrderedSet;
 import main.java.encephalon.dto.DistinctOrderedSet.OrderType;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
-import main.java.encephalon.dto.MapResponseDto;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.dto.MapVertexLite;
 import main.java.encephalon.exceptions.ResponseException;
@@ -520,11 +520,11 @@ public class AftermathHandler extends DefaultHandler
             drawTransports(writer, initialNode, zm, depth);
         if (drawGroups)
             drawGroups(writer, initialNode, zm);
+        drawDepot(writer, initialNode, zm);
         
         writer.addImageData();
         writer.script_End();
         writer.table_Start();
-        
 
         writeSummaryNode(writer, locale, initialNode, zoom, depth, authorative);
         writeSummaryNeighboringNodes(writer, locale, initialNode, zoom, depth);
@@ -759,10 +759,20 @@ public class AftermathHandler extends DefaultHandler
             Long vertexId = masterVertexList.next();
             vertexData.put(vertexId, es.getAftermathController().getMapData().get(vertexId));
         }
+        
+        
+        HashMap<Long, Depot> depotData = new HashMap<Long, Depot>();
+        List<Long> depotIds = es.getAftermathController().getSpatialIndexDepot().getNearestNodeRegion(focalPoint);
 
+        for (Long depotId : depotIds)
+        {
+            Depot depot = es.getAftermathController().getDepotData().get(depotId);
+            depotData.put(depotId, depot);
+        }
+        
         MapVertex focusVertex = es.getAftermathController().getMapData().get(uid);
         MapResponseDto responseDto = new MapResponseDto(focusVertex.getLongitude(), focusVertex.getLatitude(), zoom,
-                vertexData, edgeData, ClusteringManager.getRoots());
+                vertexData, edgeData, depotData, ClusteringManager.getRoots());
 
         JsonWriter jw = new JsonWriter(responseDto);
 
@@ -1496,7 +1506,9 @@ public class AftermathHandler extends DefaultHandler
                     + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[1]
                     + "</A>");
             writer.td(String.valueOf(mapEdge.getId()));
-            writer.td(mapEdge.toString());
+            writer.td("<A href=\"/aftermath/map/coord/" + mapEdge.getLongitude() + "/" + mapEdge.getLatitude() + "/canvas?depth="
+                    + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.toString()
+                    + "</A>");
             writer.td(mapEdge.getMode().name());
             writer.td(String.valueOf(score));
             writer.td(String.valueOf(weight));
