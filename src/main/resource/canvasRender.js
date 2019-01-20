@@ -231,13 +231,23 @@ function loadJSON(data_uri, zoom)
 						sideLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
 					}
 					
+					var edgeVertexA = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][0]];
+					var edgeVertexB = jsonObj["mapVertices"][jsonObj["mapEdges"][edge]["vertices"][1]];
+					
+					var subCoordinatesA = getBearing(ref_lon, ref_lat, edgeVertexA["longitude"], edgeVertexA["latitude"], zm, 300, 500);
+					var subCoordinatesB = getBearing(ref_lon, ref_lat, edgeVertexB["longitude"], edgeVertexB["latitude"], zm, 300, 500);
+					
 					var defaultvalue = (inputData[edge]==null)?0:inputData[edge];
 					var highlightHex = (edge == chosenEdge)?"FF":"00";
 					
 					svgLines = "";
 					svgLines += "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" style=\"stroke:rgb(0,0,0);stroke-width:2\"/>";
 					
-					strTable += "<tr style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
+					var lnRotate = Math.atan2(subCoordinatesB['y'] - subCoordinatesA['y'], subCoordinatesB['x'] - subCoordinatesA['x']);
+					var lnLen = vLength(subCoordinatesB['x'] - subCoordinatesA['x'], subCoordinatesB['y'] - subCoordinatesA['y']);
+					
+					// HERE
+					strTable += "<tr onClick=\"selectEdge(1, " + subCoordinatesA['x'] + ", " + subCoordinatesA['y'] + ", " + lnLen + ", 12, " + lnRotate + ", tempLineCanvas)\" style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
 					+ sideLines
 					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(255,0,0);stroke-width:6\"/>"
 					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/></svg></td>"
@@ -266,20 +276,8 @@ function loadJSON(data_uri, zoom)
 			
 			canvasInputBox.style.left = canvasInputPosition['x'];
 			canvasInputBox.style.top = canvasInputPosition['y'];
-							
-			tempLineCanvasContext.beginPath();
-			tempLineCanvasContext.globalAlpha = 1;
-			tempLineCanvasContext.translate(coordinatesA['x'], coordinatesA['y']);
-			tempLineCanvasContext.rotate(rotation);
-			tempLineCanvasContext.rect(0, -lineWidth / 2, lineLength, lineWidth);
-			tempLineCanvasContext.fillStyle = "#00FFFFAA";
-			tempLineCanvasContext.lineWidth = 3;
-			tempLineCanvasContext.strokeStyle = "#FF0000";
-			tempLineCanvasContext.fill();
-			tempLineCanvasContext.stroke();
-			tempLineCanvasContext.translate(0, 0);
-			tempLineCanvasContext.setTransform(1, 0, 0, 1, 0, 0);
-			tempLineCanvasContext.closePath();
+			
+			selectEdge(jsonObj["mapEdges"][chosenEdge], coordinatesA['x'], coordinatesA['y'], lineLength, lineWidth, rotation, tempLineCanvas);
 		});
 		listenerLoaded = true;
 	}
@@ -496,4 +494,25 @@ function updateEntry(edge, value)
 	{
 		delete inputData[edge];
 	}
+}
+
+function selectEdge(edge, x, y, lineLength, lineWidth, rotation, canvas)
+{
+	// also update edge div
+	context = canvas.getContext("2d");
+	
+	context.clearRect(0, 0, canvas.width, canvas.height)
+	context.beginPath();
+	context.globalAlpha = 1;
+	context.translate(x, y);
+	context.rotate(rotation);
+	context.rect(0, -lineWidth / 2, lineLength, lineWidth);
+	context.fillStyle = "#00FFFFAA";
+	context.lineWidth = 3;
+	context.strokeStyle = "#FF0000";
+	context.fill();
+	context.stroke();
+	context.translate(-x, -y);
+	context.setTransform(1, 0, 0, 1, 0, 0);
+	context.closePath();
 }
