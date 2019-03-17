@@ -247,7 +247,7 @@ function loadJSON(data_uri, zoom)
 					var lnLen = vLength(subCoordinatesB['x'] - subCoordinatesA['x'], subCoordinatesB['y'] - subCoordinatesA['y']);
 					
 					// HERE
-					strTable += "<tr onClick=\"selectEdge(1, " + subCoordinatesA['x'] + ", " + subCoordinatesA['y'] + ", " + lnLen + ", 12, " + lnRotate + ", tempLineCanvas)\" style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
+					strTable += "<tr onClick=\"clearAndSelectEdge(1, " + subCoordinatesA['x'] + ", " + subCoordinatesA['y'] + ", " + lnLen + ", 12, " + lnRotate + ", tempLineCanvas)\" style=\"background-color: #80FFBB" + highlightHex + "\"><td><svg id=\"canvasEdge_" + edge + "\" width=\"" + miniMapSize + "\" height=\"" + miniMapSize + "\">"
 					+ sideLines
 					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(255,0,0);stroke-width:6\"/>"
 					+ "<line x1=\"" + cx1 + "\" y1=\"" + cy1 + "\" x2=\"" + cx2 + "\" y2=\"" + cy2 + "\" style=\"stroke:rgb(0,255,255);stroke-width:4\"/></svg></td>"
@@ -277,7 +277,7 @@ function loadJSON(data_uri, zoom)
 			canvasInputBox.style.left = canvasInputPosition['x'];
 			canvasInputBox.style.top = canvasInputPosition['y'];
 			
-			selectEdge(jsonObj["mapEdges"][chosenEdge], coordinatesA['x'], coordinatesA['y'], lineLength, lineWidth, rotation, tempLineCanvas);
+			selectEdge(jsonObj["mapEdges"][chosenEdge], coordinatesA['x'], coordinatesA['y'], lineLength, lineWidth, rotation, tempLineCanvasContext);
 		});
 		listenerLoaded = true;
 	}
@@ -496,12 +496,17 @@ function updateEntry(edge, value)
 	}
 }
 
-function selectEdge(edge, x, y, lineLength, lineWidth, rotation, canvas)
+function clearAndSelectEdge(edge, x, y, lineLength, lineWidth, rotation, canvas)
+{
+	context = canvas.getContext("2d");
+	context.clearRect(0, 0, canvas.width, canvas.height)
+	
+	selectEdge(edge, x, y, lineLength, lineWidth, rotation, context);
+}
+
+function selectEdge(edge, x, y, lineLength, lineWidth, rotation, context)
 {
 	// also update edge div
-	context = canvas.getContext("2d");
-	
-	context.clearRect(0, 0, canvas.width, canvas.height)
 	context.beginPath();
 	context.globalAlpha = 1;
 	context.translate(x, y);

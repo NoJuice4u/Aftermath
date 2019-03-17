@@ -159,4 +159,41 @@ class Simulator
             System.out.println("[" + con.getResponseCode() + "]\t" + depot);
         }
     }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    void authorativeEntriesTest() throws IOException, InterruptedException
+    {
+        URL url = new URL("http://localhost:8080/system/session/new");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        String sidA = con.getHeaderField("X-SID");
+        
+        con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        String sidB = con.getHeaderField("X-SID");
+        
+        url = new URL("http://localhost:8080/system/session/promote");
+        con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("X-SID", sidB);
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        StringBuffer content = new StringBuffer();
+
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+        {
+            content.append(inputLine);
+        }
+
+        System.out.println(content);
+
+        // Get an Authoritative Session
+        // Fill in "5"s for authoritative answers
+        // Get a Regular Session
+        // Fill in somewhat randomized numbers (only deviating by 1 at most for neighboring nodes
+        
+        // EXPECTED RESULT:
+        // Authoritative numbers show 5, and all other values are normalized to the Authoritative values.
+    }
 }
