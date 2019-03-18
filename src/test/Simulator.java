@@ -8,9 +8,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jetty.http.HttpMethod;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
@@ -18,6 +20,7 @@ import com.google.gson.internal.LinkedTreeMap;
 
 import main.java.aftermath.engine.Depot;
 import main.java.encephalon.dto.MapEdge;
+import main.java.encephalon.client.HttpApiClient;
 
 class Simulator
 {
@@ -27,22 +30,15 @@ class Simulator
 
     @Test
     @SuppressWarnings("unchecked")
-    void simulateEntry() throws IOException, InterruptedException
+    void simulateEntry() throws Exception
     {
-        URL url = new URL("http://localhost:8080/aftermath/map/node/1093685711/json?depth=22");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-
-        int err = con.getResponseCode();
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuffer content = new StringBuffer();
-
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-        {
-            content.append(inputLine);
-        }
-
+        HttpApiClient client = new HttpApiClient();
+        
+        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685711", "22");
+        
+        int err = client.getResponseCode();
+        String content = client.readResponse();
+        
         Map<?, ?> result = new Gson().fromJson(content.toString(), Map.class);
 
         Map<String, ?> vertices = (Map<String, ?>) result.get("mapVertices");
@@ -77,34 +73,22 @@ class Simulator
                 edgePost.append("&" + it + "=" + edgeWeight);
             }
 
-            url = new URL("http://localhost:8080/aftermath/map/weight/");
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setDoOutput(true);
-            DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeBytes(edgePost.toString());
-
-            System.out.println("[" + con.getResponseCode() + "]\t" + edgePost.substring(1));
+            client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
+            
+            System.out.println("[" + client.getResponseCode() + "]\t" + edgePost.substring(1));
         }
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    void markRoads() throws IOException, InterruptedException
+    void markRoads() throws Exception
     {
-        URL url = new URL("http://localhost:8080/aftermath/map/node/1093685711/json?depth=22");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
+        HttpApiClient client = new HttpApiClient();
+        
+        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685711", "22");
 
-        int err = con.getResponseCode();
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuffer content = new StringBuffer();
-
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-        {
-            content.append(inputLine);
-        }
+        int err = client.getResponseCode();
+        String content = client.readResponse();
 
         Map<?, ?> result = new Gson().fromJson(content.toString(), Map.class);
 
@@ -119,74 +103,51 @@ class Simulator
 
             if (mode.equals("primary") || mode.equals("secondary"))
             {
-                url = new URL("http://localhost:8080/aftermath/map/mark/");
-                con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("POST");
-                con.setDoOutput(true);
-                DataOutputStream out = new DataOutputStream(con.getOutputStream());
-                out.writeBytes(edg + "=2");
-
-                System.out.println("[" + con.getResponseCode() + "]\t" + edg);
+                client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/mark", edg + "=2");
             }
         }
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    void toggleDepots() throws IOException, InterruptedException
+    void toggleDepots() throws Exception
     {
-        URL url = new URL("http://localhost:8080/aftermath/map/depots/json");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
+        HttpApiClient client = new HttpApiClient();
+        
+        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/depots/json");
 
-        int err = con.getResponseCode();
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuffer content = new StringBuffer();
-
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-        {
-            content.append(inputLine);
-        }
+        int err = client.getResponseCode();
+        String content = client.readResponse();
 
         // Long, Depot
         Map<String, Depot> result = new Gson().fromJson(content.toString(), Map.class);
-
         Set<String> keySet = result.keySet();
         
         for (String depot : keySet)
         {
-            System.out.println("[" + con.getResponseCode() + "]\t" + depot);
+            System.out.println("[" + err + "]\t" + depot);
         }
     }
     
     @Test
     @SuppressWarnings("unchecked")
-    void authorativeEntriesTest() throws IOException, InterruptedException
+    void authorativeEntriesTest() throws Exception
     {
-        URL url = new URL("http://localhost:8080/system/session/new");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        String sidA = con.getHeaderField("X-SID");
+        HttpApiClient client = new HttpApiClient();
+        HashMap<String, String> userA = new HashMap<String, String>();
+        HashMap<String, String> userB = new HashMap<String, String>();
         
-        con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        String sidB = con.getHeaderField("X-SID");
+        client.makeRequestGet("http", null, "localhost:8080", "system/session/new");
+        String sidA = client.getHeaderField("X-SID");
+        userA.put("X-SID", sidA);
         
-        url = new URL("http://localhost:8080/system/session/promote");
-        con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setRequestProperty("X-SID", sidB);
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuffer content = new StringBuffer();
-
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-        {
-            content.append(inputLine);
-        }
-
-        System.out.println(content);
+        client.makeRequestGet("http", null, "localhost:8080", "system/session/new");
+        String sidB = client.getHeaderField("X-SID");
+        userB.put("X-SID", sidB);
+        
+        HttpURLConnection connection = client.makeRequestGet("http", userB, "localhost:8080", "aftermath/map");
+        Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+        System.out.println("EOT");
 
         // Get an Authoritative Session
         // Fill in "5"s for authoritative answers
