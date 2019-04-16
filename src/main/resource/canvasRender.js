@@ -8,7 +8,7 @@ const miniMapSize = 48;
 const miniMapSegment = miniMapSize/3;
 const debugAlpha = "CC";
 const canvasInputPosition = {"x": 100, "y": 40};
-var debug = false;
+var debug = true;
 
 var chosenEdge = -1;
 var listenerLoaded = false;
