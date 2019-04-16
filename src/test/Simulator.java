@@ -107,6 +107,35 @@ class Simulator
             }
         }
     }
+    
+    @Test
+    void microTest() throws Exception
+    {
+        HttpApiClient client = new HttpApiClient();
+
+        //Why is this causing heavy values to appear in the authoritative histogram?
+        int[][] weightMap = {{1, 1},
+                             {2, 2},
+                             {3, 3},
+                             {4, 4},
+                             {5, 5},
+                             {6, 6},
+                             {7, 7},
+                             {8, 8},
+                             {9, 9},
+                             {10, 10},
+                             {11, 1},
+                             {12, 2}};
+        
+        StringBuilder edgePost = new StringBuilder();
+        for(int[] item : weightMap)
+        {
+            edgePost.append("&" + item[0] + "=" + item[1]);
+        }
+        
+        System.out.println(edgePost.substring(1));
+        client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
+    }
 
     @Test
     @SuppressWarnings("unchecked")
