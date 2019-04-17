@@ -69,7 +69,8 @@ public class Transport extends Bin
         }
         if(edge.getConfidence() > 0.1)
         {
-            edge.addWeightInput(true, 0L, System.currentTimeMillis(), edge.getWeight());
+            // Test Case to add additional weights
+            // edge.addWeightInput(true, 0L, System.currentTimeMillis(), edge.getWeight());
         }
 
         MapVertex newVertex = controller.getMapData().get(edge.getOtherVertex(node.getId()));
