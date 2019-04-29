@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1007,8 +1009,10 @@ public class AftermathHandler extends DefaultHandler
         HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
         float minNormalization = Float.MAX_VALUE;
         float maxNormalization = 0.0f;
+        float maxNormalizationDelta = 0.0f;
         CoordinateRange coordRange = new CoordinateRange();
 
+        float regressionTarget = 0.0f;
         for (String item : s)
         {
             String[] s2 = item.split("=");
@@ -1027,25 +1031,47 @@ public class AftermathHandler extends DefaultHandler
 
             if (mEdge.getWeight() > 0 && weight > 0)
             {
-                float normalizeWeight = mEdge.getWeight() / weight;
-
+                // Go through the weights.  Figure out the regression
+                int isNegative = 1;
+                float normalizeWeight = ((float)mEdge.getWeight() / weight);
+                
+                // EXPERIMENTAL!!!
+                if(normalizeWeight < 1.0f)
+                {
+                    normalizeWeight = -(1 / normalizeWeight) + 1;
+                    isNegative = -1;
+                }
+                else
+                {
+                    normalizeWeight -= 1;
+                }
+                
+                regressionTarget += (Math.pow(normalizeWeight, 2)) * isNegative;
+                
                 if (minNormalization > normalizeWeight)
                     minNormalization = normalizeWeight;
                 if (maxNormalization < normalizeWeight)
                     maxNormalization = normalizeWeight;
                 normalizationFactor += normalizeWeight;
+                
+                System.out.println("WEIGHTDIFFERENTIAL\t" + normalizeWeight + " XX " + mEdge.getWeight() + " :: " + weight + " ## " + regressionTarget);
 
                 count++;
 
                 float normalizationDelta = maxNormalization - minNormalization;
                 if (normalizationDelta > 20)
                 {
-                    new Task(es.getAftermathController().getProfiler(), parent, "NormalizationDelta Exceeded 20!", null)
-                            .end();
+                    new Task(es.getAftermathController().getProfiler(), parent, "NormalizationDelta Exceeded 20!", null).end();
                     normalizationDelta = 20;
+                }
+                
+                if(maxNormalizationDelta < normalizationDelta)
+                {
+                    maxNormalizationDelta = normalizationDelta;
                 }
             }
         }
+        regressionTarget = (regressionTarget < 0)?(float)Math.sqrt(Math.abs(regressionTarget)):(float)-Math.sqrt(regressionTarget);
 
         ClusteringManager.tryMerge(edgeWeightMap.keySet(), coordRange);
 
@@ -1057,6 +1083,8 @@ public class AftermathHandler extends DefaultHandler
         writer.td("finalWeight");
         writer.td("minNormalization");
         writer.td("maxNormalization");
+        writer.td("maxNormalizationDelta");
+        writer.td("regressionTarget");
         writer.td("confidence");
         writer.tr_End();
 
@@ -1067,7 +1095,8 @@ public class AftermathHandler extends DefaultHandler
             int weight = edgeWeightMap.get(edge);
             int finalWeight = -1;
             float confidence = -1;
-
+            
+            // Here is where we push the new weights.  We will want to add the weight and also adjust for the Phase Shift accordingly
             if (lowRes)
             {
                 weight = (int) Math.floor(weight / (float) 3.35);
@@ -1079,7 +1108,7 @@ public class AftermathHandler extends DefaultHandler
             } else
             {
                 HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge)
-                        .addWeightInput(authorative, inId, timeStamp, weight);
+                        .addWeightInput(authorative, inId, timeStamp, weight, regressionTarget);
 
                 confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
                 finalWeight = weightInputs.getWeight();
@@ -1092,6 +1121,8 @@ public class AftermathHandler extends DefaultHandler
             writer.td(String.valueOf(finalWeight));
             writer.td(String.valueOf(minNormalization));
             writer.td(String.valueOf(maxNormalization));
+            writer.td(String.valueOf(maxNormalizationDelta));
+            writer.td(String.valueOf(regressionTarget));
             writer.td(String.valueOf(confidence));
             writer.tr_End();
         }
