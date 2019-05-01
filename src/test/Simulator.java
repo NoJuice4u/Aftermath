@@ -25,7 +25,7 @@ import main.java.encephalon.client.HttpApiClient;
 class Simulator
 {
     public final int DATAENTRIES = 30000;
-    public final float DEVIATION = 0.20f;
+    public final float DEVIATION = 0.80f;
     public final int DELAY = 5;
 
     @Test
@@ -34,7 +34,7 @@ class Simulator
     {
         HttpApiClient client = new HttpApiClient();
         
-        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685711", "22");
+        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685732", "22");
         
         int err = client.getResponseCode();
         String content = client.readResponse();
@@ -115,7 +115,7 @@ class Simulator
         
         int[][][] weightGroup = {{{0, 3}, {1, 3}, {3, 3}, {4, 3}, {6, 3}, {7, 3}},
                                 {{8, 7}, {9, 7}, {10, 7}, {11, 7}, {12, 7}, {12, 7}, {13, 7}},
-                                {{8, 5}, {0, 5}}};
+                                {{8, 6}, {0, 2}}};
         
         int[] sequence = {0, 0, 0, 0, 0, 1, 1, 1, 2, 1, 2, 0};
         
