@@ -349,7 +349,6 @@ public class AftermathHandler extends DefaultHandler
     public void getDepotActivate(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
     {
-        HtmlWriter writer = es.getWriter();
         Depot d = es.getAftermathController().getDepotData().get(depotId);
         d.activate();
 
@@ -367,7 +366,6 @@ public class AftermathHandler extends DefaultHandler
     public void getDepotDeactivate(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
     {
-        HtmlWriter writer = es.getWriter();
         Depot d = es.getAftermathController().getDepotData().get(depotId);
         d.deactivate();
 
@@ -1006,8 +1004,8 @@ public class AftermathHandler extends DefaultHandler
         HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
         CoordinateRange coordRange = new CoordinateRange();
 
-        int valueAtHighConfidence = 0; 
-        float confidencePoint = 0.0f;
+        int[] valueAtHighConfidence = {0, 0};
+        float[] confidencePoint = {0.0f, 0.0f};
         for (String item : s)
         {
             String[] s2 = item.split("=");
@@ -1024,14 +1022,24 @@ public class AftermathHandler extends DefaultHandler
             MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
             coordRange.add(mEdge.getLongitude(), mEdge.getLatitude());
             
-            if(mEdge.getConfidence() > confidencePoint)
+            if(mEdge.getConfidence() > confidencePoint[0])
             {
-                confidencePoint = mEdge.getConfidence();
-                valueAtHighConfidence = mEdge.getWeight();
+                confidencePoint[1] = confidencePoint[0];
+                valueAtHighConfidence[1] = valueAtHighConfidence[0];
+                confidencePoint[0] = mEdge.getConfidence();
+                valueAtHighConfidence[0] = mEdge.getWeight();
             }
         }
         
-        System.out.println(valueAtHighConfidence + " : " + confidencePoint);
+        System.out.println(valueAtHighConfidence[0] + " : " + confidencePoint[0] + " = " + valueAtHighConfidence[1] + " : " + confidencePoint[1]);
+        if(confidencePoint[1] < 0.75)
+        {
+            // Dual Merge
+        }
+        else
+        {
+            // Single Merge
+        }
 
         ClusteringManager.tryMerge(edgeWeightMap.keySet(), coordRange);
 
@@ -1107,7 +1115,6 @@ public class AftermathHandler extends DefaultHandler
             }
 
             long edge = Long.valueOf(s2[0]);
-            int weight = Math.round(Float.valueOf(s2[1]));
 
             MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
             mEdge.setMarked(true);

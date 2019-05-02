@@ -1,25 +1,18 @@
 package test;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jetty.http.HttpMethod;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import main.java.aftermath.engine.Depot;
-import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.client.HttpApiClient;
 
 class Simulator
@@ -117,19 +110,22 @@ class Simulator
                                 {{8, 7}, {9, 7}, {10, 7}, {11, 7}, {12, 7}, {12, 7}, {13, 7}},
                                 {{8, 6}, {0, 2}}};
         
-        int[] sequence = {0, 0, 0, 0, 0, 1, 1, 1, 2, 1, 2, 0};
+        int[] sequence = {0, 0, 0, 0, 0, 1, 1, 1, 2, 1, 2, 0, 2, 2, 2, 2};
         
-        for(int i : sequence)
+        for(int z = 0; z < 10; z++)
         {
-            StringBuilder edgePost = new StringBuilder();
-            
-            for(int[] item : weightGroup[i])
+            for(int i : sequence)
             {
-                edgePost.append("&" + item[0] + "=" + item[1]);
+                StringBuilder edgePost = new StringBuilder();
+                
+                for(int[] item : weightGroup[i])
+                {
+                    edgePost.append("&" + item[0] + "=" + item[1]);
+                }
+                
+                System.out.println(edgePost.substring(1));
+                client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
             }
-            
-            System.out.println(edgePost.substring(1));
-            client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
         }
     }
 
@@ -155,7 +151,6 @@ class Simulator
     }
     
     @Test
-    @SuppressWarnings("unchecked")
     void authorativeEntriesTest() throws Exception
     {
         HttpApiClient client = new HttpApiClient();
@@ -171,7 +166,6 @@ class Simulator
         userB.put("X-SID", sidB);
         
         HttpURLConnection connection = client.makeRequestGet("http", userB, "localhost:8080", "aftermath/map");
-        Map<String, List<String>> responseHeaders = connection.getHeaderFields();
         System.out.println("EOT");
 
         // Get an Authoritative Session

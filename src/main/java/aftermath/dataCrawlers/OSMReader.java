@@ -44,7 +44,6 @@ public class OSMReader
     public static void main(String[] args) throws Exception
     {
         System.out.println("You launched the wrong instance, idiot.");
-        OSMReader osmReader = new OSMReader();
     }
 
     public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
