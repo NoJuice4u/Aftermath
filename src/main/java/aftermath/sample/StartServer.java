@@ -23,7 +23,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
         {
             AftermathServer aftermath = AftermathServer.getInstance();
             aftermath.initializeMap();
-            ClusteringManager.init(aftermath.getProfiler(), aftermath.getAftermathController().getEdgeData());
+            ClusteringManager.init(aftermath.getAftermathController().getEdgeData());
 
             GzipHandler gzipHandler = new GzipHandler();
             gzipHandler.setHandler(new DefaultHandler());

@@ -18,7 +18,7 @@ import main.java.encephalon.client.HttpApiClient;
 class Simulator
 {
     public final int DATAENTRIES = 30000;
-    public final float DEVIATION = 0.80f;
+    public final float DEVIATION = 0.20f;
     public final int DELAY = 5;
 
     @Test

@@ -31,6 +31,7 @@ import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
 import main.java.encephalon.cluster.ClusteringManager;
+import main.java.encephalon.cluster.ClusteringManagerResponse;
 import main.java.encephalon.dto.CoordinateRange;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
@@ -998,12 +999,10 @@ public class AftermathHandler extends DefaultHandler
 
         long timeStamp = System.currentTimeMillis();
 
-        // First cycle to renormalize
-
-        int count = 0;
         HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
         CoordinateRange coordRange = new CoordinateRange();
 
+        long[] edgeAtHighConfidence = {0, 0};
         int[] valueAtHighConfidence = {0, 0};
         float[] confidencePoint = {0.0f, 0.0f};
         for (String item : s)
@@ -1024,24 +1023,29 @@ public class AftermathHandler extends DefaultHandler
             
             if(mEdge.getConfidence() > confidencePoint[0])
             {
-                confidencePoint[1] = confidencePoint[0];
-                valueAtHighConfidence[1] = valueAtHighConfidence[0];
+                // When we get the highest value first, standard logic will break.
+                if(confidencePoint[0] > confidencePoint[1])
+                {
+                    edgeAtHighConfidence[1] = edgeAtHighConfidence[0];
+                    confidencePoint[1] = confidencePoint[0];
+                    valueAtHighConfidence[1] = valueAtHighConfidence[0];
+                }
+                edgeAtHighConfidence[0] = edge;
                 confidencePoint[0] = mEdge.getConfidence();
                 valueAtHighConfidence[0] = mEdge.getWeight();
             }
+            else if(mEdge.getConfidence() > confidencePoint[1])
+            {
+                edgeAtHighConfidence[1] = edge;
+                confidencePoint[1] = mEdge.getConfidence();
+                valueAtHighConfidence[1] = mEdge.getWeight();
+            }
         }
         
-        System.out.println(valueAtHighConfidence[0] + " : " + confidencePoint[0] + " = " + valueAtHighConfidence[1] + " : " + confidencePoint[1]);
-        if(confidencePoint[1] < 0.75)
-        {
-            // Dual Merge
-        }
-        else
-        {
-            // Single Merge
-        }
+        System.out.println(valueAtHighConfidence[0] + " : " + confidencePoint[0] + " = " + edgeAtHighConfidence[0]);
+        System.out.println(valueAtHighConfidence[1] + " : " + confidencePoint[1] + " = " + edgeAtHighConfidence[1]);
 
-        ClusteringManager.tryMerge(edgeWeightMap.keySet(), coordRange);
+        ClusteringManagerResponse clusterResponse = ClusteringManager.tryMergeWeightNormalize(edgeWeightMap, coordRange);
 
         writer.table_Start();
         writer.tr_Start();
