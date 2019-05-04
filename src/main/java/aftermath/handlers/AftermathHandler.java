@@ -30,6 +30,7 @@ import main.java.encephalon.annotations.methods.MenuItem;
 import main.java.encephalon.annotations.methods.POST;
 import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
+import main.java.encephalon.cluster.Cluster;
 import main.java.encephalon.cluster.ClusteringManager;
 import main.java.encephalon.cluster.ClusteringManagerResponse;
 import main.java.encephalon.dto.CoordinateRange;
@@ -837,7 +838,7 @@ public class AftermathHandler extends DefaultHandler
     public void getMapRootsJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception
     {
-        HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
+        HashMap<Long, Cluster> rootSet = ClusteringManager.getRoots();
 
         JsonWriter jw = new JsonWriter(rootSet);
 
@@ -851,14 +852,14 @@ public class AftermathHandler extends DefaultHandler
     public void getMapRoots(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response) throws Exception
     {
-        HashMap<Long, CoordinateRange> rootSet = ClusteringManager.getRoots();
-        Iterator<Entry<Long, CoordinateRange>> iter = rootSet.entrySet().iterator();
+        HashMap<Long, Cluster> rootSet = ClusteringManager.getRoots();
+        Iterator<Entry<Long, Cluster>> iter = rootSet.entrySet().iterator();
 
         HtmlWriter writer = es.getWriter();
         writer.table_Start();
         while(iter.hasNext())
         {
-            Entry<Long, CoordinateRange> entry = iter.next();
+            Entry<Long, Cluster> entry = iter.next();
             writer.tr_Start();
             writer.td(entry.getKey().toString());
             writer.td(entry.getValue().getLabel());
@@ -876,7 +877,7 @@ public class AftermathHandler extends DefaultHandler
             @QueryParam(value = "rootId") Long rootId,
             @QueryParam(value = "label") String label) throws Exception
     {
-        HashMap<Long, CoordinateRange> roots = ClusteringManager.getRoots();
+        HashMap<Long, Cluster> roots = ClusteringManager.getRoots();
         JsonWriter jw;
         
         synchronized(roots)
@@ -897,7 +898,7 @@ public class AftermathHandler extends DefaultHandler
     public void getMapRootsClear(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response) throws Exception
     {
-        HashMap<Long, CoordinateRange> rootSet = ClusteringManager.clearRoots();
+        HashMap<Long, Cluster> rootSet = ClusteringManager.clearRoots();
 
         JsonWriter jw = new JsonWriter(rootSet);
 
@@ -1045,7 +1046,7 @@ public class AftermathHandler extends DefaultHandler
         System.out.println(valueAtHighConfidence[0] + " : " + confidencePoint[0] + " = " + edgeAtHighConfidence[0]);
         System.out.println(valueAtHighConfidence[1] + " : " + confidencePoint[1] + " = " + edgeAtHighConfidence[1]);
 
-        ClusteringManagerResponse clusterResponse = ClusteringManager.tryMergeWeightNormalize(edgeWeightMap, coordRange);
+        ClusteringManager.tryMergeWeightNormalize(edgeWeightMap, coordRange);
 
         writer.table_Start();
         writer.tr_Start();
@@ -1350,8 +1351,8 @@ public class AftermathHandler extends DefaultHandler
 
     private void drawGroups(HtmlWriter writer, Coordinates focalPoint, int zoom) throws Exception
     {
-        HashMap<Long, CoordinateRange> groups = ClusteringManager.getRoots();
-        Iterator<Entry<Long, CoordinateRange>> entry = groups.entrySet().iterator();
+        HashMap<Long, Cluster> groups = ClusteringManager.getRoots();
+        Iterator<Entry<Long, Cluster>> entry = groups.entrySet().iterator();
 
         while (entry.hasNext())
         {

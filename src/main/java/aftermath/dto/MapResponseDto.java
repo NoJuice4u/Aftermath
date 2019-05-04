@@ -3,6 +3,7 @@ package main.java.aftermath.dto;
 import java.util.HashMap;
 
 import main.java.aftermath.engine.Depot;
+import main.java.encephalon.cluster.Cluster;
 import main.java.encephalon.dto.CoordinateRange;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.MapEdge;
@@ -15,10 +16,10 @@ public class MapResponseDto
     public HashMap<Long, MapVertexLite> mapVertices;
     public HashMap<Long, MapEdge> mapEdges;
     public HashMap<Long, Depot> depotData;
-    public HashMap<Long, CoordinateRange> groups;
+    public HashMap<Long, Cluster> groups;
 
     public MapResponseDto(double longitude, double latitude, int zoom, HashMap<Long, MapVertexLite> mapVertices,
-            HashMap<Long, MapEdge> mapEdges, HashMap<Long, Depot> depotData, HashMap<Long, CoordinateRange> groups)
+            HashMap<Long, MapEdge> mapEdges, HashMap<Long, Depot> depotData, HashMap<Long, Cluster> groups)
     {
         this.focus = new Coordinates(longitude, latitude);
         this.zoom = zoom;
