@@ -13,6 +13,7 @@ import main.java.aftermath.handlers.*;
 import main.java.aftermath.server.*;
 import main.java.encephalon.API.scope.Scope;
 import main.java.encephalon.cluster.ClusteringManager;
+import main.java.encephalon.logger.Logger;
 import main.java.encephalon.server.DefaultHandler;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
@@ -59,7 +60,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 
             try
             {
-                System.out.println("Trust Store Path: " + trustStorePath);
+                Logger.Log("SSL", "Trust Store Path: " + trustStorePath);
                 SslContextFactory sslContext = new SslContextFactory(keyStorePath);
                 sslContext.setKeyStorePassword(keyStorePass);
                 sslContext.setTrustStorePath(trustStorePath);

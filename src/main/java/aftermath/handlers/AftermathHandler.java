@@ -32,7 +32,6 @@ import main.java.encephalon.annotations.methods.QueryParam;
 import main.java.encephalon.annotations.methods.QueryString;
 import main.java.encephalon.cluster.Cluster;
 import main.java.encephalon.cluster.ClusteringManager;
-import main.java.encephalon.cluster.ClusteringManagerResponse;
 import main.java.encephalon.dto.CoordinateRange;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.DistinctOrderedSet;
@@ -882,7 +881,7 @@ public class AftermathHandler extends DefaultHandler
         
         synchronized(roots)
         {
-            Long root = ClusteringManager.getRoot(rootId);
+            Long root = ClusteringManager.getRoot(rootId).getGroupId();
             roots.get(root).setLabel(label);
             
             jw = new JsonWriter(roots.get(root));
@@ -1042,9 +1041,6 @@ public class AftermathHandler extends DefaultHandler
                 valueAtHighConfidence[1] = mEdge.getWeight();
             }
         }
-        
-        System.out.println(valueAtHighConfidence[0] + " : " + confidencePoint[0] + " = " + edgeAtHighConfidence[0]);
-        System.out.println(valueAtHighConfidence[1] + " : " + confidencePoint[1] + " = " + edgeAtHighConfidence[1]);
 
         ClusteringManager.tryMergeWeightNormalize(edgeWeightMap, coordRange);
 
@@ -1072,13 +1068,15 @@ public class AftermathHandler extends DefaultHandler
             // Here is where we push the new weights.  We will want to add the weight and also adjust for the Phase Shift accordingly
             if (lowRes)
             {
+                // TODO: Why the hell did I hardcode 3.35 here?  1-3 Range on Low Res?
                 weight = (int) Math.floor(weight / (float) 3.35);
                 LowResolutionHistogram weightInputs = es.getAftermathController().getEdgeData().get(edge)
                         .addWeightInputLowRes(inId, timeStamp, weight);
 
                 confidence = es.getAftermathController().getEdgeData().get(edge).getConfidence();
                 finalWeight = weightInputs.getWeight();
-            } else
+            }
+            else
             {
                 HistogramBase weightInputs = es.getAftermathController().getEdgeData().get(edge)
                         .addWeightInput(authorative, inId, timeStamp, weight);
@@ -1495,7 +1493,7 @@ public class AftermathHandler extends DefaultHandler
             int weight = es.getAftermathController().getEdgeData().get(e).getWeight();
             int score = es.getAftermathController().getEdgeData().get(e).getScore();
             float confidence = es.getAftermathController().getEdgeData().get(e).getConfidence();
-            Long group = es.getAftermathController().getEdgeData().get(e).getGroup();
+            Cluster group = es.getAftermathController().getEdgeData().get(e).getGroup();
 
             writer.tr_Start();
             writer.td("<A href=\"/aftermath/map/node/" + mapEdge.getVertices()[0] + "/canvas?depth="
@@ -1516,10 +1514,10 @@ public class AftermathHandler extends DefaultHandler
                 writer.td("0");
             } else
             {
-                writer.td(String.valueOf(group));
+                writer.td(group.toString());
             }
             writer.td(String.valueOf(confidence));
-            writer.td("<input type=\"text\" name=\"" + e + "\" value=\"\">");
+            writer.td("<input type=\"text\" size=\"4\" name=\"" + e + "\" value=\"\">");
             writer.td(mapEdge.getHistogramDataString(true));
             writer.td(mapEdge.getHistogramDataString(false));
             writer.td(mapEdge.getLowResHistogramDataString());

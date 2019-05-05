@@ -17,6 +17,7 @@ import main.java.aftermath.engine.Depot;
 import main.java.aftermath.server.AftermathServer;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
+import main.java.encephalon.logger.Logger;
 import main.java.encephalon.dto.MapVertex;
 import main.java.encephalon.profiler.CountMeter;
 import main.java.encephalon.profiler.Profiler;
@@ -43,7 +44,7 @@ public class OSMReader
 
     public static void main(String[] args) throws Exception
     {
-        System.out.println("You launched the wrong instance, idiot.");
+        Logger.Log("IDIOT", "You launched the wrong instance, idiot.");
     }
 
     public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
