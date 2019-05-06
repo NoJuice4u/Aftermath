@@ -16,48 +16,51 @@ public class AftermathServer extends EncephalonServer
 
     public final String CANVAS_RENDER_JS;
 
-    public static final String GOOGLE_MAP_API_KEY = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
-    public static final double GOOGLE_MAP_ZOOMSCALE = 1.0; // 591657550.5;
-    private static AftermathController aftermathController = new AftermathController();
+    public static final String         GOOGLE_MAP_API_KEY   = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
+    public static final double         GOOGLE_MAP_ZOOMSCALE = 1.0;                                      // 591657550.5;
+    private static AftermathController aftermathController  = new AftermathController();
 
     public final Gson gsonRequest = new Gson();
 
     protected AftermathServer() throws Exception
     {
         super();
-        
+
         localeList.put("ja", new Localizer<main.java.encephalon.locale.LocaleBase>(new JP_JP()));
         localeList.put("jp-jp", new Localizer<main.java.encephalon.locale.LocaleBase>(new JP_JP()));
         try
         {
             localeList.put("debug", new Localizer<main.java.encephalon.locale.LocaleBase>(new DEBUG()));
-        } catch (IllegalArgumentException e)
+        }
+        catch (IllegalArgumentException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } catch (IllegalAccessException e)
+        }
+        catch (IllegalAccessException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         localeList.put("en-us", new Localizer<main.java.encephalon.locale.LocaleBase>(new EN_US()));
         localeList.put("undefined", new Localizer<main.java.encephalon.locale.LocaleBase>(new LocaleBase()));
-        
+
         CANVAS_RENDER_JS = ResourceUtils.resourceToString(this, "main/resource/canvasRender.js");
-        
+
         this.writer = new HtmlWriter(2, this);
         as = this;
     }
 
     public static AftermathServer getInstance()
     {
-        if(as == null)
+        if (as == null)
         {
             try
             {
                 as = new AftermathServer();
                 EncephalonServer.setInstance(as);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -88,12 +91,10 @@ public class AftermathServer extends EncephalonServer
             {
                 String[] locales = presplit[i].split(";");
                 Localizer<main.java.encephalon.locale.LocaleBase> loc = localeList.get(locales[0].toLowerCase());
-                if (loc != null)
-                {
-                    return (LocaleBase) loc.getLocale();
-                }
+                if (loc != null) { return (LocaleBase) loc.getLocale(); }
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }
@@ -104,7 +105,7 @@ public class AftermathServer extends EncephalonServer
     {
         // writer.flush();
         // return (HtmlWriter)writer;
-        
+
         return new HtmlWriter(2, this); // HACKY
     }
 }

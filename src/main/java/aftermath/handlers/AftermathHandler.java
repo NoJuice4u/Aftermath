@@ -51,7 +51,7 @@ import main.java.encephalon.writers.JsonWriter;
 public class AftermathHandler extends DefaultHandler
 {
     private AftermathServer es;
-    private long maxScore = 1;
+    private long            maxScore = 1;
 
     public AftermathHandler()
     {
@@ -126,8 +126,7 @@ public class AftermathHandler extends DefaultHandler
                     break;
                 }
             }
-            if (i > 1000)
-                break;
+            if (i > 1000) break;
         }
         writer.table_End();
 
@@ -169,7 +168,7 @@ public class AftermathHandler extends DefaultHandler
         Thread.sleep(5000);
         response.getWriter().print("Delayed");
     }
-    
+
     @GET
     @HandlerInfo(schema = "/map/node/(uid)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNode(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
@@ -211,22 +210,19 @@ public class AftermathHandler extends DefaultHandler
                     MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
                     switch (String.valueOf(edge.getMode()))
                     {
-                    case "secondary":
-                    case "primary":
-                    case "residential":
-                        if (nearestNode == null || nearestNode.getDistance(coords) > vtx.getDistance(coords))
-                        {
-                            nearestNode = vtx;
-                        }
-                    default:
-                        break;
+                        case "secondary":
+                        case "primary":
+                        case "residential":
+                            if (nearestNode == null || nearestNode.getDistance(coords) > vtx.getDistance(coords))
+                            {
+                                nearestNode = vtx;
+                            }
+                        default:
+                            break;
                     }
                 }
             }
-            if (nearestNode != null)
-            {
-                return nearestNode.getId();
-            }
+            if (nearestNode != null) { return nearestNode.getId(); }
         }
 
         return es.getAftermathController().getSpatialIndex().getNearestNode(coords);
@@ -236,7 +232,8 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/coord/(longitude)/(latitude)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeWithCoordinates(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
-            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
+            @QueryParam(value = "latitude") Double latitude,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "roadType", _default = "") String filter,
             @QueryString(value = "transports", _default = "false") Boolean drawTransports,
@@ -255,14 +252,16 @@ public class AftermathHandler extends DefaultHandler
     @HandlerInfo(schema = "/map/coord/(longitude)/(latitude)/canvas", description = "Details not defined yet because the programmer was lazy.")
     public void getMapNodeWithCoordinatesCanvas(String target, String locale, Task parent, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "longitude") Double longitude,
-            @QueryParam(value = "latitude") Double latitude, @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
+            @QueryParam(value = "latitude") Double latitude,
+            @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
             @QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative,
             @QueryString(value = "roadType", _default = "") String roadType) throws Exception
     {
         Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
-        getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative, roadType);
+        getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative,
+                roadType);
     }
 
     @GET
@@ -284,21 +283,18 @@ public class AftermathHandler extends DefaultHandler
         MapVertex initialNode = transport.getNode();
         HtmlWriter writer = es.getWriter();
 
-        if (drawMap == true)
-            renderMap(writer, initialNode, zoom);
+        if (drawMap == true) renderMap(writer, initialNode, zoom);
         writer.canvasIcons();
         writer.canvas("mapCanvas", MapVertex.WIDTH, MapVertex.HEIGHT, 2);
         writer.script_Start();
         writer.initializeCanvasJS("mapCanvas");
 
         int zm = (int) (AftermathServer.GOOGLE_MAP_ZOOMSCALE * Math.pow(2, zoom));
-        if (drawSpatialGrid)
-            drawSpatialIndex(writer, initialNode, zm);
+        if (drawSpatialGrid) drawSpatialIndex(writer, initialNode, zm);
         drawRoads(writer, initialNode, zm, depth, filter, authorative);
         drawDepot(writer, initialNode, zm);
         drawTransport(writer, transport, initialNode, zm, depth);
-        if (drawGroups)
-            drawGroups(writer, initialNode, zm);
+        if (drawGroups) drawGroups(writer, initialNode, zm);
 
         writer.addImageData();
         writer.script_End();
@@ -344,17 +340,18 @@ public class AftermathHandler extends DefaultHandler
         writer.text(String.valueOf(d.getId()));
         response.getWriter().print(writer.getString(locale));
     }
-    
+
     @GET
     @HandlerInfo(schema = "/map/depot/(depotId)/activate", description = "Details not defined yet because the programmer was lazy.")
     public void getDepotActivate(String target, String locale, Task parent, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
+            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId)
+            throws Exception
     {
         Depot d = es.getAftermathController().getDepotData().get(depotId);
         d.activate();
 
         JsonWriter jw = new JsonWriter(d);
-        
+
         String s = jw.toString();
         response.setContentType("application/json");
         response.addHeader("Access-Control-Allow-Origin", "*");
@@ -365,13 +362,14 @@ public class AftermathHandler extends DefaultHandler
     @GET
     @HandlerInfo(schema = "/map/depot/(depotId)/deactivate", description = "Details not defined yet because the programmer was lazy.")
     public void getDepotDeactivate(String target, String locale, Task parent, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId) throws Exception
+            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "depotId") Long depotId)
+            throws Exception
     {
         Depot d = es.getAftermathController().getDepotData().get(depotId);
         d.deactivate();
 
         JsonWriter jw = new JsonWriter(d);
-        
+
         String s = jw.toString();
         response.setContentType("application/json");
         response.addHeader("Access-Control-Allow-Origin", "*");
@@ -471,7 +469,7 @@ public class AftermathHandler extends DefaultHandler
         writer.table_End();
         response.getWriter().print(writer.getString(locale));
     }
-    
+
     @GET
     @MenuItem(name = "Map/Depot List/Json")
     @HandlerInfo(schema = "/map/depots/json", description = "Details not defined yet because the programmer was lazy.")
@@ -479,7 +477,7 @@ public class AftermathHandler extends DefaultHandler
             HttpServletRequest request, HttpServletResponse response) throws Exception
     {
         HashMap<Long, Depot> depotData = es.getAftermathController().getDepotData();
-        
+
         JsonWriter jw = new JsonWriter(depotData);
 
         String s = jw.toString();
@@ -495,10 +493,7 @@ public class AftermathHandler extends DefaultHandler
             Boolean authorative) throws Exception
     {
         MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
-        if (initialNode == null)
-        {
-            throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
-        }
+        if (initialNode == null) { throw new ResponseException(404, "Node ID: [" + uid + "] not found!"); }
         HtmlWriter writer = es.getWriter();
 
         renderMap(writer, initialNode, zoom);
@@ -509,18 +504,14 @@ public class AftermathHandler extends DefaultHandler
         writer.initializeCanvasJS("mapCanvas");
 
         int zm = (int) (AftermathServer.GOOGLE_MAP_ZOOMSCALE * Math.pow(2, zoom));
-        if (drawSpatialGrid)
-            drawSpatialIndex(writer, initialNode, zm);
+        if (drawSpatialGrid) drawSpatialIndex(writer, initialNode, zm);
         drawRoads(writer, initialNode, zm, depth, filter, authorative);
-        if (drawVertices)
-            drawVertices(writer, initialNode, zm, depth, filter);
+        if (drawVertices) drawVertices(writer, initialNode, zm, depth, filter);
         drawDepot(writer, initialNode, zm);
-        if (drawTransports)
-            drawTransports(writer, initialNode, zm, depth);
-        if (drawGroups)
-            drawGroups(writer, initialNode, zm);
+        if (drawTransports) drawTransports(writer, initialNode, zm, depth);
+        if (drawGroups) drawGroups(writer, initialNode, zm);
         drawDepot(writer, initialNode, zm);
-        
+
         writer.addImageData();
         writer.script_End();
         writer.table_Start();
@@ -543,14 +534,11 @@ public class AftermathHandler extends DefaultHandler
             @QueryString(value = "roadType", _default = "") String roadType) throws Exception
     {
         MapVertex initialNode = es.getAftermathController().getMapData().get(uid);
-        if (initialNode == null)
-        {
-            throw new ResponseException(404, "Node ID: [" + uid + "] not found!");
-        }
+        if (initialNode == null) { throw new ResponseException(404, "Node ID: [" + uid + "] not found!"); }
 
         HtmlWriter writer = es.getWriter();
-        writer.importScript(es.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\""
-                + baseRequest.getRootURL() + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom + "&roadType=" + roadType
+        writer.importScript(es.CANVAS_RENDER_JS + "function refresh()" + "{loadJSON(" + "\"" + baseRequest.getRootURL()
+                + "/aftermath/map/node/" + uid + "/json?depth=" + depth + "&zoom=" + zoom + "&roadType=" + roadType
                 + "\"," + zoom + ");}refresh();");
 
         renderMap(writer, initialNode, zoom);
@@ -595,7 +583,9 @@ public class AftermathHandler extends DefaultHandler
             @QueryParam(value = "eLon") Long eLon) throws Exception
     {
         Coordinates[] coordsRange =
-        { new Coordinates(sLon, sLat), new Coordinates(eLon, eLat) };
+        {
+                new Coordinates(sLon, sLat), new Coordinates(eLon, eLat)
+        };
         List<Long> list = es.getAftermathController().getSpatialIndex().getVerticesWithinBounds(coordsRange);
 
         // TODO: FILL IN FOR EDGES
@@ -739,7 +729,8 @@ public class AftermathHandler extends DefaultHandler
 
             if (filterSet.size() == 0 || filterSet.contains(String.valueOf(mapEdge.getMode().name())))
             {
-            } else
+            }
+            else
             {
                 continue;
             }
@@ -758,8 +749,7 @@ public class AftermathHandler extends DefaultHandler
             Long vertexId = masterVertexList.next();
             vertexData.put(vertexId, es.getAftermathController().getMapData().get(vertexId));
         }
-        
-        
+
         HashMap<Long, Depot> depotData = new HashMap<Long, Depot>();
         List<Long> depotIds = es.getAftermathController().getSpatialIndexDepot().getNearestNodeRegion(focalPoint);
 
@@ -768,7 +758,7 @@ public class AftermathHandler extends DefaultHandler
             Depot depot = es.getAftermathController().getDepotData().get(depotId);
             depotData.put(depotId, depot);
         }
-        
+
         MapVertex focusVertex = es.getAftermathController().getMapData().get(uid);
         MapResponseDto responseDto = new MapResponseDto(focusVertex.getLongitude(), focusVertex.getLatitude(), zoom,
                 vertexData, edgeData, depotData, ClusteringManager.getRoots());
@@ -834,8 +824,8 @@ public class AftermathHandler extends DefaultHandler
     @GET
     @MenuItem(name = "Debug/Map/Roots/Json")
     @HandlerInfo(schema = "/map/roots/json", description = "Details not defined yet because the programmer was lazy.")
-    public void getMapRootsJson(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
-            HttpServletResponse response) throws Exception
+    public void getMapRootsJson(String target, String locale, Task parent, Request baseRequest,
+            HttpServletRequest request, HttpServletResponse response) throws Exception
     {
         HashMap<Long, Cluster> rootSet = ClusteringManager.getRoots();
 
@@ -848,15 +838,15 @@ public class AftermathHandler extends DefaultHandler
     @GET
     @MenuItem(name = "Debug/Map/Roots")
     @HandlerInfo(schema = "/map/roots", description = "Details not defined yet because the programmer was lazy.")
-    public void getMapRoots(String target, String locale, Task parent, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response) throws Exception
+    public void getMapRoots(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
+            HttpServletResponse response) throws Exception
     {
         HashMap<Long, Cluster> rootSet = ClusteringManager.getRoots();
         Iterator<Entry<Long, Cluster>> iter = rootSet.entrySet().iterator();
 
         HtmlWriter writer = es.getWriter();
         writer.table_Start();
-        while(iter.hasNext())
+        while (iter.hasNext())
         {
             Entry<Long, Cluster> entry = iter.next();
             writer.tr_Start();
@@ -872,18 +862,17 @@ public class AftermathHandler extends DefaultHandler
     @GET
     @HandlerInfo(schema = "/map/root/(rootId)/label/(label)", description = "Details not defined yet because the programmer was lazy.")
     public void getMapRootSetLabel(String target, String locale, Task parent, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response,
-            @QueryParam(value = "rootId") Long rootId,
+            HttpServletRequest request, HttpServletResponse response, @QueryParam(value = "rootId") Long rootId,
             @QueryParam(value = "label") String label) throws Exception
     {
         HashMap<Long, Cluster> roots = ClusteringManager.getRoots();
         JsonWriter jw;
-        
-        synchronized(roots)
+
+        synchronized (roots)
         {
             Long root = ClusteringManager.getRoot(rootId).getGroupId();
             roots.get(root).setLabel(label);
-            
+
             jw = new JsonWriter(roots.get(root));
         }
 
@@ -949,7 +938,8 @@ public class AftermathHandler extends DefaultHandler
                     writer.td("<a href=\"/aftermath/map/spatialindex/" + index + "/dive/" + diveparams + i + "\">"
                             + spatialIndex.getQuadrantByIndex(i).toString() + "</a>");
                     writer.tr_End();
-                } else
+                }
+                else
                 {
                     writer.tr_Start();
                     Set<Long> setLong = spatialIndex.getQuadrantByIndex(i).getIndex().keySet();
@@ -961,7 +951,8 @@ public class AftermathHandler extends DefaultHandler
                             sb.append(",<a href=\"/aftermath/map/node/" + l + "\">" + l + "</a>");
                         }
                         writer.td(sb.substring(1));
-                    } else
+                    }
+                    else
                     {
                         writer.td("&nbsp;");
                     }
@@ -970,7 +961,8 @@ public class AftermathHandler extends DefaultHandler
                 }
             }
             writer.table_End();
-        } else
+        }
+        else
         {
             writer.table_Start();
             writer.tr_Start();
@@ -1002,9 +994,18 @@ public class AftermathHandler extends DefaultHandler
         HashMap<Long, Integer> edgeWeightMap = new HashMap<Long, Integer>();
         CoordinateRange coordRange = new CoordinateRange();
 
-        long[] edgeAtHighConfidence = {0, 0};
-        int[] valueAtHighConfidence = {0, 0};
-        float[] confidencePoint = {0.0f, 0.0f};
+        long[] edgeAtHighConfidence =
+        {
+                0, 0
+        };
+        int[] valueAtHighConfidence =
+        {
+                0, 0
+        };
+        float[] confidencePoint =
+        {
+                0.0f, 0.0f
+        };
         for (String item : s)
         {
             String[] s2 = item.split("=");
@@ -1020,11 +1021,11 @@ public class AftermathHandler extends DefaultHandler
 
             MapEdge mEdge = es.getAftermathController().getEdgeData().get(edge);
             coordRange.add(mEdge.getLongitude(), mEdge.getLatitude());
-            
-            if(mEdge.getConfidence() > confidencePoint[0])
+
+            if (mEdge.getConfidence() > confidencePoint[0])
             {
                 // When we get the highest value first, standard logic will break.
-                if(confidencePoint[0] > confidencePoint[1])
+                if (confidencePoint[0] > confidencePoint[1])
                 {
                     edgeAtHighConfidence[1] = edgeAtHighConfidence[0];
                     confidencePoint[1] = confidencePoint[0];
@@ -1034,7 +1035,7 @@ public class AftermathHandler extends DefaultHandler
                 confidencePoint[0] = mEdge.getConfidence();
                 valueAtHighConfidence[0] = mEdge.getWeight();
             }
-            else if(mEdge.getConfidence() > confidencePoint[1])
+            else if (mEdge.getConfidence() > confidencePoint[1])
             {
                 edgeAtHighConfidence[1] = edge;
                 confidencePoint[1] = mEdge.getConfidence();
@@ -1064,11 +1065,12 @@ public class AftermathHandler extends DefaultHandler
             int weight = edgeWeightMap.get(edge);
             int finalWeight = -1;
             float confidence = -1;
-            
-            // Here is where we push the new weights.  We will want to add the weight and also adjust for the Phase Shift accordingly
+
+            // Here is where we push the new weights. We will want to add the weight and
+            // also adjust for the Phase Shift accordingly
             if (lowRes)
             {
-                // TODO: Why the hell did I hardcode 3.35 here?  1-3 Range on Low Res?
+                // TODO: Why the hell did I hardcode 3.35 here? 1-3 Range on Low Res?
                 weight = (int) Math.floor(weight / (float) 3.35);
                 LowResolutionHistogram weightInputs = es.getAftermathController().getEdgeData().get(edge)
                         .addWeightInputLowRes(inId, timeStamp, weight);
@@ -1143,10 +1145,12 @@ public class AftermathHandler extends DefaultHandler
             if (position.getEdges().size() > 2)
             {
                 arcColor = "#FF0000";
-            } else if (position.getEdges().size() == 1)
+            }
+            else if (position.getEdges().size() == 1)
             {
                 arcColor = "#808000";
-            } else if (position.getEdges().size() == 0)
+            }
+            else if (position.getEdges().size() == 0)
             {
                 arcColor = "#000000";
             }
@@ -1201,74 +1205,75 @@ public class AftermathHandler extends DefaultHandler
 
                 if (filterSet.size() == 0 || filterSet.contains(String.valueOf(mode)))
                 {
-                } else
+                }
+                else
                 {
                     continue;
                 }
                 switch (String.valueOf(mode))
                 {
-                case "secondary":
-                    width = 10;
-                    break;
-                case "secondary_link":
-                    width = 9;
-                    break;
-                case "primary":
-                    width = 10;
-                    break;
-                case "primary_link":
-                    width = 9;
-                    break;
-                case "tertiary":
-                    width = 8;
-                    break;
-                case "tertiary_link":
-                    width = 7;
-                    break;
-                case "residential":
-                    width = 8;
-                    break;
-                case "living_street":
-                    break;
-                case "service":
-                    break;
-                case "motorway":
-                    width = 10;
-                    break;
-                case "motorway_link":
-                    width = 9;
-                    break;
-                case "rail":
-                case "subway":
-                case "subway_entrance":
-                case "station":
-                    width = 12;
-                    break;
-                case "road":
-                    width = 4;
-                    break;
-                case "trunk":
-                case "trunk_link":
-                    width = 4;
-                    break;
-                case "pedestrian":
-                case "footway":
-                case "path":
-                case "steps":
-                    width = 2;
-                    break;
-                case "unclassified":
-                    width = 1;
-                    break;
-                case "null":
-                    width = 1;
-                    break;
-                case "platform":
-                    width = 14;
-                    break;
-                default:
-                    width = 1;
-                    break;
+                    case "secondary":
+                        width = 10;
+                        break;
+                    case "secondary_link":
+                        width = 9;
+                        break;
+                    case "primary":
+                        width = 10;
+                        break;
+                    case "primary_link":
+                        width = 9;
+                        break;
+                    case "tertiary":
+                        width = 8;
+                        break;
+                    case "tertiary_link":
+                        width = 7;
+                        break;
+                    case "residential":
+                        width = 8;
+                        break;
+                    case "living_street":
+                        break;
+                    case "service":
+                        break;
+                    case "motorway":
+                        width = 10;
+                        break;
+                    case "motorway_link":
+                        width = 9;
+                        break;
+                    case "rail":
+                    case "subway":
+                    case "subway_entrance":
+                    case "station":
+                        width = 12;
+                        break;
+                    case "road":
+                        width = 4;
+                        break;
+                    case "trunk":
+                    case "trunk_link":
+                        width = 4;
+                        break;
+                    case "pedestrian":
+                    case "footway":
+                    case "path":
+                    case "steps":
+                        width = 2;
+                        break;
+                    case "unclassified":
+                        width = 1;
+                        break;
+                    case "null":
+                        width = 1;
+                        break;
+                    case "platform":
+                        width = 14;
+                        break;
+                    default:
+                        width = 1;
+                        break;
                 }
 
                 if (zoom >= 65535)
@@ -1301,8 +1306,8 @@ public class AftermathHandler extends DefaultHandler
 
                 String color = "#" + rrHex + ggHex + "00";
                 String color2 = "#" + hx3 + hx3 + "00" + lineAlpha;
-                
-                int strokeWidth = (mapEdge.getMarked())?2:1;
+
+                int strokeWidth = (mapEdge.getMarked()) ? 2 : 1;
 
                 writer.drawCanvasLineAsRect("mapCanvas", width, color, color2, startPointX, startPointY, drawPointX,
                         drawPointY, strokeWidth);
@@ -1379,7 +1384,7 @@ public class AftermathHandler extends DefaultHandler
             int edgeBearingX = (int) point[0] + MapVertex.WIDTH / 2;
             int edgeBearingY = (int) point[1] + MapVertex.HEIGHT / 2;
 
-            String color = (depot.isActive())?"#0080FF":"#808080";
+            String color = (depot.isActive()) ? "#0080FF" : "#808080";
             writer.drawVertex("mapCanvas", 16, edgeBearingX + 5, edgeBearingY + 5, depot.getName(), color);
             writer.drawImage("mapCanvas", 32, 32, "depot", edgeBearingX - 16, edgeBearingY - 16);
         }
@@ -1503,16 +1508,17 @@ public class AftermathHandler extends DefaultHandler
                     + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.getVertices()[1]
                     + "</A>");
             writer.td(String.valueOf(mapEdge.getId()));
-            writer.td("<A href=\"/aftermath/map/coord/" + mapEdge.getLongitude() + "/" + mapEdge.getLatitude() + "/canvas?depth="
-                    + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">" + mapEdge.toString()
-                    + "</A>");
+            writer.td("<A href=\"/aftermath/map/coord/" + mapEdge.getLongitude() + "/" + mapEdge.getLatitude()
+                    + "/canvas?depth=" + String.valueOf(depth) + "&zoom=" + String.valueOf(zoom) + "\">"
+                    + mapEdge.toString() + "</A>");
             writer.td(mapEdge.getMode().name());
             writer.td(String.valueOf(score));
             writer.td(String.valueOf(weight));
             if (group == null)
             {
                 writer.td("0");
-            } else
+            }
+            else
             {
                 writer.td(group.toString());
             }
@@ -1568,7 +1574,8 @@ public class AftermathHandler extends DefaultHandler
                 writer.td(String.valueOf(t.getEdge().getScore()));
                 writer.td(t.getDestination().toString());
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 writer.td("Null");
                 writer.td("");
@@ -1631,13 +1638,11 @@ public class AftermathHandler extends DefaultHandler
                                 {
                                     maxScore = es.getAftermathController().getEdgeData().get(cascadeEdge).getScore();
                                 }
-                                if (cascadeEdge == edge)
-                                    continue;
+                                if (cascadeEdge == edge) continue;
                                 for (Long cascadeVertexId : es.getAftermathController().getEdgeData().get(cascadeEdge)
                                         .getVertices())
                                 {
-                                    if (cascadeVertexId == vertex.getId())
-                                        continue;
+                                    if (cascadeVertexId == vertex.getId()) continue;
                                     vertex = es.getAftermathController().getMapData().get(cascadeVertexId);
                                     break;
                                 }

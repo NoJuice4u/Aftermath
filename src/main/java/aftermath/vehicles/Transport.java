@@ -15,17 +15,17 @@ public class Transport extends Bin
     private transient AftermathController controller;
     private transient final static Random randomizer = new Random();
 
-    private static long nextId = 0;
-    private final long id;
-    private double VEHICLE_VELOCITY = 0.5 / 111.0;
+    private static long nextId           = 0;
+    private final long  id;
+    private double      VEHICLE_VELOCITY = 0.5 / 111.0;
 
-    private int ticks = 0;
-    private int WeightChange = 1;
+    private int  ticks        = 0;
+    private int  WeightChange = 1;
     private long lastTick, nextTick, tickAtLastNode;
     private long previousEdge = 0L;
 
-    private MapEdge edge;
-    private MapVertex node, previousNode;
+    private MapEdge                          edge;
+    private MapVertex                        node, previousNode;
     private transient Map<MapVertex, Double> previousProbabilityList;
 
     private Coordinates destination = null;
@@ -52,22 +52,22 @@ public class Transport extends Bin
     public boolean traverse() throws Exception
     {
         List<Long> newList = new ArrayList<Long>(node.getEdges());
-        if(newList.size() > 1)
+        if (newList.size() > 1)
         {
             newList.remove(previousEdge);
         }
 
         edge = controller.getEdgeData().get(newList.get(0));
-        
-        for(Long l : newList)
+
+        for (Long l : newList)
         {
             MapEdge mE = controller.getEdgeData().get(l);
-            if(randomizer.nextFloat() > 0.20 && mE.getWeight() < 5)
+            if (randomizer.nextFloat() > 0.20 && mE.getWeight() < 5)
             {
                 edge = mE;
             }
         }
-        if(edge.getConfidence() > 0.1)
+        if (edge.getConfidence() > 0.1)
         {
             // Test Case to add additional weights
             // edge.addWeightInput(true, 0L, System.currentTimeMillis(), edge.getWeight());
@@ -157,24 +157,24 @@ public class Transport extends Bin
     {
         switch (String.valueOf(mapEdge.getMode()))
         {
-        case "primary":
-        case "primary_link":
-            return 0.9f;
-        case "secondary":
-        case "secondary_link":
-            return 0.9f;
-        case "tertiary":
-        case "tertiary_link":
-            return 0.9f;
-        case "residential":
-        case "living_street":
-            return 0.1f;
-        case "motorway":
-        case "motorway_link":
-            return 0.9f;
-        case "service":
-        default:
-            return 0.1f;
+            case "primary":
+            case "primary_link":
+                return 0.9f;
+            case "secondary":
+            case "secondary_link":
+                return 0.9f;
+            case "tertiary":
+            case "tertiary_link":
+                return 0.9f;
+            case "residential":
+            case "living_street":
+                return 0.1f;
+            case "motorway":
+            case "motorway_link":
+                return 0.9f;
+            case "service":
+            default:
+                return 0.1f;
         }
     }
 }

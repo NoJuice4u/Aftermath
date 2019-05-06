@@ -7,7 +7,7 @@ public class EN_US extends LocaleBase
         super(main.java.encephalon.locale.EN_US.class);
         this.SERVER_TITLE = "Project Aftermath";
         this.SAMPLETEXT = "Sample Text";
-        
+
         this.LOCALE_NAME = "Locale Name";
         this.SAMPLE_TEXT = "Sample Text";
 

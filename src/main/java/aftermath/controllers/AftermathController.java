@@ -22,19 +22,19 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 public class AftermathController
 {
     public final String SPATIALINDEX_DEPOTMAP_NAME = "depotMap";
-    public final String SPATIALINDEX_MAPDATA_NAME = "nodesMap";
-    
-    private AftermathServer es;
-    private Runnable engine;
-    private HashMap<Long, MapVertex> mapData;
-    private HashMap<Long, MapEdge> edgeData;
-    private HashMap<Long, Depot> depotData;
+    public final String SPATIALINDEX_MAPDATA_NAME  = "nodesMap";
+
+    private AftermathServer                  es;
+    private Runnable                         engine;
+    private HashMap<Long, MapVertex>         mapData;
+    private HashMap<Long, MapEdge>           edgeData;
+    private HashMap<Long, Depot>             depotData;
     private HashMap<String, SpatialIndex<?>> spatialIndexMap;
 
     EncephalonThreadPoolExecutor executor = new EncephalonThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(100));
 
-    private CountMeter spatialIndexMeter = new CountMeter();
+    private CountMeter spatialIndexMeter      = new CountMeter();
     private CountMeter spatialIndexDepotMeter = new CountMeter();
 
     public AftermathController()
@@ -45,9 +45,10 @@ public class AftermathController
         this.edgeData = new HashMap<Long, MapEdge>();
         this.depotData = new HashMap<Long, Depot>();
         this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>(spatialIndexMeter, SpatialIndex.LON_MIN,
-                SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
-        this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME, new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
+        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>(spatialIndexMeter,
+                SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
+        this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME,
+                new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
 
         es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);
         es.getCountMeters().put("SpatialIndex.Depot.Depth", spatialIndexDepotMeter);
@@ -59,7 +60,8 @@ public class AftermathController
         {
             engine = new AftermathEngine(this);
             Future<?> future = executor.submit(engine);
-        } finally
+        }
+        finally
         {
             executor.shutdown();
         }

@@ -10,9 +10,9 @@ import main.java.encephalon.profiler.Task;
 
 public class AftermathEngine implements Runnable
 {
-    private static final int NUMBER_OF_VEHICLES = Integer.valueOf(System.getProperty("aftermath.map.vehicles"));
+    private static final int    NUMBER_OF_VEHICLES = Integer.valueOf(System.getProperty("aftermath.map.vehicles"));
     private AftermathController controller;
-    private List<Transport> transporters;
+    private List<Transport>     transporters;
 
     public AftermathEngine(AftermathController aftermathController)
     {
@@ -33,21 +33,22 @@ public class AftermathEngine implements Runnable
                 RoadTypes roadType = controller.getEdgeData().get(l).getMode();
                 switch (String.valueOf(roadType))
                 {
-                case "secondary":
-                case "primary":
-                case "tertiary":
-                case "residential":
-                case "service":
-                case "motorway":
-                    transporters.add(new Transport(controller, l));
-                    tally++;
-                    break;
-                default:
-                    break;
+                    case "secondary":
+                    case "primary":
+                    case "tertiary":
+                    case "residential":
+                    case "service":
+                    case "motorway":
+                        transporters.add(new Transport(controller, l));
+                        tally++;
+                        break;
+                    default:
+                        break;
                 }
                 l++;
             }
-        } catch (Exception e1)
+        }
+        catch (Exception e1)
         {
             // TODO Auto-generated catch block
             System.out.println("Null Edge!  Did OSMReader not finish loading and the engine tried to run?");
@@ -60,11 +61,13 @@ public class AftermathEngine implements Runnable
             {
                 Thread.sleep(250);
                 traverse();
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -82,7 +85,8 @@ public class AftermathEngine implements Runnable
             try
             {
                 t.traverse();
-            } catch (Throwable th)
+            }
+            catch (Throwable th)
             {
                 th.printStackTrace();
             }

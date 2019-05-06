@@ -8,13 +8,13 @@ import main.java.encephalon.server.EncephalonServer;
 public class Depot extends Bin
 {
     public static final String DEPOT_ACTIVE_COUNT_METER = "Depots.Active";
-    public static final String DEPOT_TOTAL_COUNT_METER = "Depots.Total";
-    private static long idIncrement;
-    private final long id;
-    private final long edgeId;
-    private boolean active = false;
-    private String name;
-    
+    public static final String DEPOT_TOTAL_COUNT_METER  = "Depots.Total";
+    private static long        idIncrement;
+    private final long         id;
+    private final long         edgeId;
+    private boolean            active                   = false;
+    private String             name;
+
     static
     {
         EncephalonServer.getInstance().getCountMeters().put(DEPOT_ACTIVE_COUNT_METER, new CountMeter());
@@ -28,7 +28,7 @@ public class Depot extends Bin
         this.id = idIncrement++;
         this.edgeId = edge.getId();
         this.name = name;
-        
+
         EncephalonServer.getInstance().getCountMeters().get(DEPOT_TOTAL_COUNT_METER).increment();
     }
 
@@ -39,7 +39,7 @@ public class Depot extends Bin
         this.id = idIncrement++;
         this.edgeId = 0;
         this.name = name;
-        
+
         EncephalonServer.getInstance().getCountMeters().get(DEPOT_TOTAL_COUNT_METER).increment();
     }
 
@@ -47,7 +47,7 @@ public class Depot extends Bin
     {
         return id;
     }
-    
+
     public long getEdgeId()
     {
         return edgeId;
@@ -62,24 +62,24 @@ public class Depot extends Bin
     {
         this.name = name;
     }
-    
+
     public boolean isActive()
     {
         return active;
     }
-    
+
     public synchronized void activate()
     {
-        if(!this.active) 
+        if (!this.active)
         {
             this.active = true;
             EncephalonServer.getInstance().getCountMeters().get(DEPOT_ACTIVE_COUNT_METER).increment();
         }
     }
-    
+
     public synchronized void deactivate()
     {
-        if(!this.active) 
+        if (!this.active)
         {
             this.active = false;
             EncephalonServer.getInstance().getCountMeters().get(DEPOT_ACTIVE_COUNT_METER).decrement();

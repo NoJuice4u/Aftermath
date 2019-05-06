@@ -11,12 +11,12 @@ import main.java.encephalon.dto.MapVertexLite;
 
 public class MapResponseDto
 {
-    public Coordinates focus;
-    public int zoom;
+    public Coordinates                  focus;
+    public int                          zoom;
     public HashMap<Long, MapVertexLite> mapVertices;
-    public HashMap<Long, MapEdge> mapEdges;
-    public HashMap<Long, Depot> depotData;
-    public HashMap<Long, Cluster> groups;
+    public HashMap<Long, MapEdge>       mapEdges;
+    public HashMap<Long, Depot>         depotData;
+    public HashMap<Long, Cluster>       groups;
 
     public MapResponseDto(double longitude, double latitude, int zoom, HashMap<Long, MapVertexLite> mapVertices,
             HashMap<Long, MapEdge> mapEdges, HashMap<Long, Depot> depotData, HashMap<Long, Cluster> groups)

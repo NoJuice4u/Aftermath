@@ -16,10 +16,10 @@ import main.java.encephalon.writers.HtmlWriter;
 
 public class DefaultHandler extends AbstractHandler
 {
-    private AftermathServer as;
+    private AftermathServer    as;
     private volatile Handler[] _handlers;
-    String pathInfo;
-    String resource;
+    String                     pathInfo;
+    String                     resource;
 
     public DefaultHandler()
     {
@@ -38,19 +38,22 @@ public class DefaultHandler extends AbstractHandler
         try
         {
             as.invokeMethod(target, task, baseRequest, request, response);
-        } catch (Throwable e)
+        }
+        catch (Throwable e)
         {
             task.insertException(e.getCause());
             try
             {
                 returnNotFound(target, task, baseRequest, request, response, e);
-            } catch (Throwable e2)
+            }
+            catch (Throwable e2)
             {
                 Timestamp time = new Timestamp(System.currentTimeMillis());
                 System.err.println(time.toString().replace(" ", "T") + " [EXCEPTION] -- Second Exception!");
                 e2.printStackTrace();
             }
-        } finally
+        }
+        finally
         {
             task.end();
         }

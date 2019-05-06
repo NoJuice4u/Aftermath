@@ -7,8 +7,8 @@ import main.java.encephalon.dto.Coordinates;
 
 public class Bin extends Coordinates
 {
-    private double binCapacity, finalBinCapacity;
-    private double binCurrentLoad;
+    private double      binCapacity, finalBinCapacity;
+    private double      binCurrentLoad;
     private final float efficiency = 0.8f;
 
     public Bin(double capacity, float longitude, float latitude) throws Exception

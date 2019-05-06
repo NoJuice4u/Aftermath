@@ -5,9 +5,9 @@ import main.java.encephalon.dto.MapVertex;
 
 public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
 {
-    private StringBuilder dataArray = new StringBuilder();
+    private StringBuilder dataArray   = new StringBuilder();
     private StringBuilder imagesArray = new StringBuilder();
-    
+
     public HtmlWriter(int indentationDepth, AftermathServer as)
     {
         super(indentationDepth, as);
@@ -39,52 +39,58 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
                 "var ctx = document.getElementById(\"" + name + "\").getContext(\"2d\");\r" + System.lineSeparator());
         drawArc(MapVertex.WIDTH / 2, MapVertex.HEIGHT / 2, 3, 2, "#00C0C0");
     }
-    
-    public void addCanvasLineRect(float alpha, int xA, int yA, double rotation, double lineWidth, double lineLength, String color, String color2, int strokeWidth)
+
+    public void addCanvasLineRect(float alpha, int xA, int yA, double rotation, double lineWidth, double lineLength,
+            String color, String color2, int strokeWidth)
     {
-        dataArray.append(", [" + alpha + ", " + xA + ", " + yA + ", " + rotation + ", " + lineWidth + ", " + lineLength + ", \"" + color + "\", \"" + color2 + "\", \"" + strokeWidth + "\"]");
+        dataArray.append(", [" + alpha + ", " + xA + ", " + yA + ", " + rotation + ", " + lineWidth + ", " + lineLength
+                + ", \"" + color + "\", \"" + color2 + "\", \"" + strokeWidth + "\"]");
     }
-    
+
     public void addRoadLineData()
     {
-        if(dataArray.length() > 2)
+        if (dataArray.length() > 2)
         {
-            stringBuilder.append(System.lineSeparator() + "var roadLines = [" + dataArray.substring(2) + "];" + System.lineSeparator());
-            
+            stringBuilder.append(System.lineSeparator() + "var roadLines = [" + dataArray.substring(2) + "];"
+                    + System.lineSeparator());
+
             stringBuilder.append("for(i = 0; i < roadLines.length; i++) {" + System.lineSeparator());
             stringBuilder.append("ctx.save();" + System.lineSeparator());
             stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
             stringBuilder.append("ctx.globalAlpha = roadLines[i][0];" + System.lineSeparator());
             stringBuilder.append("ctx.translate(roadLines[i][1],roadLines[i][2]);" + System.lineSeparator());
             stringBuilder.append("ctx.rotate(roadLines[i][3]);" + System.lineSeparator());
-            stringBuilder.append("ctx.rect(0, -roadLines[i][4]/2, roadLines[i][5], roadLines[i][4]);" + System.lineSeparator());
+            stringBuilder.append(
+                    "ctx.rect(0, -roadLines[i][4]/2, roadLines[i][5], roadLines[i][4]);" + System.lineSeparator());
             stringBuilder.append("ctx.translate(-roadLines[i][1],-roadLines[i][2]);" + System.lineSeparator());
             stringBuilder.append("ctx.rotate(-roadLines[i][3]);" + System.lineSeparator());
-    
+
             stringBuilder.append("ctx.fillStyle=roadLines[i][6];" + System.lineSeparator());
             stringBuilder.append("ctx.fill();" + System.lineSeparator());
-    
+
             stringBuilder.append("ctx.lineWidth=\"roadLines[i][8]\";" + System.lineSeparator());
             stringBuilder.append("ctx.strokeStyle=roadLines[i][7];" + System.lineSeparator());
             stringBuilder.append("ctx.stroke();" + System.lineSeparator());
-            
+
             stringBuilder.append("ctx.restore();" + System.lineSeparator());
-            
+
             stringBuilder.append("};" + System.lineSeparator());
         }
     }
-    
+
     public void addImageData()
     {
-        if(imagesArray.length() > 2)
+        if (imagesArray.length() > 2)
         {
-            stringBuilder.append("window.onload = function(e){"); 
-            stringBuilder.append(System.lineSeparator() + "var images = [" + imagesArray.substring(2) + "];" + System.lineSeparator());
-            
+            stringBuilder.append("window.onload = function(e){");
+            stringBuilder.append(System.lineSeparator() + "var images = [" + imagesArray.substring(2) + "];"
+                    + System.lineSeparator());
+
             stringBuilder.append("for(i = 0; i < images.length; i++) {" + System.lineSeparator());
-            stringBuilder.append("ctx.drawImage(images[i][0], images[i][1], images[i][2], images[i][3], images[i][4]);" + System.lineSeparator());
+            stringBuilder.append("ctx.drawImage(images[i][0], images[i][1], images[i][2], images[i][3], images[i][4]);"
+                    + System.lineSeparator());
             stringBuilder.append("};" + System.lineSeparator());
-            
+
             stringBuilder.append("};" + System.lineSeparator());
         }
     }
@@ -124,18 +130,19 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         double rotation = Math.atan2(dy, dx);
         double lineLength = Math.sqrt(dx * dx + dy * dy);
         double lineWidth = width;
-        
+
         addCanvasLineRect(alpha, xA, yA, rotation, lineWidth, lineLength, color, color2, strokeWidth);
     }
 
     public void drawImage(String name, int width, int height, String image, int positionX, int positionY)
     {
         /*
-        stringBuilder.append("var cautionImg = document.getElementById(\"" + image + "\");");
-        stringBuilder.append(
-                "ctx.drawImage(cautionImg, " + positionX + ", " + positionY + ", " + width + ", " + height + ");");
-        */
-        imagesArray.append(", [ document.getElementById(\"" + image + "\"), " + positionX + ", " + positionY + ", " + width + ", " + height + "]");
+         * stringBuilder.append("var cautionImg = document.getElementById(\"" + image +
+         * "\");"); stringBuilder.append( "ctx.drawImage(cautionImg, " + positionX +
+         * ", " + positionY + ", " + width + ", " + height + ");");
+         */
+        imagesArray.append(", [ document.getElementById(\"" + image + "\"), " + positionX + ", " + positionY + ", "
+                + width + ", " + height + "]");
     }
 
     public void drawRect(String name, float width, String color, String color2, float alpha, int xA, int yA, int xB,
@@ -167,7 +174,7 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
 
     public void drawVertex(String name, int size, float alpha, double x, double y, String str, String color)
     {
-        int xPos = (int)x + 14;
+        int xPos = (int) x + 14;
         stringBuilder.append("ctx.beginPath();" + System.lineSeparator());
         stringBuilder.append("ctx.globalAlpha = " + alpha + ";" + System.lineSeparator());
         stringBuilder.append("ctx.lineWidth = 1;" + System.lineSeparator());
@@ -181,10 +188,10 @@ public class HtmlWriter extends main.java.encephalon.writers.HtmlWriter
         stringBuilder.append("<div id=\"" + name
                 + "\" style=\"text-align:center; position:absolute; background-color:#9090FF; top:-500pt; left:-500pt; z-index:30\">"
                 + System.lineSeparator() + "<div id=\"selectedRoadType\" style=\"\">&lt;PH&gt;</div>"
-                + System.lineSeparator() + "<div><button onclick=\"" + submitFunction
-                + "\"/>Send Data!</button></div>" + System.lineSeparator() + "</div>" + System.lineSeparator());
+                + System.lineSeparator() + "<div><button onclick=\"" + submitFunction + "\"/>Send Data!</button></div>"
+                + System.lineSeparator() + "</div>" + System.lineSeparator());
     }
-    
+
     public void flush()
     {
         super.flush();

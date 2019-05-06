@@ -71,7 +71,8 @@ public class StartServer extends main.java.encephalon.sample.StartServer
                 sslConnector.setPort(8443);
                 sslConnector.setAcceptQueueSize(1000);
                 aftermath.addConnector(sslConnector);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 System.err.println("Failed to setup SSL");
                 // Log failure to load keystore
@@ -79,7 +80,8 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 
             aftermath.start();
             aftermath.join();
-        } catch (Throwable t)
+        }
+        catch (Throwable t)
         {
             HashSet<Integer> exceptionHash = new HashSet<Integer>();
             String tabSt = "  ";

@@ -7,7 +7,7 @@ public class JP_JP extends LocaleBase
         super(main.java.encephalon.locale.JP_JP.class);
         this.SERVER_TITLE = "アーフタマッス　プロジェクト";
         this.SAMPLETEXT = "見本";
-        
+
         this.LOCALE_NAME = "言語文字名前";
         this.SAMPLE_TEXT = "見本文字";
 
