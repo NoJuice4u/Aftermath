@@ -26,7 +26,7 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class OSMReader
 {
-    private static final String RESOURCE = System.getProperty("aftermath.map.mapResource");
+    private static final String MAP_RESOURCE = "aftermath.map.resource";
 
     private final AftermathServer     es;
     private final Profiler            profiler;
@@ -79,7 +79,8 @@ public class OSMReader
 
     private void read() throws Exception
     {
-        File file = new File(RESOURCE);
+        // TODO: Shouldn't have a null case here.  Should be a mandatory property instead!
+        File file = new File(es.getProperty(MAP_RESOURCE, null));
 
         XmlParser xP = new XmlParser();
         Task xmlParseTask = new Task(this.profiler, null, "Parse into XML", null);
