@@ -16,7 +16,6 @@ public class AftermathServer extends EncephalonServer
 
     public final String CANVAS_RENDER_JS;
 
-    public static final String         GOOGLE_MAP_API_KEY   = "AIzaSyBt9HJImP6x4yiqsxpgVIQtDYGXv8WqKWM";
     public static final double         GOOGLE_MAP_ZOOMSCALE = 1.0;                                      // 591657550.5;
     private static AftermathController aftermathController  = new AftermathController();
 

@@ -1,6 +1,7 @@
 package main.java.aftermath.handlers;
 
 import java.io.BufferedReader;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ public class AftermathHandler extends DefaultHandler
 {
     private AftermathServer es;
     private long            maxScore = 1;
+    private DecimalFormat decimalFormat = new DecimalFormat("###.######");
 
     public AftermathHandler()
     {
@@ -1591,15 +1593,11 @@ public class AftermathHandler extends DefaultHandler
         writer.tr_Start();
         writer.td_Start();
         writer.text("<div id=\"googleMap\" style=\"width:" + MapVertex.WIDTH + "px;height:" + MapVertex.HEIGHT
-                + "px;position:absolute; z-index:-5\"></div>");
-        String scriptstr = "<script>" + "function myMap() {" + "var mapProp= { center:new google.maps.LatLng("
-                + node.getLatitude() + "," + node.getLongitude() + "), zoom:" + zoom + " };"
-                + "var map=new google.maps.Map(document.getElementById(\"googleMap\"),mapProp);}"
-                + "var drawingManager = new google.maps.drawing.DrawingManager();" + "drawingManager.setMap(map);"
-                + "</script>";
-        writer.text(scriptstr);
-        writer.text("<script src=\"https://maps.googleapis.com/maps/api/js?key=" + AftermathServer.GOOGLE_MAP_API_KEY
-                + "&callback=myMap&libraries=drawing\"></script>");
+                + "px;position:absolute; z-index:-5\">");
+        writer.text("<iframe width=\"" + MapVertex.WIDTH + "\" height=\"" + MapVertex.HEIGHT + "\" id=\"gmap_canvas\" src=\"https://maps.google.com/maps?api=1&q=" + decimalFormat.format(node.getLatitude()) + "%2C" + decimalFormat.format(node.getLongitude()) + "&z=" + zoom + "&output=embed\" frameborder=\"0\" scrolling=\"no\" marginheight=\"0\" marginwidth=\"0\"></iframe>");
+        writer.text("</div>");
+        // writer.text("<script src=\"https://maps.googleapis.com/maps/api/js?key=" + AftermathServer.GOOGLE_MAP_API_KEY
+        //        + "&callback=myMap&libraries=drawing\"></script>");
         writer.td_End();
         writer.tr_End();
     }
