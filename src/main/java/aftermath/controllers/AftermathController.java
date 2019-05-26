@@ -34,9 +34,6 @@ public class AftermathController
     EncephalonThreadPoolExecutor executor = new EncephalonThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(100));
 
-    private CountMeter spatialIndexMeter      = new CountMeter();
-    private CountMeter spatialIndexDepotMeter = new CountMeter();
-
     public AftermathController()
     {
         this.es = AftermathServer.getInstance();
@@ -45,13 +42,10 @@ public class AftermathController
         this.edgeData = new HashMap<Long, MapEdge>();
         this.depotData = new HashMap<Long, Depot>();
         this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>(spatialIndexMeter,
+        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>("SpatialIndex.MapData",
                 SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
         this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME,
-                new SpatialIndex<Depot>(spatialIndexDepotMeter, -180, 180, -90, 90, null));
-
-        es.getCountMeters().put("SpatialIndex.MapData.Depth", spatialIndexMeter);
-        es.getCountMeters().put("SpatialIndex.Depot.Depth", spatialIndexDepotMeter);
+                new SpatialIndex<Depot>("SpatialIndex.Depot", -180, 180, -90, 90, null));
     }
 
     public void run()
@@ -59,7 +53,7 @@ public class AftermathController
         try
         {
             engine = new AftermathEngine(this);
-            Future<?> future = executor.submit(engine);
+            executor.submit(engine);
         }
         finally
         {
