@@ -1,6 +1,8 @@
 package main.java.aftermath.dataCrawlers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 
 import org.eclipse.jetty.xml.XmlParser;
 import org.eclipse.jetty.xml.XmlParser.Attribute;
@@ -26,7 +34,7 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class OSMReader
 {
-    private static final String MAP_RESOURCE = "aftermath.map.resource";
+    private static final String MAP_RESOURCE = "aftermath.map.resource.mapfile";
 
     private final AftermathServer     es;
     private final Profiler            profiler;
@@ -81,7 +89,160 @@ public class OSMReader
     {
         // TODO: Shouldn't have a null case here.  Should be a mandatory property instead!
         File file = new File(es.getProperty(MAP_RESOURCE, null));
+        FileInputStream fileStream = new FileInputStream(file);
+        
+        // Use Stream object here so we don't load the entire file in memory.
+        Task osmProcessingTask = new Task(this.profiler, null, "Parse OSM File", null);
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        XMLStreamReader xmlStr = inputFactory.createXMLStreamReader(fileStream);
+        
+        int depth = 0;
+        long edgeId = 0;
+        List<Long> wayList = new ArrayList<Long>();
+        HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
+        boolean wayStart = false;
+        RoadTypes mode = RoadTypes.unknown;
+        while(xmlStr.hasNext())
+        {
+            xmlStr.next();
+            int Etype = xmlStr.getEventType();
+            
+            switch(Etype)
+            {
+                case XMLStreamReader.START_ELEMENT:
+                    depth++;
+                    QName eName = xmlStr.getName();
+                    if(eName.getLocalPart() == "node")
+                    {
+                        int attributes = xmlStr.getAttributeCount();
+                        long nodeId = -1;
+                        float nodeLat = -1000;
+                        float nodeLon = -1000;
+                        for(int i = 0; i < attributes; i++)
+                        {
+                            // Figure out the attribute name/value positions as we don't have a guarantee the order is consistent
+                            if(xmlStr.getAttributeName(i).toString() == "id")
+                            {
+                                nodeId = Long.valueOf(xmlStr.getAttributeValue(i));
+                            }
+                            else if(xmlStr.getAttributeName(i).toString() == "lat")
+                            {
+                                nodeLat = Float.valueOf(xmlStr.getAttributeValue(i));
+                            }
+                            else if(xmlStr.getAttributeName(i).toString() == "lon")
+                            {
+                                nodeLon = Float.valueOf(xmlStr.getAttributeValue(i));
+                            }
+                        }
+                        if(nodeId == -1 || nodeLat == -1000 || nodeLon == -1000)
+                        {
+                            throw new Exception("Incomplete Data? Got: Id: " + nodeId + ", Latitude: " + nodeLat + ", Longitude: " + nodeLon);
+                        }
+                        mapData.put(nodeId, new MapVertex(nodeLon, nodeLat, nodeId));
+                        mapDataCounters.put(nodeId, new CountMeter());
+                        OSMDataVertexCountMeter.increment();
+                    }
+                    else if(eName.getLocalPart() == "way")
+                    {
+                        wayStart = true;
+                    }
+                    else if(eName.getLocalPart() == "nd" && wayStart == true)
+                    {
+                        Long refId = -1L;
+                        
+                        int attributes = xmlStr.getAttributeCount();
+                        for(int i = 0; i < attributes; i++)
+                        {
+                            // Figure out the attribute name/value positions as we don't have a guarantee the order is consistent
+                            if(xmlStr.getAttributeName(i).toString() == "ref")
+                            {
+                                refId = Long.valueOf(xmlStr.getAttributeValue(i));
+                                wayList.add(refId);
+                            }
+                        }
+                    }
+                    else if(eName.getLocalPart() == "tag")
+                    {
+                        int attributes = xmlStr.getAttributeCount();
+                        String k = null, v = null;
+                        for(int i = 0; i < attributes; i++)
+                        {
+                            // Figure out the attribute name/value positions as we don't have a guarantee the order is consistent
+                            if(xmlStr.getAttributeName(i).toString() == "k")
+                            {
+                                k = xmlStr.getAttributeValue(i);
+                            }
+                            else if(xmlStr.getAttributeName(i).toString() == "v")
+                            {
+                                v = xmlStr.getAttributeValue(i);
+                            }
+                        }
+                        
+                        if(k == null || v == null)
+                        {
+                            throw new Exception("K[" + String.valueOf(k==null) + "] or V[" + String.valueOf(v==null) + "] evaluated to Null!");
+                        }
+                        
+                        if(k.equals("highway") || k.equals("railway") || k.equals("way"))
+                        {
+                            try
+                            {
+                                mode = MapEdge.RoadTypes.valueOf(v);
+                            }
+                            catch (IllegalArgumentException e)
+                            {
+                                Task.entry(this.profiler, osmProcessingTask, "##WARNING## NO ENUM FOR WAYTAG: " + v, null);
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            Task.entry(this.profiler, osmProcessingTask, "\"k\" Unknown: [" + k + "]", null);
+                        }
+                    }
+                    break;
+                case XMLStreamReader.END_ELEMENT:
+                    depth--;
+                    QName eeName = xmlStr.getName();
+                    
+                    if(eeName.getLocalPart() == "way")
+                    {
+                        long previousNode = 0L;
+                        long currentNode = 0L;
+                        for (long l : wayList)
+                        {
+                            previousNode = currentNode;
+                            currentNode = l;
+                            if (previousNode != 0L)
+                            {
+                                MapEdge mapEdge = new MapEdge(edgeId, mapData.get(previousNode), mapData.get(currentNode),
+                                        mode);
+                                edgeListForReduction.add(edgeId);
+                                edgeData.put(edgeId, mapEdge);
+                                OSMDataEdgeCountMeter.increment();
+                                mapData.get(previousNode).addEdge(edgeId);
+                                mapData.get(currentNode).addEdge(edgeId);
 
+                                mapDataCounters.get(previousNode).increment();
+                                mapDataCounters.get(currentNode).increment();
+
+                                edgeId++;
+                            }
+                        }
+                        
+                        wayStart = false;
+                        wayList.clear();
+                        // Build the way object.
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        
+        /*
+        // OLD: Loaded the entire file which incurs a memory overhead
         XmlParser xP = new XmlParser();
         Task xmlParseTask = new Task(this.profiler, null, "Parse into XML", null);
         Node data = xP.parse(file);
@@ -89,11 +250,12 @@ public class OSMReader
 
         long edgeId = 0L;
 
-        Task osmProcessingTask = new Task(this.profiler, null, "Parse OSM File", null);
+
         Iterator<Object> nodeIterator = data.iterator();
 
         // Go through all nodes, and find the vertices and edges to build into the
         // Spatial Index
+        
         HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
         while (nodeIterator.hasNext())
         {
@@ -267,6 +429,8 @@ public class OSMReader
             }
             tagTypeTask.end();
         }
+        */
+        
         osmProcessingTask.end();
 
         for (long l = 0; l < edgeId; l++)
