@@ -24,7 +24,8 @@ import main.java.aftermath.locale.LocaleBase;
 import main.java.aftermath.server.AftermathServer;
 import main.java.aftermath.vehicles.Transport;
 import main.java.aftermath.writers.HtmlWriter;
-
+import main.java.encephalon.API.scope.Scope;
+import main.java.encephalon.annotations.APIScope;
 import main.java.encephalon.annotations.HandlerInfo;
 import main.java.encephalon.annotations.methods.GET;
 import main.java.encephalon.annotations.methods.MenuItem;
@@ -64,6 +65,7 @@ public class AftermathHandler extends DefaultHandler
 
     @GET
     @MenuItem(name = "Map/Item/Base")
+    @APIScope(scope = Scope.publicSSLPort)
     @HandlerInfo(schema = "/", description = "Details not defined yet because the programmer was lazy.")
     public void getMap(String target, String locale, Task parent, Request baseRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception

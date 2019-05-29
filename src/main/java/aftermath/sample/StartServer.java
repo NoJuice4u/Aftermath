@@ -17,13 +17,24 @@ import main.java.encephalon.logger.Logger;
 import main.java.encephalon.server.DefaultHandler;
 
 public class StartServer extends main.java.encephalon.sample.StartServer
-{
+{    
     public static void main(String[] args) throws Exception
     {
         try
         {
             AftermathServer aftermath = AftermathServer.getInstance();
+            
+            String keyStorePath = aftermath.getProperty("ssl.keyStore", null);
+            String keyStorePass = aftermath.getProperty("ssl.keyStorePassword", "");
+            String trustStorePath = aftermath.getProperty("ssl.trustStore", null);
+            String trustStorePass = aftermath.getProperty("ssl.trustStorePassword", "");
+            Integer publicPort = Integer.valueOf(aftermath.getProperty("server.publicport", "8083"));
+            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.publicport", "8082"));
+            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.publicport", "8081"));
+            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.publicport", "8443"));
+
             aftermath.initializeMap();
+            
             ClusteringManager.init(aftermath.getAftermathController().getEdgeData());
 
             GzipHandler gzipHandler = new GzipHandler();
@@ -37,45 +48,47 @@ public class StartServer extends main.java.encephalon.sample.StartServer
 
             ServerConnector publicConnector = new ServerConnector(aftermath);
             publicConnector.setName(Scope.publicPort.name());
-            publicConnector.setPort(8080);
+            publicConnector.setPort(publicPort);
             publicConnector.setAcceptQueueSize(50);
             aftermath.addConnector(publicConnector);
 
             ServerConnector privateConnector = new ServerConnector(aftermath);
             privateConnector.setName(Scope.privatePort.name());
-            privateConnector.setPort(8081);
-            privateConnector.setAcceptQueueSize(50);
+            privateConnector.setPort(privatePort);
+            privateConnector.setAcceptQueueSize(10);
             aftermath.addConnector(privateConnector);
 
-            ServerConnector debugConnector = new ServerConnector(aftermath);
-            debugConnector.setName(Scope.debugPort.name());
-            debugConnector.setPort(8082);
-            debugConnector.setAcceptQueueSize(20);
-            aftermath.addConnector(debugConnector);
+            ServerConnector maintenanceConnector = new ServerConnector(aftermath);
+            maintenanceConnector.setName(Scope.maintenancePort.name());
+            maintenanceConnector.setPort(maintenancePort);
+            maintenanceConnector.setAcceptQueueSize(2);
+            aftermath.addConnector(maintenanceConnector);
 
-            String keyStorePath = System.getProperty("javax.net.ssl.keyStore");
-            String keyStorePass = System.getProperty("javax.net.ssl.keyStorePassword");
-            String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
-            String trustStorePass = System.getProperty("javax.net.ssl.trustStorePassword");
-
-            try
+            if(keyStorePath != null)
             {
-                Logger.Log("SSL", "Trust Store Path: " + trustStorePath);
-                SslContextFactory sslContext = new SslContextFactory(keyStorePath);
-                sslContext.setKeyStorePassword(keyStorePass);
-                sslContext.setTrustStorePath(trustStorePath);
-                sslContext.setTrustStorePassword(trustStorePass);
-
-                ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
-                sslConnector.setName(Scope.publicSSLPort.name());
-                sslConnector.setPort(8443);
-                sslConnector.setAcceptQueueSize(1000);
-                aftermath.addConnector(sslConnector);
+                try
+                {
+                    Logger.Log("SSL", "Trust Store Path: " + trustStorePath);
+                    SslContextFactory sslContext = new SslContextFactory(keyStorePath);
+                    sslContext.setKeyStorePassword(keyStorePass);
+                    sslContext.setTrustStorePath(trustStorePath);
+                    sslContext.setTrustStorePassword(trustStorePass);
+    
+                    ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
+                    sslConnector.setName(Scope.publicSSLPort.name());
+                    sslConnector.setPort(publicSSLPort);
+                    sslConnector.setAcceptQueueSize(1000);
+                    aftermath.addConnector(sslConnector);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("SSL-FAIL", "Failed to setup SSL");
+                    // Log failure to load keystore
+                }
             }
-            catch (Exception e)
+            else
             {
-                System.err.println("Failed to setup SSL");
-                // Log failure to load keystore
+                Logger.Log("SSL-ABSENT", "SSL Not Configured.  Skipping");
             }
 
             aftermath.start();
