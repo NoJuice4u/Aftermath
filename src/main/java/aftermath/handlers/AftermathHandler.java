@@ -45,6 +45,7 @@ import main.java.encephalon.dto.MapVertexLite;
 import main.java.encephalon.exceptions.ResponseException;
 import main.java.encephalon.histogram.HistogramBase;
 import main.java.encephalon.histogram.LowResolutionHistogram;
+import main.java.encephalon.logger.Logger;
 import main.java.encephalon.profiler.Task;
 import main.java.encephalon.server.DefaultHandler;
 import main.java.encephalon.spatialIndex.SpatialIndex;
@@ -190,7 +191,7 @@ public class AftermathHandler extends DefaultHandler
                 drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
     }
 
-    private long findNearestMajorRoad(Double longitude, Double latitude, int diveOutDepth) throws Exception
+    private long findNearestMajorRoad(Task task, Double longitude, Double latitude, int diveOutDepth) throws Exception
     {
         Coordinates coords = new Coordinates(longitude, latitude);
 
@@ -202,28 +203,37 @@ public class AftermathHandler extends DefaultHandler
         }
 
         List<Long> nodeIds = index.getVerticesWithinBounds();
-
         if (nodeIds.size() > 0)
         {
             MapVertex nearestNode = null;
             for (Long nId : nodeIds)
             {
                 MapVertex vtx = es.getAftermathController().getMapData().get(nId);
-                for (Long eId : vtx.getEdges())
+                try
                 {
-                    MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
-                    switch (String.valueOf(edge.getMode()))
+                    // If vtx is null, it probably means that the "getVerticesWithinBounds()" method on the Spatial Index
+                    // has null references. Usually it means that we tried to remove entries from the map data after
+                    // building the spatial index.
+                    for (Long eId : vtx.getEdges())
                     {
-                        case "secondary":
-                        case "primary":
-                        case "residential":
-                            if (nearestNode == null || nearestNode.getDistance(coords) > vtx.getDistance(coords))
-                            {
-                                nearestNode = vtx;
-                            }
-                        default:
-                            break;
+                        MapEdge edge = es.getAftermathController().getEdgeData().get(eId);
+                        switch (String.valueOf(edge.getMode()))
+                        {
+                            case "secondary":
+                            case "primary":
+                            case "residential":
+                                if (nearestNode == null || nearestNode.getDistance(coords) > vtx.getDistance(coords))
+                                {
+                                    nearestNode = vtx;
+                                }
+                            default:
+                                break;
+                        }
                     }
+                }
+                catch(Exception e)
+                {
+                    Task.entry(es.getProfiler(), task, "Fetched a Null Vertex!", null);
                 }
             }
             if (nearestNode != null) { return nearestNode.getId(); }
@@ -244,10 +254,10 @@ public class AftermathHandler extends DefaultHandler
             @QueryString(value = "nodeVertices", _default = "false") Boolean drawVertices,
             @QueryString(value = "drawSpatialGrid", _default = "false") Boolean drawSpatialGrid,
             @QueryString(value = "drawGroups", _default = "false") Boolean drawGroups,
-            @QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
+            @QueryString(value = "diveOutDepth", _default = "3") Integer diveOutDepth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative) throws Exception
     {
-        Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
+        Long nodeId = findNearestMajorRoad(parent, longitude, latitude, diveOutDepth);
         getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter,
                 drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);
     }
@@ -259,11 +269,11 @@ public class AftermathHandler extends DefaultHandler
             @QueryParam(value = "latitude") Double latitude,
             @QueryString(value = "zoom", _default = "18", min = 1, max = 20) Integer zoom,
             @QueryString(value = "depth", _default = "6") Integer depth,
-            @QueryString(value = "diveOutDepth", _default = "5") Integer diveOutDepth,
+            @QueryString(value = "diveOutDepth", _default = "3") Integer diveOutDepth,
             @QueryString(value = "authorative", _default = "false") Boolean authorative,
             @QueryString(value = "roadType", _default = "") String roadType) throws Exception
     {
-        Long nodeId = findNearestMajorRoad(longitude, latitude, diveOutDepth);
+        Long nodeId = findNearestMajorRoad(parent, longitude, latitude, diveOutDepth);
         getTestCanvas(target, locale, parent, baseRequest, request, response, nodeId, zoom, depth, authorative,
                 roadType);
     }
@@ -433,7 +443,7 @@ public class AftermathHandler extends DefaultHandler
         HtmlWriter writer = es.getWriter();
 
         Depot depot = es.getAftermathController().getDepotData().get(depotId);
-        Long nodeId = findNearestMajorRoad(depot.getLongitude(), depot.getLatitude(), diveOutDepth);
+        Long nodeId = findNearestMajorRoad(parent, depot.getLongitude(), depot.getLatitude(), diveOutDepth);
 
         getMapNodeWithDepthAndZoom(target, locale, parent, baseRequest, request, response, nodeId, depth, zoom, filter,
                 drawVertices, drawTransports, drawSpatialGrid, drawGroups, authorative);

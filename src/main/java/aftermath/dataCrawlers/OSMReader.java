@@ -281,32 +281,6 @@ public class OSMReader
         }
 
         {
-            Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
-            try
-            {
-                Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
-    
-                while (iter.hasNext())
-                {
-                    Entry<Long, MapVertex> vEntry = iter.next();
-                    try
-                    {
-                        spatialIndex.add(vEntry.getKey(), vEntry.getValue());
-                    }
-                    catch (StackOverflowError e)
-                    {
-                        new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + vEntry.getKey(), null).end();
-                        System.err.println("Stack Oveflow on Edge: " + vEntry.getKey());
-                    }
-                }
-            }
-            finally
-            {
-                buildSpatialIndexTask.end();
-            }
-        }
-
-        {
             // Prune and reconnect roads
             Task t = new Task(this.profiler, osmProcessingTask, "Parse through road iterations", null);
             try
@@ -351,6 +325,33 @@ public class OSMReader
             finally
             {
                 t.end();
+            }
+        }
+        
+        {
+            // Build the Spatial Index AFTER cleanup. Otherwise we will get null references.
+            Task buildSpatialIndexTask = new Task(this.profiler, osmProcessingTask, "Build Spatial Index", null);
+            try
+            {
+                Iterator<Entry<Long, MapVertex>> iter = mapData.entrySet().iterator();
+    
+                while (iter.hasNext())
+                {
+                    Entry<Long, MapVertex> vEntry = iter.next();
+                    try
+                    {
+                        spatialIndex.add(vEntry.getKey(), vEntry.getValue());
+                    }
+                    catch (StackOverflowError e)
+                    {
+                        new Task(profiler, buildSpatialIndexTask, "Stack Oveflow on Edge: " + vEntry.getKey(), null).end();
+                        System.err.println("Stack Oveflow on Edge: " + vEntry.getKey());
+                    }
+                }
+            }
+            finally
+            {
+                buildSpatialIndexTask.end();
             }
         }
     }

@@ -29,9 +29,9 @@ public class StartServer extends main.java.encephalon.sample.StartServer
             String trustStorePath = aftermath.getProperty("ssl.trustStore", null);
             String trustStorePass = aftermath.getProperty("ssl.trustStorePassword", "");
             Integer publicPort = Integer.valueOf(aftermath.getProperty("server.publicport", "8083"));
-            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.publicport", "8082"));
-            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.publicport", "8081"));
-            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.publicport", "8443"));
+            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.privateport", "8082"));
+            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.maintenanceport", "8081"));
+            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.ssl.publicport", "8443"));
 
             aftermath.initializeMap();
             
