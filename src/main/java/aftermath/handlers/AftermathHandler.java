@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 import org.eclipse.jetty.server.Request;
 
@@ -1073,10 +1074,11 @@ public class AftermathHandler extends DefaultHandler
         writer.tr_End();
 
         boolean lowRes = edgeWeightMap.size() <= 1;
-        for (long edge : edgeWeightMap.keySet())
+        for (Entry<Long, Integer> entry : edgeWeightMap.entrySet())
         {
+            long edge = entry.getKey();
             int previousWeight = es.getAftermathController().getEdgeData().get(edge).getWeight();
-            int weight = edgeWeightMap.get(edge);
+            int weight = entry.getValue();
             int finalWeight = -1;
             float confidence = -1;
 

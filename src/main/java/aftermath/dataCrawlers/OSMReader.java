@@ -297,6 +297,7 @@ public class OSMReader
                         {
                             new Task(profiler, osmProcessingTask, "Remove vertex with 0 edges", null).end();
                             mapData.remove(l);
+                            es.getCountMeters().get("OSMData.Vertices").decrement();
                         }
                         else
                         {
