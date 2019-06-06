@@ -24,14 +24,18 @@ public class StartServer extends main.java.encephalon.sample.StartServer
         {
             AftermathServer aftermath = AftermathServer.getInstance();
             
-            String keyStorePath = aftermath.getProperty("ssl.keyStore", null);
+            String keyStorePath = aftermath.getProperty("ssl.keyStore");
             String keyStorePass = aftermath.getProperty("ssl.keyStorePassword", "");
-            String trustStorePath = aftermath.getProperty("ssl.trustStore", null);
+            String trustStorePath = aftermath.getProperty("ssl.trustStore");
             String trustStorePass = aftermath.getProperty("ssl.trustStorePassword", "");
-            Integer publicPort = Integer.valueOf(aftermath.getProperty("server.publicport", "8083"));
-            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.privateport", "8082"));
-            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.maintenanceport", "8081"));
-            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.ssl.publicport", "8443"));
+            Integer publicPort = Integer.valueOf(aftermath.getProperty("server.publicport", 8083));
+            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.privateport", 8082));
+            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.maintenanceport", 8081));
+            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.ssl.publicport", 8443));
+            Integer publicPortQueueSize = Integer.valueOf(aftermath.getProperty("server.publicport.queue.size", 10));
+            Integer privatePortQueueSize = Integer.valueOf(aftermath.getProperty("server.privateport.queue.size", 5));
+            Integer maintenancePortQueueSize = Integer.valueOf(aftermath.getProperty("server.maintenanceport.queue.size", 2));
+            Integer publicSSLPortQueueSize = Integer.valueOf(aftermath.getProperty("server.ssl.publicport.queue.size", 1000));
 
             aftermath.initializeMap();
             
@@ -49,19 +53,19 @@ public class StartServer extends main.java.encephalon.sample.StartServer
             ServerConnector publicConnector = new ServerConnector(aftermath);
             publicConnector.setName(Scope.publicPort.name());
             publicConnector.setPort(publicPort);
-            publicConnector.setAcceptQueueSize(50);
+            publicConnector.setAcceptQueueSize(publicPortQueueSize);
             aftermath.addConnector(publicConnector);
 
             ServerConnector privateConnector = new ServerConnector(aftermath);
             privateConnector.setName(Scope.privatePort.name());
             privateConnector.setPort(privatePort);
-            privateConnector.setAcceptQueueSize(10);
+            privateConnector.setAcceptQueueSize(privatePortQueueSize);
             aftermath.addConnector(privateConnector);
 
             ServerConnector maintenanceConnector = new ServerConnector(aftermath);
             maintenanceConnector.setName(Scope.maintenancePort.name());
             maintenanceConnector.setPort(maintenancePort);
-            maintenanceConnector.setAcceptQueueSize(2);
+            maintenanceConnector.setAcceptQueueSize(maintenancePortQueueSize);
             aftermath.addConnector(maintenanceConnector);
 
             if(keyStorePath != null)
@@ -77,7 +81,7 @@ public class StartServer extends main.java.encephalon.sample.StartServer
                     ServerConnector sslConnector = new ServerConnector(aftermath, sslContext);
                     sslConnector.setName(Scope.publicSSLPort.name());
                     sslConnector.setPort(publicSSLPort);
-                    sslConnector.setAcceptQueueSize(1000);
+                    sslConnector.setAcceptQueueSize(publicSSLPortQueueSize);
                     aftermath.addConnector(sslConnector);
                 }
                 catch (Exception e)

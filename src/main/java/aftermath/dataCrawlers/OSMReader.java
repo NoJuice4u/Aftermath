@@ -79,7 +79,7 @@ public class OSMReader
     private void read() throws Exception
     {
         // TODO: Shouldn't have a null case here.  Should be a mandatory property instead!
-        File file = new File(es.getProperty(MAP_RESOURCE, null));
+        File file = new File(es.getProperty(MAP_RESOURCE));
         FileInputStream fileStream = new FileInputStream(file);
         
         // Use Stream object here so we don't load the entire file in memory.
