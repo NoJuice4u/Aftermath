@@ -28,7 +28,6 @@ public class AftermathController
     private Runnable                         engine;
     private HashMap<Long, MapVertex>         mapData;
     private HashMap<Long, MapEdge>           edgeData;
-    private HashMap<Long, Depot>             depotData;
     private HashMap<String, SpatialIndex<?>> spatialIndexMap;
 
     EncephalonThreadPoolExecutor executor = new EncephalonThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS,
@@ -40,12 +39,12 @@ public class AftermathController
 
         this.mapData = new HashMap<Long, MapVertex>();
         this.edgeData = new HashMap<Long, MapEdge>();
-        this.depotData = new HashMap<Long, Depot>();
         this.spatialIndexMap = new HashMap<String, SpatialIndex<?>>();
-        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>("SpatialIndex.MapData",
+
+        this.spatialIndexMap.put(SPATIALINDEX_DEPOTMAP_NAME, new SpatialIndex<MapVertex>("SpatialIndex.Vertices",
                 SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
-        this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME,
-                new SpatialIndex<Depot>("SpatialIndex.Depot", -180, 180, -90, 90, null));
+        this.spatialIndexMap.put(SPATIALINDEX_MAPDATA_NAME, new SpatialIndex<Depot>("SpatialIndex.Depots",
+                SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null));
     }
 
     public void run()
@@ -73,7 +72,7 @@ public class AftermathController
 
     public HashMap<Long, Depot> getDepotData()
     {
-        return depotData;
+        return Depot.getDepotList();
     }
 
     public SpatialIndex<?> getSpatialIndex(String s)

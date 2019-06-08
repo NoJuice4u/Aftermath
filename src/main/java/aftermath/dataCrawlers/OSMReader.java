@@ -69,8 +69,8 @@ public class OSMReader
         this.mapData = new HashMap<Long, MapVertex>(300000);
         this.mapDataCounters = new HashMap<Long, CountMeter>();
         this.edgeData = new HashMap<Long, MapEdge>(300000);
-        this.spatialIndex = new SpatialIndex<MapVertex>("SpatialIndex.Vertex", -180, 180, -90, 90, null);
-        this.spatialIndexDepot = new SpatialIndex<Depot>("SpatialIndex.Depots", -180, 180, -90, 90, null);
+        this.spatialIndex = new SpatialIndex<MapVertex>("DUMMY", -180, 180, -90, 90, null);
+        this.spatialIndexDepot = new SpatialIndex<Depot>("DUMMY", -180, 180, -90, 90, null);
         this.profiler = null;
 
         read();
@@ -93,6 +93,11 @@ public class OSMReader
         HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
         boolean wayStart = false;
         RoadTypes mode = RoadTypes.unknown;
+        String name = null;
+        boolean isStation = false;
+        float nodeLat = -1000;
+        float nodeLon = -1000;
+        
         while(xmlStr.hasNext())
         {
             xmlStr.next();
@@ -107,8 +112,8 @@ public class OSMReader
                     {
                         int attributes = xmlStr.getAttributeCount();
                         long nodeId = -1;
-                        float nodeLat = -1000;
-                        float nodeLon = -1000;
+                        nodeLat = -1000;
+                        nodeLon = -1000;
                         for(int i = 0; i < attributes; i++)
                         {
                             // Figure out the attribute name/value positions as we don't have a guarantee the order is consistent
@@ -189,10 +194,27 @@ public class OSMReader
                                 continue;
                             }
                         }
+                        else if(k.equals("name"))
+                        {
+                            name = v;
+                        }
+                        else if(v.equals("station"))
+                        {
+                            isStation = true;
+                        }
                         else
                         {
                             // For Debugging only
                             // Task.entry(this.profiler, osmProcessingTask, "\"k\" Unknown: [" + k + "]", null);
+                        }
+                        
+                        if(name != null && isStation == true)
+                        {
+                            Depot depot = new Depot(name, 0, nodeLon, nodeLat);
+                            spatialIndexDepot.add(depot.getId(), depot);
+                            
+                            name = null;
+                            isStation = false;
                         }
                     }
                     break;

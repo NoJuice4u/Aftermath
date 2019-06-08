@@ -1,5 +1,7 @@
 package main.java.aftermath.engine;
 
+import java.util.HashMap;
+
 import main.java.aftermath.vehicles.Bin;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.profiler.CountMeter;
@@ -9,6 +11,7 @@ public class Depot extends Bin
 {
     public static final String DEPOT_ACTIVE_COUNT_METER = "Depots.Active";
     public static final String DEPOT_TOTAL_COUNT_METER  = "Depots.Total";
+    private static final HashMap<Long, Depot> depotList = new HashMap<Long, Depot>();
     private static long        idIncrement;
     private final long         id;
     private final long         edgeId;
@@ -29,6 +32,8 @@ public class Depot extends Bin
         this.edgeId = edge.getId();
         this.name = name;
 
+        depotList.put(this.id, this);
+
         EncephalonServer.getInstance().getCountMeters().get(DEPOT_TOTAL_COUNT_METER).increment();
     }
 
@@ -39,6 +44,8 @@ public class Depot extends Bin
         this.id = idIncrement++;
         this.edgeId = 0;
         this.name = name;
+
+        depotList.put(this.id, this);
 
         EncephalonServer.getInstance().getCountMeters().get(DEPOT_TOTAL_COUNT_METER).increment();
     }
@@ -84,5 +91,15 @@ public class Depot extends Bin
             this.active = false;
             EncephalonServer.getInstance().getCountMeters().get(DEPOT_ACTIVE_COUNT_METER).decrement();
         }
+    }
+    
+    public static HashMap<Long, Depot> getDepotList()
+    {
+        return depotList;
+    }
+    
+    public static Depot get(int index)
+    {
+        return depotList.get(index);
     }
 }
