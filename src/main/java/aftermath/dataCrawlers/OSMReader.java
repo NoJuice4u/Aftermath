@@ -29,8 +29,13 @@ import main.java.encephalon.spatialIndex.SpatialIndex;
 public class OSMReader
 {
     private static final String MAP_RESOURCE = "aftermath.map.resource.mapfile";
-
-    private final AftermathServer     es;
+    
+    private static final AftermathServer     as = AftermathServer.getInstance();
+    
+    private static final int MAPDATA_INIT_SIZE = as.getProperty("aftermath.mapdata.initialization.size", 300000, "Hashmap initialization size for map data.");
+    private static final int EDGEDATA_INIT_SIZE = as.getProperty("aftermath.edgedata.initialization.size", 300000, "Hashmap initialization size for edge data.");
+    private static final int LATLON_MAGIC_NUMBER = -1000;
+    
     private final Profiler            profiler;
     private HashMap<Long, MapVertex>  mapData;
     private HashMap<Long, CountMeter> mapDataCounters;
@@ -49,28 +54,26 @@ public class OSMReader
     public OSMReader(HashMap<Long, MapVertex> mapData, HashMap<Long, MapEdge> edgeData,
             SpatialIndex<MapVertex> spatialIndex, SpatialIndex<Depot> spatialIndexDepot) throws Exception
     {
-        this.es = AftermathServer.getInstance();
         this.mapData = mapData;
         this.mapDataCounters = new HashMap<Long, CountMeter>();
         this.edgeData = edgeData;
         this.spatialIndex = spatialIndex;
         this.spatialIndexDepot = spatialIndexDepot;
-        this.profiler = es.getProfiler();
+        this.profiler = as.getProfiler();
 
-        es.getCountMeters().put("OSMData.Vertices", OSMDataVertexCountMeter);
-        es.getCountMeters().put("OSMData.Edges", OSMDataEdgeCountMeter);
+        as.getCountMeters().put("OSMData.Vertices", OSMDataVertexCountMeter);
+        as.getCountMeters().put("OSMData.Edges", OSMDataEdgeCountMeter);
 
         read();
     }
 
     public OSMReader() throws Exception
     {
-        this.es = null;
-        this.mapData = new HashMap<Long, MapVertex>(300000);
+        this.mapData = new HashMap<Long, MapVertex>(MAPDATA_INIT_SIZE);
         this.mapDataCounters = new HashMap<Long, CountMeter>();
-        this.edgeData = new HashMap<Long, MapEdge>(300000);
-        this.spatialIndex = new SpatialIndex<MapVertex>("DUMMY", -180, 180, -90, 90, null);
-        this.spatialIndexDepot = new SpatialIndex<Depot>("DUMMY", -180, 180, -90, 90, null);
+        this.edgeData = new HashMap<Long, MapEdge>(EDGEDATA_INIT_SIZE);
+        this.spatialIndex = new SpatialIndex<MapVertex>("DUMMY", SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null);
+        this.spatialIndexDepot = new SpatialIndex<Depot>("DUMMY", SpatialIndex.LON_MIN, SpatialIndex.LON_MAX, SpatialIndex.LAT_MIN, SpatialIndex.LAT_MAX, null);
         this.profiler = null;
 
         read();
@@ -79,7 +82,7 @@ public class OSMReader
     private void read() throws Exception
     {
         // TODO: Shouldn't have a null case here.  Should be a mandatory property instead!
-        File file = new File(es.getProperty(MAP_RESOURCE));
+        File file = new File(as.getProperty(MAP_RESOURCE));
         FileInputStream fileStream = new FileInputStream(file);
         
         // Use Stream object here so we don't load the entire file in memory.
@@ -90,13 +93,13 @@ public class OSMReader
         int depth = 0;
         long edgeId = 0;
         List<Long> wayList = new ArrayList<Long>();
-        HashSet<Long> edgeListForReduction = new HashSet<Long>(300000);
+        HashSet<Long> edgeListForReduction = new HashSet<Long>(EDGEDATA_INIT_SIZE);
         boolean wayStart = false;
         RoadTypes mode = RoadTypes.unknown;
         String name = null;
         boolean isStation = false;
-        float nodeLat = -1000;
-        float nodeLon = -1000;
+        float nodeLat = LATLON_MAGIC_NUMBER;
+        float nodeLon = LATLON_MAGIC_NUMBER;
         
         while(xmlStr.hasNext())
         {
@@ -112,8 +115,8 @@ public class OSMReader
                     {
                         int attributes = xmlStr.getAttributeCount();
                         long nodeId = -1;
-                        nodeLat = -1000;
-                        nodeLon = -1000;
+                        nodeLat = LATLON_MAGIC_NUMBER;
+                        nodeLon = LATLON_MAGIC_NUMBER;
                         for(int i = 0; i < attributes; i++)
                         {
                             // Figure out the attribute name/value positions as we don't have a guarantee the order is consistent
@@ -130,7 +133,7 @@ public class OSMReader
                                 nodeLon = Float.valueOf(xmlStr.getAttributeValue(i));
                             }
                         }
-                        if(nodeId == -1 || nodeLat == -1000 || nodeLon == -1000)
+                        if(nodeId == -1 || nodeLat == LATLON_MAGIC_NUMBER || nodeLon == LATLON_MAGIC_NUMBER)
                         {
                             throw new Exception("Incomplete Data? Got: Id: " + nodeId + ", Latitude: " + nodeLat + ", Longitude: " + nodeLon);
                         }
@@ -319,18 +322,18 @@ public class OSMReader
                         {
                             new Task(profiler, osmProcessingTask, "Remove vertex with 0 edges", null).end();
                             mapData.remove(l);
-                            es.getCountMeters().get("OSMData.Vertices").decrement();
+                            as.getCountMeters().get("OSMData.Vertices").decrement();
                         }
                         else
                         {
                             String meterName = "Vertex.With." + String.format("%03d", cm.getCount()) + ".Edges";
-                            if(es.getCountMeters().get(meterName) == null)
+                            if(as.getCountMeters().get(meterName) == null)
                             {
-                                es.getCountMeters().put(meterName, new CountMeter());
+                                as.getCountMeters().put(meterName, new CountMeter());
                             }
                             else
                             {
-                                es.getCountMeters().get(meterName).increment();
+                                as.getCountMeters().get(meterName).increment();
                             }
                         }
                     }

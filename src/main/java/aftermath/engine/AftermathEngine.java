@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.java.aftermath.controllers.AftermathController;
+import main.java.aftermath.server.AftermathServer;
 import main.java.aftermath.vehicles.Transport;
 import main.java.encephalon.dto.MapEdge.RoadTypes;
 import main.java.encephalon.profiler.Task;
 
 public class AftermathEngine implements Runnable
 {
-    private static final int    NUMBER_OF_VEHICLES = Integer.valueOf(System.getProperty("aftermath.map.vehicles"));
+    private static AftermathServer as = AftermathServer.getInstance();
+    private static final int    NUMBER_OF_VEHICLES = as.getProperty("aftermath.map.vehicles.count", 20, "Number of Vehicles in simulation.");
+    
     private AftermathController controller;
     private List<Transport>     transporters;
 
@@ -59,7 +62,7 @@ public class AftermathEngine implements Runnable
         {
             try
             {
-                Thread.sleep(250);
+                Thread.sleep(as.getProperty("aftermath.engine.interval.ms", 250, "Engine interval beween ticks"));
                 traverse();
             }
             catch (InterruptedException e)

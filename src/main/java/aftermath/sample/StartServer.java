@@ -24,18 +24,18 @@ public class StartServer extends main.java.encephalon.sample.StartServer
         {
             AftermathServer aftermath = AftermathServer.getInstance();
             
-            String keyStorePath = aftermath.getProperty("ssl.keyStore");
-            String keyStorePass = aftermath.getProperty("ssl.keyStorePassword", "");
-            String trustStorePath = aftermath.getProperty("ssl.trustStore");
-            String trustStorePass = aftermath.getProperty("ssl.trustStorePassword", "");
-            Integer publicPort = Integer.valueOf(aftermath.getProperty("server.publicport", 8083));
-            Integer privatePort = Integer.valueOf(aftermath.getProperty("server.privateport", 8082));
-            Integer maintenancePort = Integer.valueOf(aftermath.getProperty("server.maintenanceport", 8081));
-            Integer publicSSLPort = Integer.valueOf(aftermath.getProperty("server.ssl.publicport", 8443));
-            Integer publicPortQueueSize = Integer.valueOf(aftermath.getProperty("server.publicport.queue.size", 10));
-            Integer privatePortQueueSize = Integer.valueOf(aftermath.getProperty("server.privateport.queue.size", 5));
-            Integer maintenancePortQueueSize = Integer.valueOf(aftermath.getProperty("server.maintenanceport.queue.size", 2));
-            Integer publicSSLPortQueueSize = Integer.valueOf(aftermath.getProperty("server.ssl.publicport.queue.size", 1000));
+            String keyStorePath = aftermath.getProperty("ssl.keyStore", "SSL Keystore file.");
+            String keyStorePass = aftermath.getProperty("ssl.keyStore.password", "", "SSL Keystore password.");
+            String trustStorePath = aftermath.getProperty("ssl.trustStore", "SSL Truststore file.");
+            String trustStorePass = aftermath.getProperty("ssl.trustStore.password", "", "SSL Truststore password.");
+            Integer publicPort = aftermath.getProperty("server.port.public", 8083, "Public Port.");
+            Integer privatePort = aftermath.getProperty("server.port.private", 8082, "Private Port.");
+            Integer maintenancePort = aftermath.getProperty("server.port.maintenance", 8081, "Maintenance Port.");
+            Integer publicSSLPort = aftermath.getProperty("server.ssl.port.public", 8443, "SSL Public Port.");
+            Integer publicPortQueueSize = aftermath.getProperty("server.port.public.queue.size", 10, "Public port queue size.");
+            Integer privatePortQueueSize = aftermath.getProperty("server.port.private.queue.size", 5, "Private port queue size.");
+            Integer maintenancePortQueueSize = aftermath.getProperty("server.port.maintenance.queue.size", 2, "Maintenance port queue size.");
+            Integer publicSSLPortQueueSize = aftermath.getProperty("server.ssl.port.public.queue.size", 1000, "SSL Public port queue size.");
 
             aftermath.initializeMap();
             

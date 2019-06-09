@@ -12,11 +12,11 @@ import main.java.encephalon.utils.ResourceUtils;
 
 public class AftermathServer extends EncephalonServer
 {
-    private static AftermathServer as;
+    private static AftermathServer as = AftermathServer.getInstance();
 
     public final String CANVAS_RENDER_JS;
 
-    public static final double         GOOGLE_MAP_ZOOMSCALE = 1.0;                                      // 591657550.5;
+    public static final float          GOOGLE_MAP_ZOOMSCALE = as.getProperty("google.maps.zoom.scale.factor", 1.0f, "Google Maps zoom scale factor");        // 591657550.5;
     private static AftermathController aftermathController  = new AftermathController();
 
     public final Gson gsonRequest = new Gson();
@@ -105,6 +105,6 @@ public class AftermathServer extends EncephalonServer
         // writer.flush();
         // return (HtmlWriter)writer;
 
-        return new HtmlWriter(2, this); // HACKY
+        return new HtmlWriter(2, this); // TODO: HACKY
     }
 }

@@ -27,7 +27,7 @@ class Simulator
     {
         HttpApiClient client = new HttpApiClient();
 
-        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685732",
+        client.makeRequestGet("http", null, "localhost:8081", "aftermath/map/node/??/json?depth=??", "1093685732",
                 "22");
 
         int err = client.getResponseCode();
@@ -66,7 +66,7 @@ class Simulator
                 edgePost.append("&" + it + "=" + edgeWeight);
             }
 
-            client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
+            client.makeRequestPost("http", null, "localhost:8081", "aftermath/map/weight", edgePost.substring(1));
 
             System.out.println("[" + client.getResponseCode() + "]\t" + edgePost.substring(1));
         }
@@ -78,7 +78,7 @@ class Simulator
     {
         HttpApiClient client = new HttpApiClient();
 
-        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/node/??/json?depth=??", "1093685711",
+        client.makeRequestGet("http", null, "localhost:8081", "aftermath/map/node/??/json?depth=??", "1093685711",
                 "22");
 
         int err = client.getResponseCode();
@@ -97,7 +97,7 @@ class Simulator
 
             if (mode.equals("primary") || mode.equals("secondary"))
             {
-                client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/mark", edg + "=2");
+                client.makeRequestPost("http", null, "localhost:8081", "aftermath/map/mark", edg + "=2");
             }
         }
     }
@@ -109,57 +109,24 @@ class Simulator
 
         int[][][] weightGroup =
         {
-                {
-                        {
-                                0, 3
-                        },
-                        {
-                                1, 3
-                        },
-                        {
-                                3, 3
-                        },
-                        {
-                                4, 3
-                        },
-                        {
-                                6, 3
-                        },
-                        {
-                                7, 3
-                        }
-                },
-                {
-                        {
-                                8, 7
-                        },
-                        {
-                                9, 7
-                        },
-                        {
-                                10, 7
-                        },
-                        {
-                                11, 7
-                        },
-                        {
-                                12, 7
-                        },
-                        {
-                                12, 7
-                        },
-                        {
-                                13, 7
-                        }
-                },
-                {
-                        {
-                                8, 6
-                        },
-                        {
-                                0, 2
-                        }
-                }
+            {
+                { 0, 2 },
+                { 1, 2 },
+                { 2, 4 },
+                { 3, 4 },
+            },
+            {
+                { 0, 4 },
+                { 1, 4 },
+                { 2, 8 },
+                { 3, 8 },
+            },
+            {
+                { 0, 3 },
+                { 4, 3 },
+                { 5, 3 },
+                { 6, 3 },
+            }
         };
 
         int[] sequence =
@@ -179,7 +146,7 @@ class Simulator
                 }
 
                 System.out.println(edgePost.substring(1));
-                client.makeRequestPost("http", null, "localhost:8080", "aftermath/map/weight", edgePost.substring(1));
+                client.makeRequestPost("http", null, "localhost:8081", "aftermath/map/weight", edgePost.substring(1));
             }
         }
     }
@@ -190,7 +157,7 @@ class Simulator
     {
         HttpApiClient client = new HttpApiClient();
 
-        client.makeRequestGet("http", null, "localhost:8080", "aftermath/map/depots/json");
+        client.makeRequestGet("http", null, "localhost:8081", "aftermath/map/depots/json");
 
         int err = client.getResponseCode();
         String content = client.readResponse();
@@ -212,15 +179,15 @@ class Simulator
         HashMap<String, String> userA = new HashMap<String, String>();
         HashMap<String, String> userB = new HashMap<String, String>();
 
-        client.makeRequestGet("http", null, "localhost:8080", "system/session/new");
+        client.makeRequestGet("http", null, "localhost:8081", "system/session/new");
         String sidA = client.getHeaderField("X-SID");
         userA.put("X-SID", sidA);
 
-        client.makeRequestGet("http", null, "localhost:8080", "system/session/new");
+        client.makeRequestGet("http", null, "localhost:8081", "system/session/new");
         String sidB = client.getHeaderField("X-SID");
         userB.put("X-SID", sidB);
 
-        HttpURLConnection connection = client.makeRequestGet("http", userB, "localhost:8080", "aftermath/map");
+        HttpURLConnection connection = client.makeRequestGet("http", userB, "localhost:8081", "aftermath/map");
         System.out.println("EOT");
 
         // Get an Authoritative Session

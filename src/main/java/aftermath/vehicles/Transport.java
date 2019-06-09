@@ -6,18 +6,21 @@ import java.util.Map;
 import java.util.Random;
 
 import main.java.aftermath.controllers.AftermathController;
+import main.java.aftermath.server.AftermathServer;
 import main.java.encephalon.dto.Coordinates;
 import main.java.encephalon.dto.MapEdge;
 import main.java.encephalon.dto.MapVertex;
+import main.java.encephalon.spatialIndex.SpatialIndex;
 
 public class Transport extends Bin
 {
+    private static final AftermathServer as = AftermathServer.getInstance();
     private transient AftermathController controller;
     private transient final static Random randomizer = new Random();
 
     private static long nextId           = 0;
     private final long  id;
-    private double      VEHICLE_VELOCITY = 0.5 / 111.0;
+    private double      VEHICLE_VELOCITY = as.getProperty("aftermath.vehicle.velocity", 0.5f, "Vehicle speed") / SpatialIndex.COORDINATES_TO_DISTANCE_FACTOR;
 
     private int  ticks        = 0;
     private int  WeightChange = 1;
